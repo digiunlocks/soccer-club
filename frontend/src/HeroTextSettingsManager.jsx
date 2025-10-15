@@ -146,15 +146,68 @@ export default function HeroTextSettingsManager() {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Main Caption/Title *
               </label>
-              <input
-                type="text"
-                name="caption"
-                value={settings.caption}
-                onChange={handleChange}
-                placeholder="e.g., Welcome to Seattle Leopards FC"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              />
+              
+              {/* Preset Captions Dropdown */}
+              <div className="mb-2">
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  Choose a preset caption:
+                </label>
+                <select
+                  onChange={(e) => {
+                    if (e.target.value !== '') {
+                      setSettings(prev => ({ ...prev, caption: e.target.value }));
+                    }
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                >
+                  <option value="">Select a preset caption...</option>
+                  
+                  <optgroup label="🏆 Professional & Impactful">
+                    <option value="Seattle Leopards FC">Seattle Leopards FC</option>
+                    <option value="Building Champions, Creating Legends">Building Champions, Creating Legends</option>
+                    <option value="Where Champions Are Made">Where Champions Are Made</option>
+                    <option value="Excellence in Every Play">Excellence in Every Play</option>
+                  </optgroup>
+                  
+                  <optgroup label="⚽ Soccer-Focused">
+                    <option value="Your Journey to Greatness Starts Here">Your Journey to Greatness Starts Here</option>
+                    <option value="More Than a Club, It's a Family">More Than a Club, It's a Family</option>
+                    <option value="Developing Tomorrow's Soccer Stars">Developing Tomorrow's Soccer Stars</option>
+                    <option value="Passion. Dedication. Victory.">Passion. Dedication. Victory.</option>
+                  </optgroup>
+                  
+                  <optgroup label="🌟 Community & Growth">
+                    <option value="Growing Champions, One Player at a Time">Growing Champions, One Player at a Time</option>
+                    <option value="Where Dreams Meet Dedication">Where Dreams Meet Dedication</option>
+                    <option value="Seattle's Premier Youth Soccer Experience">Seattle's Premier Youth Soccer Experience</option>
+                    <option value="Unleash Your Potential">Unleash Your Potential</option>
+                  </optgroup>
+                  
+                  <optgroup label="💪 Inspirational">
+                    <option value="Rise Above. Play Beyond.">Rise Above. Play Beyond.</option>
+                    <option value="Every Player. Every Dream. Every Victory.">Every Player. Every Dream. Every Victory.</option>
+                    <option value="From Grassroots to Greatness">From Grassroots to Greatness</option>
+                    <option value="Champions Start Here">Champions Start Here</option>
+                  </optgroup>
+                </select>
+              </div>
+              
+              {/* Custom Caption Input */}
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  Or write your own custom caption:
+                </label>
+                <input
+                  type="text"
+                  name="caption"
+                  value={settings.caption}
+                  onChange={handleChange}
+                  placeholder="Enter your custom caption here..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+              
               <p className="text-xs text-gray-500 mt-1">This will appear as the main headline over ALL hero images</p>
             </div>
 
