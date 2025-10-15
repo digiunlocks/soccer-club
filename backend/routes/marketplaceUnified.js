@@ -6,13 +6,16 @@ const SellerRating = require('../models/SellerRating');
 const BuyerRating = require('../models/BuyerRating');
 const authenticateToken = require('../middleware/auth');
 
-// Get user's items
+// Get user's items (including all statuses)
 router.get('/my-items', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id || req.user._id;
     
     const items = await MarketplaceItem.find({ seller: userId })
+      .populate('seller', 'username firstName lastName')
       .sort({ createdAt: -1 });
+    
+    console.log(`📦 [MyItems] Found ${items.length} items for user ${userId}`);
     
     res.json(items);
   } catch (error) {

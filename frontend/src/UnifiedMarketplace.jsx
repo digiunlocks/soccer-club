@@ -8,6 +8,7 @@ export default function UnifiedMarketplace() {
   const [activeTab, setActiveTab] = useState('post');
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // Post Tab State
   const [showPostForm, setShowPostForm] = useState(false);
@@ -41,7 +42,11 @@ export default function UnifiedMarketplace() {
   const fetchUser = async () => {
     try {
       const token = localStorage.getItem('token');
-      if (!token) return;
+      if (!token) {
+        setIsAuthenticated(false);
+        setLoading(false);
+        return;
+      }
 
       const response = await fetch('http://localhost:5000/api/auth/me', {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -50,10 +55,14 @@ export default function UnifiedMarketplace() {
       if (response.ok) {
         const userData = await response.json();
         setUser(userData);
+        setIsAuthenticated(true);
         localStorage.setItem('user', JSON.stringify(userData));
+      } else {
+        setIsAuthenticated(false);
       }
     } catch (error) {
       console.error('Error fetching user:', error);
+      setIsAuthenticated(false);
     } finally {
       setLoading(false);
     }
@@ -141,12 +150,50 @@ export default function UnifiedMarketplace() {
     toast.success('Rating submitted successfully!');
   };
 
-  const tabs = [
-    { id: 'post', label: 'Post Item', icon: FaPlus },
-    { id: 'items', label: 'My Items', icon: FaShoppingBag },
-    { id: 'offers', label: 'Offers', icon: FaHandshake },
-    { id: 'reviews', label: 'Rate & Review', icon: FaStar }
+  const publicTabs = [
+    { id: 'post', label: 'Post Item', icon: FaPlus, requiresAuth: true }
   ];
+
+  const authenticatedTabs = [
+    { id: 'items', label: 'My Items', icon: FaShoppingBag, requiresAuth: true },
+    { id: 'offers', label: 'Offers', icon: FaHandshake, requiresAuth: true },
+    { id: 'reviews', label: 'Rate & Review', icon: FaStar, requiresAuth: true }
+  ];
+
+  const allTabs = [...publicTabs, ...authenticatedTabs];
+
+  // Check if current tab requires authentication
+  const currentTab = allTabs.find(tab => tab.id === activeTab);
+  const requiresAuth = currentTab?.requiresAuth;
+
+  // Redirect to login if trying to access authenticated tab without being logged in
+  if (!loading && requiresAuth && !isAuthenticated) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="bg-white rounded-lg shadow-md p-8 text-center">
+          <div className="text-6xl mb-6">🔒</div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Authentication Required</h2>
+          <p className="text-gray-600 mb-6">
+            You need to be logged in to access this section of the marketplace.
+          </p>
+          <div className="flex gap-4 justify-center">
+            <button
+              onClick={() => window.location.href = '/signin'}
+              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+            >
+              Sign In
+            </button>
+            <button
+              onClick={() => window.location.href = '/signup'}
+              className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors font-semibold"
+            >
+              Sign Up
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -168,20 +215,30 @@ export default function UnifiedMarketplace() {
       {/* Tab Navigation */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
         <div className="flex border-b border-gray-200">
-          {tabs.map((tab) => {
+          {allTabs.map((tab) => {
             const Icon = tab.icon;
+            const isDisabled = tab.requiresAuth && !isAuthenticated;
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => {
+                  if (!isDisabled) {
+                    setActiveTab(tab.id);
+                  }
+                }}
+                disabled={isDisabled}
                 className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors ${
-                  activeTab === tab.id
+                  isDisabled
+                    ? 'text-gray-400 cursor-not-allowed'
+                    : activeTab === tab.id
                     ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                 }`}
+                title={isDisabled ? 'Please sign in to access this section' : ''}
               >
                 <Icon className="w-5 h-5" />
                 {tab.label}
+                {isDisabled && <span className="text-xs">(🔒)</span>}
               </button>
             );
           })}
@@ -239,8 +296,32 @@ export default function UnifiedMarketplace() {
                 className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
               >
                 <FaPlus className="w-4 h-4 inline mr-2" />
-                Add Item
+                Post New Item
               </button>
+            </div>
+
+            {/* Item Status Filter */}
+            <div className="mb-6">
+              <div className="flex flex-wrap gap-2">
+                <button className="px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800 border border-blue-200">
+                  All ({myItems.length})
+                </button>
+                <button className="px-3 py-1 rounded-full text-sm bg-green-100 text-green-800 border border-green-200">
+                  Active ({myItems.filter(item => item.status === 'approved').length})
+                </button>
+                <button className="px-3 py-1 rounded-full text-sm bg-yellow-100 text-yellow-800 border border-yellow-200">
+                  Pending ({myItems.filter(item => item.status === 'pending').length})
+                </button>
+                <button className="px-3 py-1 rounded-full text-sm bg-red-100 text-red-800 border border-red-200">
+                  Sold ({myItems.filter(item => item.status === 'sold').length})
+                </button>
+                <button className="px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-800 border border-gray-200">
+                  Expired ({myItems.filter(item => item.status === 'expired').length})
+                </button>
+                <button className="px-3 py-1 rounded-full text-sm bg-orange-100 text-orange-800 border border-orange-200">
+                  Flagged ({myItems.filter(item => item.status === 'flagged').length})
+                </button>
+              </div>
             </div>
 
             {myItems.length === 0 ? (
@@ -275,18 +356,38 @@ export default function UnifiedMarketplace() {
                     <div className="p-4">
                       <h3 className="font-semibold text-gray-900 mb-2">{item.title}</h3>
                       <p className="text-green-600 font-bold text-lg">${item.price}</p>
-                      <p className="text-sm text-gray-600 mb-3">{item.location}</p>
+                      <p className="text-sm text-gray-600 mb-2">{item.location}</p>
+                      
+                      {/* Item Details */}
+                      <div className="text-xs text-gray-500 mb-3">
+                        <p>Posted: {new Date(item.createdAt).toLocaleDateString()}</p>
+                        {item.views && <p>Views: {item.views}</p>}
+                        {item.favorites && item.favorites.length > 0 && (
+                          <p>Favorites: {item.favorites.length}</p>
+                        )}
+                      </div>
+                      
                       <div className="flex justify-between items-center">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                           item.status === 'sold' ? 'bg-green-100 text-green-800' :
                           item.status === 'approved' ? 'bg-blue-100 text-blue-800' :
-                          'bg-yellow-100 text-yellow-800'
+                          item.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                          item.status === 'flagged' ? 'bg-orange-100 text-orange-800' :
+                          item.status === 'expired' ? 'bg-gray-100 text-gray-800' :
+                          'bg-red-100 text-red-800'
                         }`}>
                           {item.status}
                         </span>
-                        <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                          View Details
-                        </button>
+                        <div className="flex gap-2">
+                          <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                            View
+                          </button>
+                          {item.status === 'approved' && (
+                            <button className="text-green-600 hover:text-green-800 text-sm font-medium">
+                              Edit
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
