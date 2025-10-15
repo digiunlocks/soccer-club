@@ -181,6 +181,22 @@ export default function HeroTextSettingsManager() {
                     <option value="Where Dreams Meet Dedication">Where Dreams Meet Dedication</option>
                     <option value="Seattle's Premier Youth Soccer Experience">Seattle's Premier Youth Soccer Experience</option>
                     <option value="Unleash Your Potential">Unleash Your Potential</option>
+                    <option value="Building Stronger Communities Through Soccer">Building Stronger Communities Through Soccer</option>
+                    <option value="Where Every Player Belongs">Where Every Player Belongs</option>
+                    <option value="Connecting Families, Building Futures">Connecting Families, Building Futures</option>
+                    <option value="Your Neighborhood Soccer Family">Your Neighborhood Soccer Family</option>
+                    <option value="Together We Rise, Together We Play">Together We Rise, Together We Play</option>
+                    <option value="Community First, Victory Second">Community First, Victory Second</option>
+                    <option value="Where Friends Become Teammates">Where Friends Become Teammates</option>
+                    <option value="Building Bonds Beyond the Field">Building Bonds Beyond the Field</option>
+                    <option value="One Community, One Passion, One Goal">One Community, One Passion, One Goal</option>
+                    <option value="Growing Together, Playing Together">Growing Together, Playing Together</option>
+                    <option value="Where Every Family Has a Home">Where Every Family Has a Home</option>
+                    <option value="Community Pride, Soccer Pride">Community Pride, Soccer Pride</option>
+                    <option value="Supporting Our Youth, Supporting Our Future">Supporting Our Youth, Supporting Our Future</option>
+                    <option value="Where Community Meets Competition">Where Community Meets Competition</option>
+                    <option value="Building Tomorrow's Leaders Today">Building Tomorrow's Leaders Today</option>
+                    <option value="Your Community, Your Club, Your Family">Your Community, Your Club, Your Family</option>
                   </optgroup>
                   
                   <optgroup label="💪 Inspirational">
@@ -215,14 +231,84 @@ export default function HeroTextSettingsManager() {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Subtitle (Optional)
               </label>
-              <input
-                type="text"
-                name="subtitle"
-                value={settings.subtitle}
-                onChange={handleChange}
-                placeholder="e.g., Join the Best Youth Soccer Club in Seattle"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+              
+              {/* Preset Subtitles Dropdown */}
+              <div className="mb-2">
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  Choose a preset subtitle:
+                </label>
+                <select
+                  onChange={(e) => {
+                    if (e.target.value !== '') {
+                      setSettings(prev => ({ ...prev, subtitle: e.target.value }));
+                    }
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                >
+                  <option value="">Select a preset subtitle...</option>
+                  
+                  <optgroup label="🏆 Professional & Impactful">
+                    <option value="Building Champions, Creating Memories">Building Champions, Creating Memories</option>
+                    <option value="Excellence in Every Play, Pride in Every Moment">Excellence in Every Play, Pride in Every Moment</option>
+                    <option value="Where Champions Are Born and Legends Are Made">Where Champions Are Born and Legends Are Made</option>
+                    <option value="Developing Tomorrow's Soccer Stars Today">Developing Tomorrow's Soccer Stars Today</option>
+                  </optgroup>
+                  
+                  <optgroup label="⚽ Soccer-Focused">
+                    <option value="Join the Best Youth Soccer Club in Seattle">Join the Best Youth Soccer Club in Seattle</option>
+                    <option value="More Than a Game, It's a Way of Life">More Than a Game, It's a Way of Life</option>
+                    <option value="Where Passion Meets Performance">Where Passion Meets Performance</option>
+                    <option value="Training Champions, Building Character">Training Champions, Building Character</option>
+                    <option value="Your Journey to Soccer Excellence Starts Here">Your Journey to Soccer Excellence Starts Here</option>
+                  </optgroup>
+                  
+                  <optgroup label="🌟 Community & Growth">
+                    <option value="Growing Champions, One Player at a Time">Growing Champions, One Player at a Time</option>
+                    <option value="Where Every Player Belongs and Every Family Matters">Where Every Player Belongs and Every Family Matters</option>
+                    <option value="Building Stronger Communities Through Soccer">Building Stronger Communities Through Soccer</option>
+                    <option value="Connecting Families, Building Futures">Connecting Families, Building Futures</option>
+                    <option value="Your Neighborhood Soccer Family Awaits">Your Neighborhood Soccer Family Awaits</option>
+                    <option value="Together We Rise, Together We Play">Together We Rise, Together We Play</option>
+                    <option value="Community First, Victory Second">Community First, Victory Second</option>
+                    <option value="Where Friends Become Teammates for Life">Where Friends Become Teammates for Life</option>
+                    <option value="Building Bonds Beyond the Field">Building Bonds Beyond the Field</option>
+                    <option value="One Community, One Passion, One Goal">One Community, One Passion, One Goal</option>
+                  </optgroup>
+                  
+                  <optgroup label="💪 Inspirational">
+                    <option value="Rise Above. Play Beyond. Achieve More.">Rise Above. Play Beyond. Achieve More.</option>
+                    <option value="Every Player. Every Dream. Every Victory.">Every Player. Every Dream. Every Victory.</option>
+                    <option value="From Grassroots to Greatness">From Grassroots to Greatness</option>
+                    <option value="Champions Start Here, Legends Are Born Here">Champions Start Here, Legends Are Born Here</option>
+                    <option value="Unleash Your Potential, Embrace Your Passion">Unleash Your Potential, Embrace Your Passion</option>
+                    <option value="Where Dreams Take Flight and Goals Come True">Where Dreams Take Flight and Goals Come True</option>
+                  </optgroup>
+                  
+                  <optgroup label="🎯 Action-Oriented">
+                    <option value="Join Us Today, Lead Tomorrow">Join Us Today, Lead Tomorrow</option>
+                    <option value="Start Your Soccer Journey With Us">Start Your Soccer Journey With Us</option>
+                    <option value="Be Part of Something Greater">Be Part of Something Greater</option>
+                    <option value="Experience the Difference">Experience the Difference</option>
+                    <option value="Your Success Story Starts Here">Your Success Story Starts Here</option>
+                  </optgroup>
+                </select>
+              </div>
+              
+              {/* Custom Subtitle Input */}
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  Or write your own custom subtitle:
+                </label>
+                <input
+                  type="text"
+                  name="subtitle"
+                  value={settings.subtitle}
+                  onChange={handleChange}
+                  placeholder="Enter your custom subtitle here..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              
               <p className="text-xs text-gray-500 mt-1">Additional text that appears below the main caption</p>
             </div>
 

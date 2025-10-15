@@ -3,6 +3,7 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const SellerRating = require('../models/SellerRating');
 const MarketplaceItem = require('../models/MarketplaceItem');
+const MarketplaceMessage = require('../models/MarketplaceMessage');
 const User = require('../models/User');
 const authenticateToken = require('../middleware/auth');
 
@@ -164,6 +165,20 @@ router.post('/', authenticateToken, async (req, res) => {
     });
     
     await newReview.save();
+    
+    // Update the marketplace message to mark buyer as rated
+    await MarketplaceMessage.updateOne(
+      {
+        item: itemId,
+        sender: reviewerId,
+        recipient: sellerId,
+        status: 'accepted',
+        markedAsReceived: true
+      },
+      { buyerRated: true }
+    );
+    
+    console.log('✅ [SellerRating] Updated buyerRated flag for marketplace message');
     
     // Update seller's average rating
     await updateSellerAverageRating(sellerId);

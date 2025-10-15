@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const BuyerRating = require('../models/BuyerRating');
 const MarketplaceItem = require('../models/MarketplaceItem');
+const MarketplaceMessage = require('../models/MarketplaceMessage');
 const User = require('../models/User');
 const authenticateToken = require('../middleware/auth');
 
@@ -36,6 +37,20 @@ router.post('/', authenticateToken, async (req, res) => {
     });
     
     await newRating.save();
+    
+    // Update the marketplace message to mark seller as rated
+    await MarketplaceMessage.updateOne(
+      {
+        item: itemId,
+        sender: buyerId,
+        recipient: sellerId,
+        status: 'accepted',
+        markedAsReceived: true
+      },
+      { sellerRated: true }
+    );
+    
+    console.log('✅ [BuyerRating] Updated sellerRated flag for marketplace message');
     
     res.status(201).json({
       message: 'Buyer rated successfully',
