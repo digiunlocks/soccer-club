@@ -48,6 +48,7 @@ import MarketplaceAdminManager from "./components/MarketplaceAdminManager";
 import MarketplaceConversation from "./MarketplaceConversation";
 import OfferManagement from "./OfferManagement";
 import BuyerOffers from "./BuyerOffers";
+import UnifiedMarketplace from "./UnifiedMarketplace";
 import MyOffers from "./MyOffers";
 import MarketplaceDashboard from "./MarketplaceDashboard";
 import MarketplaceSettings from "./MarketplaceSettings";
@@ -294,6 +295,7 @@ export default function App() {
           <Route path="/schedules" element={<Schedules />} />
                       <Route path="/fans-gallery" element={<FansGallery />} />
             <Route path="/marketplace" element={<Marketplace />} />
+            <Route path="/marketplace/unified" element={<UnifiedMarketplace />} />
             <Route path="/marketplace/post" element={<MarketplacePost />} />
             <Route path="/marketplace/item/:id" element={<MarketplaceItemDetail />} />
             <Route path="/marketplace/item/:itemId/offers" element={<OfferManagement />} />

@@ -50,6 +50,13 @@ const sellerRatingSchema = new mongoose.Schema({
     default: 'approved'
   },
   
+  // Seller's response to the review
+  sellerResponse: {
+    type: String,
+    trim: true,
+    maxlength: 500
+  },
+  
   // Admin notes if review is moderated
   adminNotes: {
     type: String,

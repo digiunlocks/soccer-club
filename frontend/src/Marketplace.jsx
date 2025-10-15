@@ -479,6 +479,13 @@ export default function Marketplace() {
             </div>
             
             <div className="flex items-center gap-3">
+              <Link 
+                to="/marketplace/unified"
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-semibold flex items-center gap-2"
+              >
+                <FaUser className="w-4 h-4" />
+                My Dashboard
+              </Link>
               <button 
                 className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-semibold flex items-center gap-2"
                 onClick={() => {

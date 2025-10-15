@@ -107,6 +107,9 @@ app.use('/api/seller-ratings', sellerRatingRoutes);
 const buyerRatingRoutes = require('./routes/buyerRatings');
 app.use('/api/buyer-ratings', buyerRatingRoutes);
 
+const marketplaceUnifiedRoutes = require('./routes/marketplaceUnified');
+app.use('/api/marketplace', marketplaceUnifiedRoutes);
+
 const scheduleRoutes = require('./routes/schedules');
 app.use('/api/schedules', scheduleRoutes);
 

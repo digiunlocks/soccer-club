@@ -452,6 +452,11 @@ export default function OfferManagement() {
                     </div>
                   )}
                   
+                  {/* Debug Info */}
+                  <div className="mt-2 p-2 bg-gray-100 text-xs text-gray-600 rounded">
+                    Debug: Status={offer.status}, Received={offer.markedAsReceived ? 'Yes' : 'No'}, SellerRated={offer.sellerRated ? 'Yes' : 'No'}
+                  </div>
+                  
                   {/* Transaction Complete - Show Rating Option */}
                   {offer.status === 'accepted' && offer.markedAsReceived && (
                     <div className="mt-3 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-lg">

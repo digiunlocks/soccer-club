@@ -25,6 +25,13 @@ const buyerRatingSchema = new mongoose.Schema({
   comment: {
     type: String,
     maxlength: 500
+  },
+  
+  // Buyer's response to the review
+  buyerResponse: {
+    type: String,
+    trim: true,
+    maxlength: 500
   }
 }, {
   timestamps: true
