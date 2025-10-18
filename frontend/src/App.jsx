@@ -46,10 +46,6 @@ import MarketplacePost from "./MarketplacePost";
 import MarketplaceModerationManager from "./MarketplaceModerationManager";
 import MarketplaceAdminManager from "./components/MarketplaceAdminManager";
 import MarketplaceConversation from "./MarketplaceConversation";
-import OfferManagement from "./OfferManagement";
-import BuyerOffers from "./BuyerOffers";
-import UnifiedMarketplace from "./UnifiedMarketplace";
-import MyOffers from "./MyOffers";
 import MarketplaceDashboard from "./MarketplaceDashboard";
 import MarketplaceSettings from "./MarketplaceSettings";
 import MyExpiringItems from "./MyExpiringItems";
@@ -59,7 +55,6 @@ import AboutPageManager from "./AboutPageManager";
 import Messages from "./Messages";
 import UserTransactions from "./UserTransactions";
 import PrivacySettings from "./PrivacySettings";
-import Negotiations from './Negotiations';
 import BroadcastManager from "./components/BroadcastManager";
 import Notifications from './Notifications';
 import UnifiedInbox from './UnifiedInbox';
@@ -295,12 +290,8 @@ export default function App() {
           <Route path="/schedules" element={<Schedules />} />
                       <Route path="/fans-gallery" element={<FansGallery />} />
             <Route path="/marketplace" element={<Marketplace />} />
-            <Route path="/marketplace/unified" element={<UnifiedMarketplace />} />
             <Route path="/marketplace/post" element={<MarketplacePost />} />
             <Route path="/marketplace/item/:id" element={<MarketplaceItemDetail />} />
-            <Route path="/marketplace/item/:itemId/offers" element={<OfferManagement />} />
-            <Route path="/marketplace/item/:itemId/my-offers" element={<BuyerOffers />} />
-          <Route path="/marketplace/my-offers" element={<MyOffers />} />
           <Route path="/marketplace/dashboard" element={<MarketplaceDashboard />} />
           <Route path="/marketplace/expiring-items" element={<MyExpiringItems />} />
             <Route path="/marketplace/conversation/:itemId/:otherUserId" element={<MarketplaceConversation />} />
@@ -327,7 +318,6 @@ export default function App() {
           <Route path="/my-items" element={<MyMarketplaceItems />} />
           <Route path="/user-transactions" element={<UserTransactions />} />
           <Route path="/privacy-settings" element={<PrivacySettings />} />
-          <Route path="/negotiations" element={<Negotiations />} />
           <Route path="/admin/hero" element={<SuperAdminHeroManager />} />
           <Route path="/admin/branding" element={<BrandingManager />} />
           <Route path="/admin/club" element={<ClubManager />} />

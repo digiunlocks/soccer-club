@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import UnifiedMessaging from './components/UnifiedMessaging';
 import ConversationView from './components/ConversationView';
 
 const Messages = () => {

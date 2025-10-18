@@ -297,7 +297,7 @@ export default function MarketplaceItemDetail() {
 
     try {
       // Fetch active (pending) offers
-      const response = await fetch(`http://localhost:5000/api/marketplace-messages/offers/${id}`, {
+      const response = await fetch(`http://localhost:5000/api/marketplace/messages/offers/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.ok) {
@@ -309,7 +309,7 @@ export default function MarketplaceItemDetail() {
       }
 
       // Fetch all offers (including accepted/rejected) for history
-      const allResponse = await fetch(`http://localhost:5000/api/marketplace-messages/offers/${id}/all`, {
+      const allResponse = await fetch(`http://localhost:5000/api/marketplace/messages/offers/${id}/all`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (allResponse.ok) {
@@ -332,7 +332,7 @@ export default function MarketplaceItemDetail() {
       
       if (!userId || !item?.seller?._id) return;
 
-      const response = await fetch(`http://localhost:5000/api/marketplace-messages/conversation/${id}/${item.seller._id}`, {
+      const response = await fetch(`http://localhost:5000/api/marketplace/messages/conversation/${id}/${item.seller._id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.ok) {
@@ -365,7 +365,7 @@ export default function MarketplaceItemDetail() {
         ? counterOfferRecipient 
         : item.seller._id;
       
-      const response = await fetch('http://localhost:5000/api/marketplace-messages/send', {
+      const response = await fetch('http://localhost:5000/api/marketplace/messages/send', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -405,7 +405,7 @@ export default function MarketplaceItemDetail() {
     if (!token) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/marketplace-messages/${action}/${messageId}`, {
+      const response = await fetch(`http://localhost:5000/api/marketplace/messages/${action}/${messageId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -647,15 +647,34 @@ export default function MarketplaceItemDetail() {
             <div className="bg-white rounded-lg p-4 border border-gray-200">
               <div className="flex justify-between items-center mb-3">
                 <h3 className="text-lg font-semibold text-gray-900">Seller Information</h3>
-                <button
-                  onClick={() => setShowFlagModal(true)}
-                  className="text-red-600 hover:text-red-700 text-sm font-medium flex items-center gap-1"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
-                  </svg>
-                  Flag Item
-                </button>
+                {/* Only show flag item button if user is not the seller */}
+                {(() => {
+                  console.log('🔍 [Flag Button] Debug info:', {
+                    currentUser: currentUser,
+                    currentUserId: currentUser?.id,
+                    itemSeller: item.seller,
+                    itemSellerId: item.seller?._id,
+                    isSeller: currentUser?.id === item.seller?._id
+                  });
+                  
+                  // Don't show flag item button if user is not logged in or is the seller
+                  if (!currentUser || currentUser.id === item.seller?._id) {
+                    console.log('🚫 [Flag Button] Hiding flag button - user is seller or not logged in');
+                    return null;
+                  }
+                  
+                  return (
+                    <button
+                      onClick={() => setShowFlagModal(true)}
+                      className="text-red-600 hover:text-red-700 text-sm font-medium flex items-center gap-1"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
+                      </svg>
+                      Flag Item
+                    </button>
+                  );
+                })()}
               </div>
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
@@ -667,15 +686,60 @@ export default function MarketplaceItemDetail() {
                 </div>
               </div>
               
-              {/* Only show contact seller button if user is not the seller */}
+              {/* Show different content based on whether user is the seller */}
               {(() => {
-                const token = localStorage.getItem('token');
-                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                console.log('🔍 [Seller Actions] Debug info:', {
+                  currentUser: currentUser,
+                  currentUserId: currentUser?.id,
+                  itemSeller: item.seller,
+                  itemSellerId: item.seller?._id,
+                  isSeller: currentUser?.id === item.seller?._id
+                });
                 
-                // Don't show contact seller button if user is not logged in or is the seller
-                if (!token || user._id === item.seller?._id) {
-                  return null;
+                // If user is the seller, show management options
+                if (currentUser && currentUser.id === item.seller?._id) {
+                  console.log('✅ [Seller Actions] User is seller - showing management options');
+                  return (
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center">
+                          <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                        <h4 className="text-sm font-medium text-green-900">This is your listing</h4>
+                      </div>
+                      <p className="text-sm text-green-700 mb-3">
+                        You can manage this item, view offers, and respond to messages from your Account → Marketplace section.
+                      </p>
+                      <button
+                        onClick={() => navigate('/account?tab=marketplace&subtab=items')}
+                        className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
+                      >
+                        Manage My Items →
+                      </button>
+                    </div>
+                  );
                 }
+                
+                // If user is not logged in, show login prompt
+                if (!currentUser) {
+                  return (
+                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                      <p className="text-sm text-gray-600 mb-3">
+                        Please log in to make offers or contact the seller.
+                      </p>
+                      <button
+                        onClick={() => navigate('/signin')}
+                        className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
+                      >
+                        Sign In →
+                      </button>
+                    </div>
+                  );
+                }
+                
+                // If user is logged in but not the seller, show action buttons
                 
                 return (
                   <div className="space-y-3">
@@ -773,7 +837,7 @@ export default function MarketplaceItemDetail() {
                       </p>
                     </div>
                     <button
-                      onClick={() => navigate(`/marketplace/item/${item._id}/offers`)}
+                      onClick={() => navigate('/account?tab=marketplace&subtab=offers')}
                       className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-bold text-sm transition-all shadow-md hover:shadow-lg flex items-center gap-2"
                     >
                       <FaDollarSign className="w-5 h-5" />
@@ -820,7 +884,7 @@ export default function MarketplaceItemDetail() {
                       {pendingOffers.length > 2 && (
                         <div className="text-center mt-3 pb-2">
                           <button
-                            onClick={() => navigate(`/marketplace/item/${item._id}/offers`)}
+                            onClick={() => navigate('/account?tab=marketplace&subtab=offers')}
                             className="text-blue-600 hover:text-blue-700 font-bold text-sm"
                           >
                             + View {pendingOffers.length - 2} more pending offer{pendingOffers.length - 2 > 1 ? 's' : ''}
@@ -918,7 +982,7 @@ export default function MarketplaceItemDetail() {
                 onReviewSubmitted={() => {
                   toast.success('Thank you for your review!');
                   setShowRatingForm(false);
-                  navigate(`/marketplace/my-offers`);
+                  navigate('/account?tab=marketplace&subtab=offers');
                 }}
               />
             </div>
@@ -928,8 +992,8 @@ export default function MarketplaceItemDetail() {
           <SellerReviewsNew sellerId={item.seller?._id} itemId={item._id} />
           
           {/* Rating Form - Only show if user can review (has interacted with seller) */}
-          {!showRatingForm && localStorage.getItem('token') && 
-           item.seller?._id !== JSON.parse(localStorage.getItem('user') || '{}')._id && 
+          {!showRatingForm && currentUser && 
+           item.seller?._id !== currentUser.id && 
            userInteractions.canReview && (
             <SellerRatingFormNew 
               sellerId={item.seller?._id} 
@@ -942,8 +1006,8 @@ export default function MarketplaceItemDetail() {
           )}
 
           {/* Show message if user hasn't interacted with seller yet */}
-          {localStorage.getItem('token') && 
-           item.seller?._id !== JSON.parse(localStorage.getItem('user') || '{}')._id && 
+          {currentUser && 
+           item.seller?._id !== currentUser.id && 
            !userInteractions.canReview && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <h4 className="text-sm font-medium text-blue-900 mb-2">Rate & Review This Seller</h4>

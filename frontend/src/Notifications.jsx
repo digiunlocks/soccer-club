@@ -328,13 +328,13 @@ const Notifications = () => {
                       {(notification.type.includes('negotiation') || notification.type.includes('offer')) && (
                         <>
                           <Link
-                            to="/marketplace/my-offers"
+                            to="/account?tab=marketplace&subtab=offers"
                             className="text-purple-600 hover:text-purple-800 text-sm font-medium px-3 py-1 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
                           >
                             📋 All My Offers →
                           </Link>
                           <Link
-                            to={`/marketplace/item/${notification.marketplaceItem}/offers`}
+                            to="/account?tab=marketplace&subtab=offers"
                             className="text-green-600 hover:text-green-800 text-sm font-medium px-3 py-1 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
                           >
                             💼 Manage Offers →
@@ -344,7 +344,7 @@ const Notifications = () => {
                       {/* Rate Buyer link for transaction completed */}
                       {notification.type === 'transaction_completed' && notification.data?.buyerName && (
                         <Link
-                          to={`/marketplace/item/${notification.marketplaceItem}/offers`}
+                          to="/account?tab=marketplace&subtab=offers"
                           className="text-yellow-600 hover:text-yellow-800 text-sm font-medium px-3 py-1 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors"
                         >
                           ⭐ Rate {notification.data.buyerName} →

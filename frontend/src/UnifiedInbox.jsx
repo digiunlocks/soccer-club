@@ -2,21 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { 
-  FaBell, FaEnvelope, FaDollarSign, FaShoppingCart, 
-  FaCheckCircle, FaTimesCircle, FaClock, FaEye, FaTrash,
-  FaFilter, FaSearch, FaStar, FaExclamationTriangle, FaInbox
+  FaBell, FaEnvelope, FaTrash, FaFilter, FaSearch, FaInbox
 } from 'react-icons/fa';
 
 export default function UnifiedInbox() {
   const navigate = useNavigate();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all'); // all, unread, offers, conversations
+  const [filter, setFilter] = useState('all'); // all, unread, conversations
   const [searchQuery, setSearchQuery] = useState('');
   const [stats, setStats] = useState({
     total: 0,
     unread: 0,
-    offers: 0,
     conversations: 0
   });
 
@@ -55,23 +52,30 @@ export default function UnifiedInbox() {
       const notifications = await notifResponse.json();
       console.log('✅ Fetched notifications:', notifications.length);
 
-      // Transform notifications into inbox items
-      const notificationItems = notifications.map(notif => ({
-        id: `notif-${notif._id}`,
-        originalId: notif._id,
-        type: 'notification',
-        subtype: notif.type,
-        title: notif.title,
-        message: notif.message,
-        from: notif.sender?.username || 'System',
-        fromId: notif.sender?._id,
-        read: notif.read,
-        timestamp: new Date(notif.createdAt),
-        data: notif.data || {},
-        itemId: notif.marketplaceItem?._id,
-        itemTitle: notif.marketplaceItem?.title,
-        offerAmount: notif.data?.offerAmount
-      }));
+      // Transform notifications into inbox items (excluding marketplace notifications)
+      const notificationItems = notifications
+        .filter(notif => {
+          // Exclude marketplace-related notifications
+          const marketplaceTypes = [
+            'offer_received', 'offer_accepted', 'offer_rejected',
+            'negotiation_counter_offer', 'marketplace_inquiry',
+            'item_sold', 'item_purchased', 'marketplace_message'
+          ];
+          return !marketplaceTypes.includes(notif.type);
+        })
+        .map(notif => ({
+          id: `notif-${notif._id}`,
+          originalId: notif._id,
+          type: 'notification',
+          subtype: notif.type,
+          title: notif.title,
+          message: notif.message,
+          from: notif.sender?.username || 'System',
+          fromId: notif.sender?._id,
+          read: notif.read,
+          timestamp: new Date(notif.createdAt),
+          data: notif.data || {}
+        }));
 
       // Get conversations if available
       let conversationItems = [];
@@ -103,22 +107,17 @@ export default function UnifiedInbox() {
 
       // Calculate stats
       const unreadCount = allItems.filter(item => !item.read).length;
-      const offersCount = notificationItems.filter(item => 
-        item.subtype && item.subtype.includes('offer')
-      ).length;
       const conversationsCount = conversationItems.length;
 
       setStats({
         total: allItems.length,
         unread: unreadCount,
-        offers: offersCount,
         conversations: conversationsCount
       });
 
       console.log('📊 Unified Inbox stats:', {
         total: allItems.length,
         unread: unreadCount,
-        offers: offersCount,
         conversations: conversationsCount
       });
 
@@ -159,9 +158,6 @@ export default function UnifiedInbox() {
     if (item.type === 'conversation') {
       // Navigate to messages with this conversation
       navigate(`/messages?conversation=${item.conversationId}`);
-    } else if (item.itemId) {
-      // Navigate to marketplace item
-      navigate(`/marketplace/item/${item.itemId}`);
     }
     
     // Mark as read
@@ -218,23 +214,7 @@ export default function UnifiedInbox() {
     if (item.type === 'conversation') {
       return <FaEnvelope className="text-blue-600" />;
     }
-    if (item.subtype && item.subtype.includes('offer')) {
-      return <FaDollarSign className="text-green-600" />;
-    }
-    if (item.subtype === 'marketplace_inquiry') {
-      return <FaShoppingCart className="text-purple-600" />;
-    }
     return <FaBell className="text-orange-600" />;
-  };
-
-  const getBadgeColor = (item) => {
-    if (item.subtype && item.subtype.includes('offer')) {
-      return 'bg-green-100 text-green-800 border-green-200';
-    }
-    if (item.subtype === 'marketplace_inquiry') {
-      return 'bg-blue-100 text-blue-800 border-blue-200';
-    }
-    return 'bg-purple-100 text-purple-800 border-purple-200';
   };
 
   const formatTime = (date) => {
@@ -251,10 +231,10 @@ export default function UnifiedInbox() {
     return date.toLocaleDateString();
   };
 
+
   const filteredItems = items.filter(item => {
     // Filter by type
     if (filter === 'unread' && item.read) return false;
-    if (filter === 'offers' && (!item.subtype || !item.subtype.includes('offer'))) return false;
     if (filter === 'conversations' && item.type !== 'conversation') return false;
 
     // Search filter
@@ -263,8 +243,7 @@ export default function UnifiedInbox() {
       return (
         item.title?.toLowerCase().includes(query) ||
         item.message?.toLowerCase().includes(query) ||
-        item.from?.toLowerCase().includes(query) ||
-        item.itemTitle?.toLowerCase().includes(query)
+        item.from?.toLowerCase().includes(query)
       );
     }
 
@@ -291,10 +270,10 @@ export default function UnifiedInbox() {
             <div>
               <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
                 <FaEnvelope className="text-blue-600" />
-                Unified Inbox
+                General Inbox
               </h1>
               <p className="text-gray-600 mt-1">
-                All your notifications and messages in one place
+                Your general notifications and conversations
               </p>
             </div>
             {stats.unread > 0 && (
@@ -308,7 +287,7 @@ export default function UnifiedInbox() {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-4 gap-4 mt-6">
+          <div className="grid grid-cols-3 gap-4 mt-6">
             <div className="bg-gray-50 rounded-lg p-4">
               <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
               <div className="text-sm text-gray-600">Total Items</div>
@@ -316,10 +295,6 @@ export default function UnifiedInbox() {
             <div className="bg-blue-50 rounded-lg p-4">
               <div className="text-2xl font-bold text-blue-600">{stats.unread}</div>
               <div className="text-sm text-blue-600">Unread</div>
-            </div>
-            <div className="bg-green-50 rounded-lg p-4">
-              <div className="text-2xl font-bold text-green-600">{stats.offers}</div>
-              <div className="text-sm text-green-600">Offers</div>
             </div>
             <div className="bg-purple-50 rounded-lg p-4">
               <div className="text-2xl font-bold text-purple-600">{stats.conversations}</div>
@@ -335,7 +310,7 @@ export default function UnifiedInbox() {
           <div className="flex items-center gap-4 flex-wrap">
             {/* Filter Buttons */}
             <div className="flex gap-2">
-              {['all', 'unread', 'offers', 'conversations'].map((f) => (
+              {['all', 'unread', 'conversations'].map((f) => (
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
@@ -409,11 +384,6 @@ export default function UnifiedInbox() {
                                 New
                               </span>
                             )}
-                            {item.offerAmount && (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                ${item.offerAmount}
-                              </span>
-                            )}
                           </div>
 
                           {/* Message */}
@@ -422,9 +392,6 @@ export default function UnifiedInbox() {
                           {/* Meta Info */}
                           <div className="flex items-center gap-4 text-xs text-gray-500">
                             <span>From: <span className="font-medium">{item.from}</span></span>
-                            {item.itemTitle && (
-                              <span>• Item: <span className="font-medium">{item.itemTitle}</span></span>
-                            )}
                             <span>• {formatTime(item.timestamp)}</span>
                           </div>
                         </div>
@@ -458,6 +425,7 @@ export default function UnifiedInbox() {
           )}
         </div>
       </div>
+
     </div>
   );
 }

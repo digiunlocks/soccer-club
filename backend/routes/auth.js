@@ -718,4 +718,40 @@ router.post('/forgot-username', async (req, res) => {
   }
 });
 
+// Change password route
+router.put('/change-password', auth, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: 'Current password and new password are required' });
+    }
+    
+    if (newPassword.length < 6) {
+      return res.status(400).json({ message: 'New password must be at least 6 characters long' });
+    }
+    
+    // Verify current password
+    const isCurrentPasswordValid = await bcrypt.compare(currentPassword, req.user.password);
+    if (!isCurrentPasswordValid) {
+      return res.status(400).json({ message: 'Current password is incorrect' });
+    }
+    
+    // Hash new password
+    const saltRounds = 10;
+    const hashedNewPassword = await bcrypt.hash(newPassword, saltRounds);
+    
+    // Update user password
+    await User.findByIdAndUpdate(req.user._id, { password: hashedNewPassword });
+    
+    console.log(`🔐 Password changed for user: ${req.user.email}`);
+    
+    res.json({ message: 'Password changed successfully' });
+    
+  } catch (error) {
+    console.error('Change password error:', error);
+    res.status(500).json({ message: 'An error occurred while changing password' });
+  }
+});
+
 module.exports = { router, auth, superAdminAuth }; 

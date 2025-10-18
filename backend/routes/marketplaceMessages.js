@@ -17,6 +17,28 @@ router.get('/conversations', authenticateToken, async (req, res) => {
   }
 });
 
+// Get all marketplace messages for the current user
+router.get('/user', authenticateToken, async (req, res) => {
+  try {
+    const messages = await MarketplaceMessage.find({
+      $or: [
+        { sender: req.user.id },
+        { recipient: req.user.id }
+      ]
+    })
+    .populate('sender', 'username name email')
+    .populate('recipient', 'username name email')
+    .populate('item', 'title price images')
+    .sort({ createdAt: -1 })
+    .limit(50); // Limit to recent 50 messages
+
+    res.json(messages);
+  } catch (error) {
+    console.error('Error fetching user marketplace messages:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // Send a message
 router.post('/send', authenticateToken, async (req, res) => {
   try {
@@ -179,6 +201,32 @@ router.get('/unread-count', authenticateToken, async (req, res) => {
     res.json({ count });
   } catch (error) {
     console.error('Error getting unread count:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Get single message by ID
+router.get('/:messageId', authenticateToken, async (req, res) => {
+  try {
+    const { messageId } = req.params;
+    
+    const message = await MarketplaceMessage.findById(messageId)
+      .populate('item', 'title price images')
+      .populate('sender', 'name username email')
+      .populate('recipient', 'name username email');
+    
+    if (!message) {
+      return res.status(404).json({ message: 'Message not found' });
+    }
+    
+    // Check if user is either sender or recipient
+    if (message.sender._id.toString() !== req.user.id && message.recipient._id.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+    
+    res.json(message);
+  } catch (error) {
+    console.error('Error fetching message:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -559,6 +607,154 @@ router.post('/withdraw/:messageId', authenticateToken, async (req, res) => {
     res.json({ message: 'Offer withdrawn successfully' });
   } catch (error) {
     console.error('Error withdrawing offer:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Accept a counter offer
+router.put('/:messageId/accept', authenticateToken, async (req, res) => {
+  try {
+    const { messageId } = req.params;
+    
+    const message = await MarketplaceMessage.findById(messageId)
+      .populate('item', 'title price seller')
+      .populate('sender', 'name username email')
+      .populate('recipient', 'name username email');
+    
+    if (!message) {
+      return res.status(404).json({ message: 'Message not found' });
+    }
+    
+    // Check if user is the recipient of the counter offer
+    if (message.recipient._id.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+    
+    // Check if this is a counter offer
+    if (message.messageType !== 'counter_offer') {
+      return res.status(400).json({ message: 'This is not a counter offer' });
+    }
+    
+    // Update message status to accepted
+    message.status = 'accepted';
+    message.read = true;
+    message.readAt = new Date();
+    await message.save();
+    
+    // Create a new message to confirm acceptance
+    const acceptanceMessage = new MarketplaceMessage({
+      item: message.item._id,
+      sender: req.user.id,
+      recipient: message.sender._id,
+      messageType: 'accept',
+      content: `I accept your counter offer of $${message.offerAmount}. Let's proceed with the purchase.`,
+      offerAmount: message.offerAmount,
+      status: 'accepted'
+    });
+    
+    await acceptanceMessage.save();
+    
+    // Create notification for the seller
+    const Notification = require('../models/Notification');
+    await Notification.createNotification(
+      message.sender._id,
+      req.user.id,
+      'offer_accepted',
+      'Counter Offer Accepted!',
+      `${req.user.username || req.user.name} accepted your counter offer of $${message.offerAmount} for "${message.item.title}"`,
+      message.item._id,
+      null,
+      {
+        offerAmount: message.offerAmount,
+        messageId: acceptanceMessage._id
+      }
+    );
+    
+    console.log(`✅ Counter offer accepted: ${messageId}`);
+    res.json({ 
+      message: 'Counter offer accepted successfully',
+      acceptanceMessage 
+    });
+    
+  } catch (error) {
+    console.error('Error accepting counter offer:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Respond to a counter offer with another counter offer
+router.post('/:messageId/counter', authenticateToken, async (req, res) => {
+  try {
+    const { messageId } = req.params;
+    const { offerAmount, content } = req.body;
+    
+    if (!offerAmount || offerAmount <= 0) {
+      return res.status(400).json({ message: 'Valid offer amount is required' });
+    }
+    
+    const originalMessage = await MarketplaceMessage.findById(messageId)
+      .populate('item', 'title price seller')
+      .populate('sender', 'name username email')
+      .populate('recipient', 'name username email');
+    
+    if (!originalMessage) {
+      return res.status(404).json({ message: 'Original message not found' });
+    }
+    
+    // Check if user is the recipient of the counter offer
+    if (originalMessage.recipient._id.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+    
+    // Check if this is a counter offer
+    if (originalMessage.messageType !== 'counter_offer') {
+      return res.status(400).json({ message: 'This is not a counter offer' });
+    }
+    
+    // Mark original message as read
+    originalMessage.read = true;
+    originalMessage.readAt = new Date();
+    await originalMessage.save();
+    
+    // Create a new counter offer message
+    const counterMessage = new MarketplaceMessage({
+      item: originalMessage.item._id,
+      sender: req.user.id,
+      recipient: originalMessage.sender._id,
+      messageType: 'counter_offer',
+      content: content || `Counter offer: $${offerAmount}`,
+      offerAmount: offerAmount,
+      status: 'pending',
+      originalOfferId: originalMessage._id
+    });
+    
+    await counterMessage.save();
+    
+    // Create notification for the seller
+    const Notification = require('../models/Notification');
+    await Notification.createNotification(
+      originalMessage.sender._id,
+      req.user.id,
+      'negotiation_counter_offer',
+      'Counter Offer Received',
+      `${req.user.username || req.user.name} made a counter offer of $${offerAmount} on your item "${originalMessage.item.title}"`,
+      originalMessage.item._id,
+      null,
+      {
+        offerAmount: offerAmount,
+        messageId: counterMessage._id,
+        originalOfferAmount: originalMessage.offerAmount
+      }
+    );
+    
+    console.log(`✅ Counter offer response sent: ${counterMessage._id}`);
+    res.json({ 
+      message: 'Counter offer sent successfully',
+      counterMessage 
+    });
+    
+  } catch (error) {
+    console.error('Error sending counter offer response:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });

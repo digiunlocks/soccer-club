@@ -157,4 +157,95 @@ router.post('/ratings/buyer/:ratingId/respond', authenticateToken, async (req, r
   }
 });
 
+// Mark item as sold
+router.put('/my-items/:itemId/status', authenticateToken, async (req, res) => {
+  try {
+    const { itemId } = req.params;
+    const { status, soldPrice } = req.body;
+    const userId = req.user.id;
+
+    const item = await MarketplaceItem.findOne({ _id: itemId, seller: userId });
+    if (!item) {
+      return res.status(404).json({ message: 'Item not found' });
+    }
+
+    item.status = status;
+    if (status === 'sold' && soldPrice) {
+      item.soldPrice = soldPrice;
+      item.soldAt = new Date();
+    }
+
+    await item.save();
+    res.json({ message: 'Item status updated successfully', item });
+  } catch (error) {
+    console.error('Error updating item status:', error);
+    res.status(500).json({ message: 'Error updating item status' });
+  }
+});
+
+// Repost item
+router.post('/my-items/:itemId/repost', authenticateToken, async (req, res) => {
+  try {
+    const { itemId } = req.params;
+    const userId = req.user.id;
+
+    const originalItem = await MarketplaceItem.findOne({ _id: itemId, seller: userId });
+    if (!originalItem) {
+      return res.status(404).json({ message: 'Item not found' });
+    }
+
+    // Prevent reposting sold items
+    if (originalItem.status === 'sold') {
+      return res.status(400).json({ message: 'Cannot repost sold items' });
+    }
+
+    // Create new item with same details but reset status and dates
+    const newItem = new MarketplaceItem({
+      title: originalItem.title,
+      description: originalItem.description,
+      price: originalItem.price,
+      category: originalItem.category,
+      condition: originalItem.condition,
+      images: originalItem.images,
+      seller: userId,
+      status: 'pending', // Reset to pending for review
+      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
+    });
+
+    await newItem.save();
+    res.json({ message: 'Item reposted successfully', item: newItem });
+  } catch (error) {
+    console.error('Error reposting item:', error);
+    res.status(500).json({ message: 'Error reposting item' });
+  }
+});
+
+// Extend item listing
+router.post('/my-items/:itemId/extend', authenticateToken, async (req, res) => {
+  try {
+    const { itemId } = req.params;
+    const { days } = req.body;
+    const userId = req.user.id;
+
+    const item = await MarketplaceItem.findOne({ _id: itemId, seller: userId });
+    if (!item) {
+      return res.status(404).json({ message: 'Item not found' });
+    }
+
+    if (item.status !== 'approved') {
+      return res.status(400).json({ message: 'Can only extend approved items' });
+    }
+
+    // Extend the expiration date
+    const currentExpiry = item.expiresAt || new Date();
+    item.expiresAt = new Date(currentExpiry.getTime() + days * 24 * 60 * 60 * 1000);
+
+    await item.save();
+    res.json({ message: `Item extended by ${days} days`, item });
+  } catch (error) {
+    console.error('Error extending item:', error);
+    res.status(500).json({ message: 'Error extending item' });
+  }
+});
+
 module.exports = router;

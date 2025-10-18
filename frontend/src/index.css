@@ -33,3 +33,11 @@ nav a[href], nav a[to] {
   display: inline-block;
   text-decoration: none;
 }
+
+/* Line clamp utility for text truncation */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

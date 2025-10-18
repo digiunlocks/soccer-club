@@ -62,6 +62,32 @@ const userSchema = new mongoose.Schema({
     type: String, 
     default: '' 
   },
+  // Address information
+  address: { 
+    type: String, 
+    default: '',
+    trim: true
+  },
+  city: { 
+    type: String, 
+    default: '',
+    trim: true
+  },
+  state: { 
+    type: String, 
+    default: '',
+    trim: true
+  },
+  zipCode: { 
+    type: String, 
+    default: '',
+    trim: true
+  },
+  country: { 
+    type: String, 
+    default: '',
+    trim: true
+  },
   // Privacy settings for contact information
   privacySettings: {
     showEmail: { type: Boolean, default: true },

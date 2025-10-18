@@ -7,6 +7,8 @@ const sharp = require('sharp');
 const jwt = require('jsonwebtoken');
 const { auth: authenticateToken, superAdminAuth } = require('./auth');
 const MarketplaceItem = require('../models/MarketplaceItem');
+const MarketplaceOffer = require('../models/MarketplaceOffer');
+const MarketplaceReview = require('../models/MarketplaceReview');
 const User = require('../models/User');
 
 const mongoose = require('mongoose');
@@ -283,7 +285,7 @@ router.get('/user/my-items', authenticateToken, async (req, res) => {
   try {
     const user = req.user;
     const userItems = await MarketplaceItem.find({
-      author: user._id
+      seller: user._id
     })
     .populate('seller', 'name username email')
     .sort({ createdAt: -1 });
@@ -1391,6 +1393,177 @@ router.post('/:id/contact-seller', authenticateToken, async (req, res) => {
     console.error('Stack:', error.stack);
     console.log('========================================\n');
     res.status(500).json({ message: 'Failed to send message', error: error.message });
+  }
+});
+
+// Get user's offers (received and given)
+router.get('/offers/user', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    
+    // Get offers where user is the seller (received offers)
+    const receivedOffers = await MarketplaceOffer.find({ sellerId: userId })
+      .populate('buyerId', 'name email')
+      .populate('itemId', 'title price images')
+      .sort({ createdAt: -1 });
+
+    // Get offers where user is the buyer (given offers)
+    const givenOffers = await MarketplaceOffer.find({ buyerId: userId })
+      .populate('sellerId', 'name email')
+      .populate('itemId', 'title price images')
+      .sort({ createdAt: -1 });
+
+    // Format the data
+    const formattedOffers = [
+      ...receivedOffers.map(offer => ({
+        ...offer.toObject(),
+        type: 'received'
+      })),
+      ...givenOffers.map(offer => ({
+        ...offer.toObject(),
+        type: 'given'
+      }))
+    ];
+
+    res.json(formattedOffers);
+  } catch (error) {
+    console.error('Error fetching user offers:', error);
+    res.status(500).json({ message: 'Failed to fetch offers' });
+  }
+});
+
+// Get user's reviews (received and given)
+router.get('/reviews/user', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    
+    // Get reviews where user is the seller (received reviews)
+    const receivedReviews = await MarketplaceReview.find({ sellerId: userId })
+      .populate('buyerId', 'name email')
+      .populate('itemId', 'title images')
+      .sort({ createdAt: -1 });
+
+    // Get reviews where user is the buyer (given reviews)
+    const givenReviews = await MarketplaceReview.find({ buyerId: userId })
+      .populate('sellerId', 'name email')
+      .populate('itemId', 'title images')
+      .sort({ createdAt: -1 });
+
+    // Format the data
+    const formattedReviews = [
+      ...receivedReviews.map(review => ({
+        ...review.toObject(),
+        type: 'received'
+      })),
+      ...givenReviews.map(review => ({
+        ...review.toObject(),
+        type: 'given'
+      }))
+    ];
+
+    res.json(formattedReviews);
+  } catch (error) {
+    console.error('Error fetching user reviews:', error);
+    res.status(500).json({ message: 'Failed to fetch reviews' });
+  }
+});
+
+// Repost an expired item
+router.post('/items/:id/repost', authenticateToken, async (req, res) => {
+  try {
+    const item = await MarketplaceItem.findById(req.params.id);
+    
+    if (!item) {
+      return res.status(404).json({ message: 'Item not found' });
+    }
+    
+    if (item.sellerId.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+    
+    if (item.status !== 'expired') {
+      return res.status(400).json({ message: 'Only expired items can be reposted' });
+    }
+    
+    // Reset the item status and update expiry
+    item.status = 'approved';
+    item.expiryDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days from now
+    item.repostedAt = new Date();
+    
+    await item.save();
+    
+    res.json({ message: 'Item reposted successfully', item });
+  } catch (error) {
+    console.error('Error reposting item:', error);
+    res.status(500).json({ message: 'Failed to repost item' });
+  }
+});
+
+// Extend an item's listing
+router.post('/items/:id/extend', authenticateToken, async (req, res) => {
+  try {
+    const { days = 30 } = req.body;
+    const item = await MarketplaceItem.findById(req.params.id);
+    
+    if (!item) {
+      return res.status(404).json({ message: 'Item not found' });
+    }
+    
+    if (item.sellerId.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+    
+    if (!['approved', 'expired'].includes(item.status)) {
+      return res.status(400).json({ message: 'Only active or expired items can be extended' });
+    }
+    
+    // Extend the expiry date
+    const currentExpiry = item.expiryDate || new Date();
+    item.expiryDate = new Date(currentExpiry.getTime() + days * 24 * 60 * 60 * 1000);
+    
+    // If expired, make it active again
+    if (item.status === 'expired') {
+      item.status = 'approved';
+    }
+    
+    await item.save();
+    
+    res.json({ message: `Item extended by ${days} days`, item });
+  } catch (error) {
+    console.error('Error extending item:', error);
+    res.status(500).json({ message: 'Failed to extend item' });
+  }
+});
+
+// Unflag an item
+router.post('/items/:id/unflag', authenticateToken, async (req, res) => {
+  try {
+    const item = await MarketplaceItem.findById(req.params.id);
+    
+    if (!item) {
+      return res.status(404).json({ message: 'Item not found' });
+    }
+    
+    if (item.sellerId.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+    
+    if (item.status !== 'flagged') {
+      return res.status(400).json({ message: 'Only flagged items can be unflagged' });
+    }
+    
+    // Remove flag and restore to approved status
+    item.status = 'approved';
+    item.flagReason = undefined;
+    item.flaggedAt = undefined;
+    item.unflaggedAt = new Date();
+    
+    await item.save();
+    
+    res.json({ message: 'Item unflagged successfully', item });
+  } catch (error) {
+    console.error('Error unflagging item:', error);
+    res.status(500).json({ message: 'Failed to unflag item' });
   }
 });
 

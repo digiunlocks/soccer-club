@@ -32,7 +32,7 @@ export default function BuyerRatingForm({ buyerId, itemId, onClose }) {
       if (response.ok) {
         toast.success('Thank you for rating the buyer!');
         if (onClose) onClose();
-        else navigate(`/marketplace/item/${itemId}/offers`);
+        else navigate('/account?tab=marketplace&subtab=offers');
       } else {
         const error = await response.json();
         toast.error(error.message || 'Failed to submit rating');

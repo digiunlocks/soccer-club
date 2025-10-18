@@ -359,64 +359,48 @@ export default function Marketplace() {
   const renderItemCard = (item, isCompact = false) => (
     <div
       key={item._id}
-      className="bg-white rounded-lg shadow-sm hover:shadow-md overflow-hidden group cursor-pointer transition-all duration-300 border border-gray-200 hover:border-gray-300"
+      className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+      onClick={() => handleItemClick(item._id)}
     >
-      <div className="flex flex-col">
-        {/* Image Container - Top */}
-        <div className="relative w-full h-32 overflow-hidden">
-          <img
-            src={item.images && item.images[0] ? 
-              (item.images[0].startsWith('http') ? 
-                item.images[0] : 
-                `http://localhost:5000${item.images[0]}`) : 
-              '/placeholder-item.jpg'}
-            alt={item.title}
-            className="w-full h-full object-cover"
-            onClick={() => handleItemClick(item._id)}
-            onError={(e) => {
-              e.target.src = '/placeholder-item.jpg';
-            }}
-          />
+      <div className="relative aspect-square bg-gray-100 overflow-hidden">
+        <img
+          src={item.images && item.images[0] ? 
+            (item.images[0].startsWith('http') ? 
+              item.images[0] : 
+              `http://localhost:5000${item.images[0]}`) : 
+            'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDMwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjNGNEY2Ii8+Cjx0ZXh0IHg9IjE1MCIgeT0iMTUwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5QjlCQjAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5JbWFnZSBOb3QgQXZhaWxhYmxlPC90ZXh0Pgo8L3N2Zz4K'}
+          alt={item.title || 'Item image'}
+          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+          onError={(e) => {
+            e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDMwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjNGNEY2Ii8+Cjx0ZXh0IHg9IjE1MCIgeT0iMTUwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5QjlCQjAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5JbWFnZSBOb3QgQXZhaWxhYmxlPC90ZXh0Pgo8L3N2Zz4K';
+          }}
+        />
 
-          {/* Promoted Badge */}
-          {item.isPromoted && (
-            <div className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 text-xs font-medium rounded">
-              Promoted
-            </div>
-          )}
-
-          {/* Shipping Icon */}
-          {item.shipping && (
-            <div className="absolute bottom-2 right-2 bg-white rounded-full p-1 shadow-sm">
-              <FaTruck className="w-3 h-3 text-gray-600" />
-            </div>
-          )}
-        </div>
-
-        {/* Content - Bottom */}
-        <div className="p-3 flex flex-col">
-          {/* Title */}
-          <div className="mb-2">
-            <h3
-              className="font-bold text-gray-900 text-sm leading-tight cursor-pointer hover:text-blue-600"
-              onClick={() => handleItemClick(item._id)}
-              title={item.title}
-            >
-              {item.title || 'Untitled Item'}
-            </h3>
+        {/* Promoted Badge */}
+        {item.isPromoted && (
+          <div className="absolute top-2 left-2 bg-gray-800 text-white text-xs font-semibold px-2 py-1 rounded-full">
+            Promoted
           </div>
+        )}
 
-          {/* Price */}
-          <div className="mb-2">
-            <p className="text-lg font-bold text-green-600">
-              {item.price === 0 ? 'FREE' : formatPrice(item.price)}
-            </p>
+        {/* Shipping Icon */}
+        {item.shipping && (
+          <div className="absolute bottom-2 left-2 bg-white rounded-full p-1 shadow-md">
+            <FaTruck className="w-3 h-3 text-blue-600" />
           </div>
+        )}
+      </div>
 
-          {/* Location */}
-          <div className="text-xs text-gray-500">
-            <span>{item.location || 'Unknown'}</span>
-          </div>
+      <div className="p-3 flex flex-col">
+        <h3 className="font-semibold text-gray-800 text-sm leading-tight line-clamp-2 mb-1">
+          {item.title || 'Untitled Item'}
+        </h3>
+        <p className="text-gray-900 font-bold text-base mb-1">
+          {item.price === 0 ? 'FREE' : formatPrice(item.price)}
+        </p>
+        <div className="flex items-center text-xs text-gray-500 mt-auto">
+          <FaMapMarkerAlt className="w-3 h-3 text-gray-400 mr-1" />
+          <span>{item.location || 'Unknown'}</span>
         </div>
       </div>
     </div>
@@ -447,40 +431,11 @@ export default function Marketplace() {
                 <FaShoppingCart className="text-blue-600" />
                 Marketplace
               </h1>
-              {isLoggedIn && (
-                <div className="flex items-center gap-2">
-                  <button 
-                    className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                      showMyItems 
-                        ? 'bg-blue-600 text-white' 
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                    onClick={toggleMyItems}
-                  >
-                    <FaUser className="w-3 h-3 mr-1" />
-                    My Items
-                  </button>
-                  <button 
-                    className="px-3 py-1.5 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
-                    onClick={() => setShowSavedSearches(!showSavedSearches)}
-                  >
-                    <FaBookmark className="w-3 h-3 mr-1" />
-                    Saved
-                  </button>
-                  <Link 
-                    to="/marketplace/dashboard"
-                    className="px-4 py-2 rounded-lg text-sm font-medium bg-green-600 text-white hover:bg-green-700 transition-colors shadow-md"
-                  >
-                    <FaBox className="w-3 h-3 mr-1 inline" />
-                    My Marketplace
-                  </Link>
-                </div>
-              )}
             </div>
             
             <div className="flex items-center gap-3">
               <Link 
-                to="/marketplace/unified"
+                to="/account?tab=marketplace"
                 className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-semibold flex items-center gap-2"
               >
                 <FaUser className="w-4 h-4" />
@@ -800,7 +755,7 @@ export default function Marketplace() {
                 View All
               </button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
               {trendingItems.slice(0, 8).map(item => renderItemCard(item, true))}
             </div>
           </div>
@@ -818,7 +773,7 @@ export default function Marketplace() {
                 View All
               </button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
               {recommendedItems.slice(0, 8).map(item => renderItemCard(item, true))}
             </div>
           </div>
@@ -828,31 +783,25 @@ export default function Marketplace() {
         {showMyItems ? (
           // Show user's items
           myItemsLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {[...Array(6)].map((_, i) => (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+              {[...Array(12)].map((_, i) => (
                 <div key={i} className="animate-pulse">
                   <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                    <div className="flex h-32">
-                      <div className="w-32 h-32 bg-gray-200"></div>
-                      <div className="flex-1 p-3 flex flex-col justify-between">
-                        <div>
-                          <div className="h-3 bg-gray-200 rounded mb-1"></div>
-                          <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                          <div className="h-3 bg-gray-200 rounded mb-1"></div>
-                          <div className="h-5 bg-gray-200 rounded"></div>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <div className="h-3 bg-gray-200 rounded w-16"></div>
-                          <div className="h-6 bg-gray-200 rounded w-12"></div>
-                        </div>
-                      </div>
+                    {/* Image skeleton */}
+                    <div className="w-full aspect-square bg-gray-200"></div>
+                    {/* Content skeleton */}
+                    <div className="p-3 flex flex-col">
+                      <div className="h-4 bg-gray-200 rounded mb-1"></div>
+                      <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                      <div className="h-5 bg-gray-200 rounded w-1/3 mb-2"></div>
+                      <div className="h-3 bg-gray-200 rounded w-20"></div>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
           ) : myItems && myItems.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
               {myItems.filter(item => item && item._id).map(renderItemCard)}
             </div>
           ) : (
@@ -869,31 +818,25 @@ export default function Marketplace() {
         ) : (
           // Show all marketplace items
           loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
               {[...Array(12)].map((_, i) => (
                 <div key={i} className="animate-pulse">
                   <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                    <div className="flex h-32">
-                      <div className="w-32 h-32 bg-gray-200"></div>
-                      <div className="flex-1 p-3 flex flex-col justify-between">
-                        <div>
-                          <div className="h-3 bg-gray-200 rounded mb-1"></div>
-                          <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                          <div className="h-3 bg-gray-200 rounded mb-1"></div>
-                          <div className="h-5 bg-gray-200 rounded"></div>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <div className="h-3 bg-gray-200 rounded w-16"></div>
-                          <div className="h-6 bg-gray-200 rounded w-12"></div>
-                        </div>
-                      </div>
+                    {/* Image skeleton */}
+                    <div className="w-full aspect-square bg-gray-200"></div>
+                    {/* Content skeleton */}
+                    <div className="p-3 flex flex-col">
+                      <div className="h-4 bg-gray-200 rounded mb-1"></div>
+                      <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                      <div className="h-5 bg-gray-200 rounded w-1/3 mb-2"></div>
+                      <div className="h-3 bg-gray-200 rounded w-20"></div>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
           ) : items && items.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
               {items.filter(item => item && item._id).map(renderItemCard)}
             </div>
           ) : (

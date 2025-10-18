@@ -147,7 +147,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/marketplace/fees', marketplaceFeesRoutes);
 app.use('/api/marketplace/payments', marketplacePaymentsRoutes);
-app.use('/api/marketplace-messages', marketplaceMessagesRoutes);
+app.use('/api/marketplace/messages', marketplaceMessagesRoutes);
 app.use('/api/marketplace/flags', marketplaceFlagsRoutes);
 app.use('/api/marketplace/settings', marketplaceSettingsRoutes);
 app.use('/api/marketplace/extension', marketplaceExtensionRoutes);
@@ -156,6 +156,10 @@ app.use('/api/memberships', membershipRoutes);
 app.use('/api/homepage-content', homepageContentRoutes);
 // IMPORTANT: General marketplace route must come LAST to avoid conflicts
 app.use('/api/marketplace', marketplaceRoutes);
+
+// Enhanced Rating System
+const enhancedRatingsRoutes = require('./routes/enhancedRatings');
+app.use('/api/ratings', enhancedRatingsRoutes);
 
 
 // Health check endpoint
