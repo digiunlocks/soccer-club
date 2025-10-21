@@ -17,6 +17,7 @@ import RefereeApplication from "./RefereeApplication";
 import VolunteerApplication from "./VolunteerApplication";
 import Register from "./Register";
 import Login from "./Login";
+import ResetPassword from "./ResetPassword";
 import Donate from "./Donate";
 import SuperAdminHeroManager from "./SuperAdminHeroManager";
 import BrandingManager from "./BrandingManager";
@@ -25,7 +26,6 @@ import ContactManager from "./ContactManager";
 import ContentManager from "./ContentManager";
 import PlaceholderManager from "./PlaceholderManager";
 import AdminDashboard from "./AdminDashboard";
-import ApplicationsManager from "./ApplicationsManager";
 import ProgramManager from "./ProgramManager";
 import AdminTeamManager from "./AdminTeamManager";
 import UserManager from "./UserManager";
@@ -52,6 +52,26 @@ import MyExpiringItems from "./MyExpiringItems";
 import CategoryManagement from "./EnhancedCategoryManagement";
 import MembershipManagement from "./MembershipManagement";
 import AboutPageManager from "./AboutPageManager";
+import CoachesManager from "./CoachesManager";
+import ParentsManager from "./ParentsManager";
+import VolunteersManager from "./VolunteersManager";
+import UserRolesManager from "./UserRolesManager";
+import ClubInfoManager from "./ClubInfoManager";
+import PoliciesManager from "./PoliciesManager";
+import DocumentationManager from "./DocumentationManager";
+import ApplicationManager from "./ApplicationManager";
+import FormManager from "./FormManager";
+import MatchManager from "./MatchManager";
+import TrainingManager from "./TrainingManager";
+import EventManager from "./EventManager";
+import SchedulingManager from "./SchedulingManager";
+import StandingsManager from "./StandingsManager";
+import StatisticsManager from "./StatisticsManager";
+import MediaLibraryManager from "./MediaLibraryManager";
+import SponsorManager from "./SponsorManager";
+import FinanceManager from "./FinanceManager";
+import MembershipManager from "./MembershipManager";
+import PaymentManagementSystem from "./PaymentManagementSystem";
 import Messages from "./Messages";
 import UserTransactions from "./UserTransactions";
 import PrivacySettings from "./PrivacySettings";
@@ -305,6 +325,7 @@ export default function App() {
           <Route path="/join/volunteer" element={<VolunteerApplication />} />
           <Route path="/register" element={<Register />} />
           <Route path="/signin" element={<Login />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
                       <Route path="/donate" element={<Donate />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
@@ -369,12 +390,30 @@ export default function App() {
           <Route path="/admin/marketplace-settings" element={<MarketplaceSettings />} />
           <Route path="/admin/category-management" element={<CategoryManagement />} />
           <Route path="/admin/membership-management" element={<MembershipManagement />} />
-          <Route path="/admin/applications" element={<ApplicationsManager />} />
           <Route path="/admin/programs" element={<ProgramManager />} />
           <Route path="/admin/teams" element={<AdminTeamManager />} />
           <Route path="/admin/users" element={<UserManager />} />
+          <Route path="/admin/coaches" element={<CoachesManager />} />
+          <Route path="/admin/parents" element={<ParentsManager />} />
+          <Route path="/admin/volunteers" element={<VolunteersManager />} />
+          <Route path="/admin/user-roles" element={<UserRolesManager />} />
+          <Route path="/admin/club-info" element={<ClubInfoManager />} />
+          <Route path="/admin/policies" element={<PoliciesManager />} />
+          <Route path="/admin/documents" element={<DocumentationManager />} />
+          <Route path="/admin/applications" element={<ApplicationManager />} />
+          <Route path="/admin/forms" element={<FormManager />} />
+          <Route path="/admin/matches" element={<MatchManager />} />
+          <Route path="/admin/training" element={<TrainingManager />} />
+          <Route path="/admin/events" element={<EventManager />} />
+          <Route path="/admin/scheduling" element={<SchedulingManager />} />
+          <Route path="/admin/standings" element={<StandingsManager />} />
+          <Route path="/admin/statistics" element={<StatisticsManager />} />
+          <Route path="/admin/media" element={<MediaLibraryManager />} />
+          <Route path="/admin/sponsors" element={<SponsorManager />} />
+          <Route path="/admin/finance" element={<FinanceManager />} />
+          <Route path="/admin/membership" element={<MembershipManager />} />
           <Route path="/admin/news" element={<NewsManager />} />
-          <Route path="/admin/payments" element={<PaymentManager />} />
+          <Route path="/admin/payments" element={<PaymentManagementSystem />} />
           <Route path="/admin/settings" element={<SiteSettings />} />
           <Route path="/admin/schedules" element={<ScheduleManager />} />
           <Route path="/admin/gallery" element={<Gallery />} />

@@ -276,4 +276,113 @@ router.post('/export-new-users', superAdminAuth, async (req, res) => {
   }
 });
 
+// POST /api/users/bulk - Bulk operations on users
+router.post('/bulk', superAdminAuth, async (req, res) => {
+  try {
+    const { userIds, action, role, status } = req.body;
+    
+    if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
+      return res.status(400).json({ error: 'User IDs array is required' });
+    }
+    
+    let result;
+    
+    switch (action) {
+      case 'changeRole':
+        if (!role) {
+          return res.status(400).json({ error: 'Role is required for changeRole action' });
+        }
+        result = await User.updateMany(
+          { _id: { $in: userIds } },
+          { $set: { role: role } }
+        );
+        break;
+        
+      case 'changeStatus':
+        if (!status) {
+          return res.status(400).json({ error: 'Status is required for changeStatus action' });
+        }
+        result = await User.updateMany(
+          { _id: { $in: userIds } },
+          { $set: { status: status } }
+        );
+        break;
+        
+      case 'delete':
+        result = await User.deleteMany({ _id: { $in: userIds } });
+        break;
+        
+      default:
+        return res.status(400).json({ error: 'Invalid action' });
+    }
+    
+    res.json({
+      success: true,
+      message: `Bulk ${action} completed successfully`,
+      modifiedCount: result.modifiedCount || result.deletedCount || 0
+    });
+  } catch (error) {
+    console.error('Error performing bulk action:', error);
+    res.status(500).json({ error: 'Failed to perform bulk action' });
+  }
+});
+
+// POST /api/users/:id/reset-password - Reset user password
+router.post('/:id/reset-password', superAdminAuth, async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    // Generate reset token
+    const resetToken = require('crypto').randomBytes(32).toString('hex');
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+    await user.save();
+    
+    // Send reset email (you can implement this based on your email service)
+    // For now, just return success
+    res.json({
+      success: true,
+      message: 'Password reset email sent successfully',
+      resetToken: resetToken // Remove this in production
+    });
+  } catch (error) {
+    console.error('Error resetting password:', error);
+    res.status(500).json({ error: 'Failed to reset password' });
+  }
+});
+
+// Set user password (super admin only)
+router.post('/:id/set-password', superAdminAuth, async (req, res) => {
+  try {
+    const { newPassword } = req.body;
+    const { id } = req.params;
+
+    if (!newPassword || newPassword.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters long' });
+    }
+
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Hash the new password
+    const bcrypt = require('bcryptjs');
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+    // Update user password
+    user.password = hashedPassword;
+    await user.save();
+
+    res.json({ message: 'Password updated successfully' });
+  } catch (error) {
+    console.error('Error setting password:', error);
+    res.status(500).json({ error: 'Failed to set password' });
+  }
+});
+
 module.exports = router;

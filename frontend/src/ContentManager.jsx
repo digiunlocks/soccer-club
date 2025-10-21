@@ -156,7 +156,8 @@ export default function ContentManager() {
     { id: 'events', name: 'Events', icon: '📅' },
     { id: 'teams', name: 'Teams', icon: '👥' },
     { id: 'stats', name: 'Statistics', icon: '📊' },
-    { id: 'cta', name: 'Call to Action', icon: '📢' }
+    { id: 'cta', name: 'Call to Action', icon: '📢' },
+    { id: 'about', name: 'About Page', icon: 'ℹ️' }
   ];
 
   return (
@@ -756,6 +757,82 @@ export default function ContentManager() {
               >
                 Add Button
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* About Page Section */}
+        {activeTab === 'about' && (
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">About Page Management</h2>
+            
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+              <div className="flex items-center mb-4">
+                <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mr-4">
+                  <span className="text-2xl">ℹ️</span>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-blue-900">About Page Manager</h3>
+                  <p className="text-blue-700">Manage your About page content and gallery</p>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-white rounded-lg p-4 border border-blue-200">
+                  <h4 className="font-semibold text-gray-900 mb-2">📝 Content Management</h4>
+                  <ul className="text-sm text-gray-600 space-y-1">
+                    <li>• Edit page title and description</li>
+                    <li>• Manage club highlights</li>
+                    <li>• Update additional information</li>
+                  </ul>
+                </div>
+                
+                <div className="bg-white rounded-lg p-4 border border-blue-200">
+                  <h4 className="font-semibold text-gray-900 mb-2">🖼️ Gallery Management</h4>
+                  <ul className="text-sm text-gray-600 space-y-1">
+                    <li>• Upload multiple images (up to 10)</li>
+                    <li>• Add captions and alt text</li>
+                    <li>• Drag & drop reordering</li>
+                    <li>• Bulk delete operations</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <div className="mt-6 flex gap-3">
+                <button
+                  onClick={() => window.open('/admin/about', '_blank')}
+                  className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                >
+                  🚀 Open About Page Manager
+                </button>
+                <button
+                  onClick={() => window.open('/about', '_blank')}
+                  className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors font-medium"
+                >
+                  👁️ Preview About Page
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-gray-50 rounded-lg p-4">
+              <h4 className="font-semibold text-gray-900 mb-3">Quick Actions</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="text-center p-3 bg-white rounded border">
+                  <div className="text-2xl mb-2">📝</div>
+                  <h5 className="font-medium text-gray-900">Edit Content</h5>
+                  <p className="text-sm text-gray-600">Update page text and highlights</p>
+                </div>
+                <div className="text-center p-3 bg-white rounded border">
+                  <div className="text-2xl mb-2">🖼️</div>
+                  <h5 className="font-medium text-gray-900">Manage Gallery</h5>
+                  <p className="text-sm text-gray-600">Upload and organize images</p>
+                </div>
+                <div className="text-center p-3 bg-white rounded border">
+                  <div className="text-2xl mb-2">👁️</div>
+                  <h5 className="font-medium text-gray-900">Preview</h5>
+                  <p className="text-sm text-gray-600">See how it looks to visitors</p>
+                </div>
+              </div>
             </div>
           </div>
         )}

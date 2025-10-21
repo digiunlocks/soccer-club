@@ -113,6 +113,64 @@ router.post('/register', async (req, res) => {
     
     await user.save();
     
+    // Create a free basic membership for new user
+    try {
+      const { Membership, MembershipTier } = require('../models/Membership');
+      
+      // Find or create Basic tier
+      let basicTier = await MembershipTier.findOne({ name: 'Basic' });
+      
+      if (!basicTier) {
+        // Create default Basic tier if it doesn't exist
+        basicTier = new MembershipTier({
+          name: 'Basic',
+          slug: 'basic',
+          description: 'Free basic membership for all registered users',
+          price: 0,
+          duration: 12, // 12 months
+          features: [
+            { name: 'Access to public events', included: true },
+            { name: 'Newsletter subscription', included: true },
+            { name: 'Member directory listing', included: true }
+          ],
+          benefits: [
+            { title: 'Public Events', description: 'Access to all public club events' },
+            { title: 'Newsletter', description: 'Monthly newsletter subscription' },
+            { title: 'Directory', description: 'Listed in member directory' }
+          ],
+          isActive: true,
+          createdBy: user._id
+        });
+        await basicTier.save();
+        console.log('✅ Created Basic membership tier');
+      }
+      
+      // Create membership for the new user
+      const startDate = new Date();
+      const endDate = new Date();
+      endDate.setMonth(endDate.getMonth() + basicTier.duration);
+      
+      const membership = new Membership({
+        user: user._id,
+        tier: basicTier._id,
+        status: 'active',
+        startDate,
+        endDate,
+        amount: basicTier.price,
+        totalAmount: basicTier.price,
+        paymentMethod: 'free',
+        paymentStatus: 'paid',
+        autoRenew: true,
+        createdBy: user._id
+      });
+      
+      await membership.save();
+      console.log('✅ Basic membership created for new user:', user.email);
+    } catch (membershipError) {
+      console.error('❌ Failed to create membership:', membershipError);
+      // Don't fail registration if membership creation fails
+    }
+    
     // Send welcome email automatically
     try {
       const emailService = require('../services/emailService');
@@ -552,15 +610,20 @@ router.post('/forgot-password', async (req, res) => {
     user.resetPasswordExpires = new Date(Date.now() + 3600000); // 1 hour
     await user.save();
     
-    // In a real application, you would send an email here
-    // For now, we'll just return the token (in production, this should be sent via email)
+    // Send password reset email
+    try {
+      const emailService = require('../services/emailService');
+      await emailService.sendPasswordResetEmail(user, resetToken);
+      console.log('✅ Password reset email sent to:', user.email);
+    } catch (emailError) {
+      console.error('❌ Failed to send password reset email:', emailError);
+      // Don't fail the request if email fails, but log it
+    }
+    
     console.log(`🔐 Password reset requested for user ${user.username} (${email})`);
-    console.log(`🔐 Reset token: ${resetToken}`);
     
     res.json({ 
-      message: 'If an account with this email exists, password reset instructions have been sent.',
-      // In production, remove this token from the response
-      resetToken: resetToken // Remove this in production
+      message: 'If an account with this email exists, password reset instructions have been sent.'
     });
     
   } catch (error) {
@@ -585,15 +648,20 @@ router.post('/forgot-username', async (req, res) => {
       return res.json({ message: 'If an account with this email exists, your username has been sent.' });
     }
     
-    // In a real application, you would send an email here
-    // For now, we'll just return the username (in production, this should be sent via email)
+    // Send username recovery email
+    try {
+      const emailService = require('../services/emailService');
+      await emailService.sendUsernameRecoveryEmail(user);
+      console.log('✅ Username recovery email sent to:', user.email);
+    } catch (emailError) {
+      console.error('❌ Failed to send username recovery email:', emailError);
+      // Don't fail the request if email fails, but log it
+    }
+    
     console.log(`👤 Username recovery requested for email ${email}`);
-    console.log(`👤 Username: ${user.username}`);
     
     res.json({ 
-      message: 'If an account with this email exists, your username has been sent.',
-      // In production, remove this username from the response
-      username: user.username // Remove this in production
+      message: 'If an account with this email exists, your username has been sent.'
     });
     
   } catch (error) {
@@ -646,77 +714,6 @@ router.post('/reset-password', async (req, res) => {
   }
 });
 
-// POST /api/auth/forgot-password
-router.post('/forgot-password', async (req, res) => {
-  try {
-    const { email } = req.body;
-    
-    if (!email) {
-      return res.status(400).json({ message: 'Email is required' });
-    }
-    
-    // Find user by email
-    const user = await User.findOne({ email });
-    if (!user) {
-      // Don't reveal if email exists or not for security
-      return res.json({ message: 'If an account with this email exists, password reset instructions have been sent.' });
-    }
-    
-    // Generate a temporary reset token (valid for 1 hour)
-    const resetToken = jwt.sign(
-      { userId: user._id, type: 'password-reset' },
-      process.env.JWT_SECRET || 'your-secret-key',
-      { expiresIn: '1h' }
-    );
-    
-    // Store reset token in user document
-    user.resetPasswordToken = resetToken;
-    user.resetPasswordExpires = new Date(Date.now() + 3600000); // 1 hour
-    await user.save();
-    
-    console.log(`🔐 Password reset requested for user ${user.username} (${email})`);
-    console.log(`🔐 Reset token: ${resetToken}`);
-    
-    res.json({ 
-      message: 'If an account with this email exists, password reset instructions have been sent.',
-      resetToken: resetToken // Remove this in production
-    });
-    
-  } catch (error) {
-    console.error('Forgot password error:', error);
-    res.status(500).json({ message: 'An error occurred. Please try again.' });
-  }
-});
-
-// POST /api/auth/forgot-username
-router.post('/forgot-username', async (req, res) => {
-  try {
-    const { email } = req.body;
-    
-    if (!email) {
-      return res.status(400).json({ message: 'Email is required' });
-    }
-    
-    // Find user by email
-    const user = await User.findOne({ email });
-    if (!user) {
-      // Don't reveal if email exists or not for security
-      return res.json({ message: 'If an account with this email exists, your username has been sent.' });
-    }
-    
-    console.log(`👤 Username recovery requested for email ${email}`);
-    console.log(`👤 Username: ${user.username}`);
-    
-    res.json({ 
-      message: 'If an account with this email exists, your username has been sent.',
-      username: user.username // Remove this in production
-    });
-    
-  } catch (error) {
-    console.error('Forgot username error:', error);
-    res.status(500).json({ message: 'An error occurred. Please try again.' });
-  }
-});
 
 // Change password route
 router.put('/change-password', auth, async (req, res) => {

@@ -69,6 +69,15 @@ export default function AdminDashboard() {
         border-radius: 8px;
         border-left: 3px solid #007bff;
       }
+      
+      .hover-shadow {
+        transition: all 0.3s ease;
+      }
+      
+      .hover-shadow:hover {
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+        transform: translateY(-3px);
+      }
     `;
     document.head.appendChild(style);
     
@@ -712,42 +721,42 @@ export default function AdminDashboard() {
               
               {!collapsedSections.userManagement && (
                 <div className="ms-3">
-              <button
-                    className={`nav-link text-white text-start border-0 ${activeSection === 'users' ? 'bg-white bg-opacity-25' : ''}`}
-                    onClick={() => handleSectionChange('users')}
+              <Link
+                    to="/admin/users"
+                    className="nav-link text-white text-start border-0"
               >
                     All Users
-              </button>
-              <button
-                className={`nav-link text-white text-start border-0 ${activeSection === 'coaches' ? 'bg-white bg-opacity-25' : ''}`}
-                onClick={() => handleSectionChange('coaches')}
+              </Link>
+              <Link
+                to="/admin/coaches"
+                className="nav-link text-white text-start border-0"
               >
                     Coaches
-              </button>
-              <button
-                className={`nav-link text-white text-start border-0 ${activeSection === 'parents' ? 'bg-white bg-opacity-25' : ''}`}
-                onClick={() => handleSectionChange('parents')}
+              </Link>
+              <Link
+                to="/admin/parents"
+                className="nav-link text-white text-start border-0"
               >
                     Parents
-              </button>
-              <button
-                className={`nav-link text-white text-start border-0 ${activeSection === 'volunteers' ? 'bg-white bg-opacity-25' : ''}`}
-                onClick={() => handleSectionChange('volunteers')}
+              </Link>
+              <Link
+                to="/admin/volunteers"
+                className="nav-link text-white text-start border-0"
               >
                     Volunteers
-              </button>
-              <button
-                className={`nav-link text-white text-start border-0 ${activeSection === 'user-roles' ? 'bg-white bg-opacity-25' : ''}`}
-                onClick={() => handleSectionChange('user-roles')}
+              </Link>
+              <Link
+                to="/admin/user-roles"
+                className="nav-link text-white text-start border-0"
               >
                     User Roles
-              </button>
-              <button
-                className={`nav-link text-white text-start border-0 ${activeSection === 'permissions' ? 'bg-white bg-opacity-25' : ''}`}
-                onClick={() => handleSectionChange('permissions')}
+              </Link>
+              <Link
+                to="/admin/users"
+                className="nav-link text-white text-start border-0"
               >
                     Permissions
-              </button>
+              </Link>
               <button
                 className={`nav-link text-white text-start border-0 ${activeSection === 'content' ? 'bg-white bg-opacity-25' : ''}`}
                 onClick={() => handleSectionChange('content')}
@@ -2527,6 +2536,63 @@ export default function AdminDashboard() {
                 {/* Content Management Tab */}
                 {activeSubSection === 'content' && (
                   <div className="row">
+                    {/* Content Management Quick Links */}
+                    <div className="col-12 mb-4">
+                      <div className="card">
+                        <div className="card-header bg-gradient-dark text-white">
+                          <h5 className="mb-0"><i className="bi bi-grid me-2"></i>Content Management Sections</h5>
+                        </div>
+                        <div className="card-body">
+                          <div className="row g-3">
+                            <div className="col-lg-3 col-md-4 col-sm-6">
+                              <Link to="/admin/about" className="text-decoration-none">
+                                <div className="card border-primary hover-shadow" style={{transition: 'all 0.3s', cursor: 'pointer'}}>
+                                  <div className="card-body text-center">
+                                    <i className="bi bi-info-circle-fill text-primary" style={{fontSize: '2.5rem'}}></i>
+                                    <h5 className="mt-3 mb-2 text-primary">About Page</h5>
+                                    <p className="text-muted small mb-0">Manage About page content & gallery</p>
+                                  </div>
+                                </div>
+                              </Link>
+                            </div>
+                            <div className="col-lg-3 col-md-4 col-sm-6">
+                              <Link to="/admin/content" className="text-decoration-none">
+                                <div className="card border-success hover-shadow" style={{transition: 'all 0.3s', cursor: 'pointer'}}>
+                                  <div className="card-body text-center">
+                                    <i className="bi bi-house-fill text-success" style={{fontSize: '2.5rem'}}></i>
+                                    <h5 className="mt-3 mb-2 text-success">Homepage Content</h5>
+                                    <p className="text-muted small mb-0">Edit homepage sections & content</p>
+                                  </div>
+                                </div>
+                              </Link>
+                            </div>
+                            <div className="col-lg-3 col-md-4 col-sm-6">
+                              <Link to="/admin/news" className="text-decoration-none">
+                                <div className="card border-info hover-shadow" style={{transition: 'all 0.3s', cursor: 'pointer'}}>
+                                  <div className="card-body text-center">
+                                    <i className="bi bi-newspaper text-info" style={{fontSize: '2.5rem'}}></i>
+                                    <h5 className="mt-3 mb-2 text-info">News & Updates</h5>
+                                    <p className="text-muted small mb-0">Manage news articles & updates</p>
+                                  </div>
+                                </div>
+                              </Link>
+                            </div>
+                            <div className="col-lg-3 col-md-4 col-sm-6">
+                              <Link to="/admin/gallery" className="text-decoration-none">
+                                <div className="card border-warning hover-shadow" style={{transition: 'all 0.3s', cursor: 'pointer'}}>
+                                  <div className="card-body text-center">
+                                    <i className="bi bi-images text-warning" style={{fontSize: '2.5rem'}}></i>
+                                    <h5 className="mt-3 mb-2 text-warning">Gallery</h5>
+                                    <p className="text-muted small mb-0">Manage community gallery images</p>
+                                  </div>
+                                </div>
+                              </Link>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
                     {/* Frontpage Content Management */}
                     <div className="col-12 mb-4">
                       <div className="card">
@@ -3032,22 +3098,140 @@ export default function AdminDashboard() {
                         <h5 className="mb-0">Content Management System</h5>
                       </div>
                       <div className="card-body">
-                        <div className="alert alert-info">
-                          <i className="bi bi-info-circle me-2"></i>
-                          Content management features will be implemented here. This will include:
-                          <ul className="mt-2 mb-0">
-                            <li>Page content editing (Homepage, About, Contact, Programs)</li>
-                            <li>Blog management</li>
-                            <li>Event management</li>
-                            <li>Newsletter system</li>
-                            <li>Media library</li>
-                            <li>Content templates</li>
+                        <div className="alert alert-success">
+                          <i className="bi bi-check-circle me-2"></i>
+                          <strong>Content Management is now available!</strong> Access the comprehensive content management system with features including:
+                          <ul className="mt-2 mb-3">
+                            <li>Homepage content editing (Welcome, Programs, Events, Teams, Statistics, CTA)</li>
+                            <li>About page management with gallery</li>
+                            <li>Event management and scheduling</li>
+                            <li>Team information management</li>
+                            <li>Statistics and highlights</li>
+                            <li>Call-to-action sections</li>
                           </ul>
+                          <Link to="/admin/content" className="btn btn-success">
+                            <i className="bi bi-arrow-right me-2"></i>
+                            Go to Content Management
+                          </Link>
                         </div>
-                        <div className="text-center py-5">
-                          <i className="bi bi-file-text display-1 text-muted"></i>
-                          <h4 className="mt-3 text-muted">Content Management</h4>
-                          <p className="text-muted">Coming soon...</p>
+                        <div className="text-center py-4">
+                          <i className="bi bi-file-text display-1 text-success"></i>
+                          <h4 className="mt-3 text-success">Content Management Ready</h4>
+                          <p className="text-muted">Click the button above to access the comprehensive content management system.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeSection === 'club-info' && (
+              <div>
+                <div className="row">
+                  <div className="col-12">
+                    <div className="card">
+                      <div className="card-header">
+                        <h5 className="mb-0">Club Information Management</h5>
+                      </div>
+                      <div className="card-body">
+                        <div className="alert alert-success">
+                          <i className="bi bi-check-circle me-2"></i>
+                          <strong>Club Information Management is now available!</strong> Access the comprehensive club information system with features including:
+                          <ul className="mt-2 mb-3">
+                            <li>Basic club information (name, founded, location)</li>
+                            <li>Contact details and addresses</li>
+                            <li>Branding and color management</li>
+                            <li>Facilities and venues</li>
+                            <li>Legal and registration information</li>
+                            <li>Social media links</li>
+                            <li>Achievements and awards tracking</li>
+                          </ul>
+                          <Link to="/admin/club-info" className="btn btn-success">
+                            <i className="bi bi-arrow-right me-2"></i>
+                            Go to Club Information Management
+                          </Link>
+                        </div>
+                        <div className="text-center py-4">
+                          <i className="bi bi-building display-1 text-success"></i>
+                          <h4 className="mt-3 text-success">Club Information Ready</h4>
+                          <p className="text-muted">Click the button above to access the comprehensive club information management system.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeSection === 'policies' && (
+              <div>
+                <div className="row">
+                  <div className="col-12">
+                    <div className="card">
+                      <div className="card-header">
+                        <h5 className="mb-0">Policies Management</h5>
+                      </div>
+                      <div className="card-body">
+                        <div className="alert alert-success">
+                          <i className="bi bi-check-circle me-2"></i>
+                          <strong>Policies Management is now available!</strong> Access the comprehensive policies management system with features including:
+                          <ul className="mt-2 mb-3">
+                            <li>General club policies and terms</li>
+                            <li>Safety and health protocols</li>
+                            <li>Disciplinary procedures and consequences</li>
+                            <li>Financial policies and payment terms</li>
+                            <li>Technology and data protection policies</li>
+                            <li>Volunteer guidelines and expectations</li>
+                            <li>Version control and audit trails</li>
+                          </ul>
+                          <Link to="/admin/policies" className="btn btn-success">
+                            <i className="bi bi-arrow-right me-2"></i>
+                            Go to Policies Management
+                          </Link>
+                        </div>
+                        <div className="text-center py-4">
+                          <i className="bi bi-shield-check display-1 text-success"></i>
+                          <h4 className="mt-3 text-success">Policies Management Ready</h4>
+                          <p className="text-muted">Click the button above to access the comprehensive policies management system.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeSection === 'documents' && (
+              <div>
+                <div className="row">
+                  <div className="col-12">
+                    <div className="card">
+                      <div className="card-header">
+                        <h5 className="mb-0">Documentation Management</h5>
+                      </div>
+                      <div className="card-body">
+                        <div className="alert alert-success">
+                          <i className="bi bi-check-circle me-2"></i>
+                          <strong>Documentation Management is now available!</strong> Access the comprehensive documentation system with features including:
+                          <ul className="mt-2 mb-3">
+                            <li>Centralized document repository</li>
+                            <li>Multiple document categories (policies, forms, handbooks, training materials)</li>
+                            <li>Upload and manage files (PDF, DOC, XLS, PPT, images)</li>
+                            <li>Version control and tracking</li>
+                            <li>Document status management (draft, published, archived)</li>
+                            <li>Search and filter capabilities</li>
+                            <li>Document categorization and tagging</li>
+                          </ul>
+                          <Link to="/admin/documents" className="btn btn-success">
+                            <i className="bi bi-arrow-right me-2"></i>
+                            Go to Documentation Management
+                          </Link>
+                        </div>
+                        <div className="text-center py-4">
+                          <i className="bi bi-file-earmark-text display-1 text-success"></i>
+                          <h4 className="mt-3 text-success">Documentation Management Ready</h4>
+                          <p className="text-muted">Click the button above to access the comprehensive documentation management system.</p>
                         </div>
                       </div>
                     </div>
@@ -3462,21 +3646,66 @@ export default function AdminDashboard() {
                         <h5 className="mb-0">Team Management</h5>
                       </div>
                       <div className="card-body">
-                        <div className="alert alert-info">
-                          <i className="bi bi-info-circle me-2"></i>
-                          Team management features will be implemented here. This will include:
-                          <ul className="mt-2 mb-0">
-                            <li>Create and manage teams</li>
-                            <li>Assign players and coaches</li>
-                            <li>Team schedules and practices</li>
-                            <li>Team statistics and performance</li>
-                            <li>Team communication tools</li>
+                        <div className="alert alert-success">
+                          <i className="bi bi-check-circle me-2"></i>
+                          <strong>⚽ Comprehensive Team Management System Available!</strong> Manage all aspects of your teams with powerful features:
+                          
+                          <div className="row mt-3 mb-3">
+                            <div className="col-md-6">
+                              <h6 className="text-success"><i className="bi bi-people-fill me-2"></i>Team Management</h6>
+                              <ul className="small">
+                                <li>Create and manage teams by age group</li>
+                                <li>Multiple team levels (Recreational, Competitive, Elite)</li>
+                                <li>Team roster management</li>
+                                <li>Coach and assistant coach assignments</li>
+                                <li>Team status tracking (Active, Forming, Full, Tryouts)</li>
                           </ul>
                         </div>
-                        <div className="text-center py-5">
-                          <i className="bi bi-people-fill display-1 text-muted"></i>
-                          <h4 className="mt-3 text-muted">Team Management</h4>
-                          <p className="text-muted">Coming soon...</p>
+                            <div className="col-md-6">
+                              <h6 className="text-success"><i className="bi bi-calendar-check me-2"></i>Scheduling & Organization</h6>
+                              <ul className="small">
+                                <li>Practice schedules and times</li>
+                                <li>Game day coordination</li>
+                                <li>Location and facility assignment</li>
+                                <li>Season management</li>
+                                <li>Player capacity tracking</li>
+                              </ul>
+                        </div>
+                      </div>
+                          
+                          <div className="bg-white p-3 rounded mb-3">
+                            <h6 className="text-dark mb-2"><i className="bi bi-gear me-2"></i>Advanced Features</h6>
+                            <div className="row small">
+                              <div className="col-md-4">• Team roster management</div>
+                              <div className="col-md-4">• Player assignments</div>
+                              <div className="col-md-4">• Coach assignments</div>
+                              <div className="col-md-4">• Fee tracking</div>
+                              <div className="col-md-4">• Team visibility control</div>
+                              <div className="col-md-4">• Advanced filtering</div>
+                    </div>
+                  </div>
+                          
+                          <div className="bg-light p-3 rounded mb-3">
+                            <h6 className="text-dark mb-2"><i className="bi bi-trophy me-2"></i>Age Groups & Levels</h6>
+                            <div className="row small">
+                              <div className="col-md-6">
+                                <strong>Age Groups:</strong> Under 6, 8, 10, 12, 14, 16, 18, Adult, Women's, Coed
+                              </div>
+                              <div className="col-md-6">
+                                <strong>Levels:</strong> Recreational, Competitive, Elite, Development, All-Star
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <Link to="/admin/teams" className="btn btn-success btn-lg">
+                            <i className="bi bi-arrow-right me-2"></i>
+                            Go to Team Management
+                          </Link>
+                        </div>
+                        <div className="text-center py-4">
+                          <i className="bi bi-people-fill display-1 text-success"></i>
+                          <h4 className="mt-3 text-success">Team Management Ready</h4>
+                          <p className="text-muted">Manage teams, rosters, schedules, and coaching assignments all in one place.</p>
                         </div>
                       </div>
                     </div>
@@ -3494,21 +3723,79 @@ export default function AdminDashboard() {
                         <h5 className="mb-0">Event Management</h5>
                       </div>
                       <div className="card-body">
-                        <div className="alert alert-info">
-                          <i className="bi bi-info-circle me-2"></i>
-                          Event management features will be implemented here. This will include:
-                          <ul className="mt-2 mb-0">
-                            <li>Create and manage events</li>
-                            <li>Event registration and RSVP</li>
-                            <li>Event scheduling and calendar</li>
-                            <li>Event notifications and reminders</li>
-                            <li>Event analytics and attendance</li>
+                        <div className="alert alert-success">
+                          <i className="bi bi-check-circle me-2"></i>
+                          <strong>🎉 Comprehensive Event Management System Available!</strong> Manage both public and internal events:
+                          
+                          <div className="row mt-3 mb-3">
+                            <div className="col-md-6">
+                              <h6 className="text-success"><i className="bi bi-globe me-2"></i>Public Events (Community-Facing)</h6>
+                              <ul className="small">
+                                <li>Tournaments and competitions</li>
+                                <li>Public tryouts and training camps</li>
+                                <li>Community outreach events</li>
+                                <li>Fundraising activities</li>
+                                <li>Skills clinics and workshops</li>
+                                <li>Awards ceremonies</li>
+                                <li>Online registration with payment</li>
                           </ul>
                         </div>
-                        <div className="text-center py-5">
-                          <i className="bi bi-calendar-event display-1 text-muted"></i>
-                          <h4 className="mt-3 text-muted">Event Management</h4>
-                          <p className="text-muted">Coming soon...</p>
+                            <div className="col-md-6">
+                              <h6 className="text-success"><i className="bi bi-building me-2"></i>Internal Events (Club-Only)</h6>
+                              <ul className="small">
+                                <li>Board and committee meetings</li>
+                                <li>Parent-coach meetings</li>
+                                <li>Staff training workshops</li>
+                                <li>Volunteer coordination</li>
+                                <li>Team social events</li>
+                                <li>Strategic planning sessions</li>
+                                <li>Internal communications</li>
+                              </ul>
+                        </div>
+                      </div>
+                          
+                          <div className="bg-white p-3 rounded mb-3">
+                            <h6 className="text-dark mb-2"><i className="bi bi-gear me-2"></i>Event Management Features</h6>
+                            <div className="row small">
+                              <div className="col-md-4">• 12 event categories</div>
+                              <div className="col-md-4">• 4 visibility levels</div>
+                              <div className="col-md-4">• Registration & RSVP system</div>
+                              <div className="col-md-4">• Capacity management</div>
+                              <div className="col-md-4">• Waitlist functionality</div>
+                              <div className="col-md-4">• Fee collection</div>
+                              <div className="col-md-4">• Event agenda builder</div>
+                              <div className="col-md-4">• Attendee tracking</div>
+                              <div className="col-md-4">• Analytics dashboard</div>
+                    </div>
+                  </div>
+                          
+                          <div className="bg-light p-3 rounded mb-3">
+                            <h6 className="text-dark mb-2"><i className="bi bi-shield-check me-2"></i>Visibility Options</h6>
+                            <div className="row small">
+                              <div className="col-md-6">
+                                <strong>🌐 Public:</strong> Visible to everyone, open registration
+                              </div>
+                              <div className="col-md-6">
+                                <strong>🔐 Members Only:</strong> Only registered club members
+                              </div>
+                              <div className="col-md-6">
+                                <strong>🏢 Internal:</strong> Staff and volunteers only
+                              </div>
+                              <div className="col-md-6">
+                                <strong>🔒 Private:</strong> Invite-only events
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <Link to="/admin/events" className="btn btn-success btn-lg">
+                            <i className="bi bi-arrow-right me-2"></i>
+                            Go to Event Management
+                          </Link>
+                        </div>
+                        <div className="text-center py-4">
+                          <i className="bi bi-calendar-event-fill display-1 text-success"></i>
+                          <h4 className="mt-3 text-success">Event Management System Ready</h4>
+                          <p className="text-muted">Create public tournaments and internal meetings with full registration, tracking, and analytics.</p>
                         </div>
                       </div>
                     </div>
@@ -3523,24 +3810,86 @@ export default function AdminDashboard() {
                   <div className="col-12">
                     <div className="card">
                       <div className="card-header">
-                        <h5 className="mb-0">Media Library</h5>
+                        <h5 className="mb-0">Media Library Management</h5>
                       </div>
                       <div className="card-body">
-                        <div className="alert alert-info">
-                          <i className="bi bi-info-circle me-2"></i>
-                          Media management features will be implemented here. This will include:
-                          <ul className="mt-2 mb-0">
-                            <li>Upload and organize media files</li>
-                            <li>Image and video galleries</li>
-                            <li>Media optimization and compression</li>
-                            <li>Media sharing and permissions</li>
-                            <li>Media analytics and usage tracking</li>
+                        <div className="alert alert-success">
+                          <i className="bi bi-check-circle me-2"></i>
+                          <strong>📸 Comprehensive Media Library System Available!</strong> Centralized digital asset management for photos, videos, and documents:
+                          
+                          <div className="row mt-3 mb-3">
+                            <div className="col-md-6">
+                              <h6 className="text-success"><i className="bi bi-globe me-2"></i>Public Media (Website)</h6>
+                              <ul className="small">
+                                <li>Photo galleries for website and fans</li>
+                                <li>Match action shots and highlights</li>
+                                <li>Event photos and videos</li>
+                                <li>Team and player photos</li>
+                                <li>Social media content</li>
+                                <li>Marketing materials and graphics</li>
+                                <li>Sponsor logos and assets</li>
+                                <li>Award and trophy photos</li>
                           </ul>
                         </div>
-                        <div className="text-center py-5">
-                          <i className="bi bi-images display-1 text-muted"></i>
-                          <h4 className="mt-3 text-muted">Media Library</h4>
-                          <p className="text-muted">Coming soon...</p>
+                            <div className="col-md-6">
+                              <h6 className="text-success"><i className="bi bi-lock me-2"></i>Internal Media (Private)</h6>
+                              <ul className="small">
+                                <li>Training video analysis</li>
+                                <li>Tactical diagrams and playbooks</li>
+                                <li>Internal documents and forms</li>
+                                <li>Staff resources and guides</li>
+                                <li>Confidential materials</li>
+                                <li>Coach development videos</li>
+                                <li>Administrative documents</li>
+                                <li>Meeting recordings</li>
+                              </ul>
+                        </div>
+                      </div>
+                          
+                          <div className="bg-white p-3 rounded mb-3">
+                            <h6 className="text-dark mb-2"><i className="bi bi-folder me-2"></i>Organization System</h6>
+                            <div className="row small">
+                              <div className="col-md-3">• <strong>12 Categories:</strong> Matches, Training, Events, Players, Teams, Facilities, etc.</div>
+                              <div className="col-md-3">• <strong>4 Visibility Levels:</strong> Public, Members, Internal, Private</div>
+                              <div className="col-md-3">• <strong>Tagging System:</strong> Add multiple tags for easy searching</div>
+                              <div className="col-md-3">• <strong>Advanced Search:</strong> Find files by name, category, tag, date</div>
+                            </div>
+                          </div>
+                          
+                          <div className="bg-light p-3 rounded mb-3">
+                            <h6 className="text-dark mb-2"><i className="bi bi-gear me-2"></i>Features & Management</h6>
+                            <div className="row small">
+                              <div className="col-md-4">• Bulk upload (multiple files at once)</div>
+                              <div className="col-md-4">• Automatic image optimization</div>
+                              <div className="col-md-4">• Thumbnail generation</div>
+                              <div className="col-md-4">• Grid and list view modes</div>
+                              <div className="col-md-4">• File size tracking and limits</div>
+                              <div className="col-md-4">• Download permission control</div>
+                              <div className="col-md-4">• Photo credit/attribution</div>
+                              <div className="col-md-4">• Metadata management</div>
+                              <div className="col-md-4">• Preview and lightbox</div>
+                            </div>
+                          </div>
+                          
+                          <div className="bg-white p-3 rounded mb-3">
+                            <h6 className="text-dark mb-2"><i className="bi bi-file-earmark me-2"></i>Supported File Types</h6>
+                            <div className="row small">
+                              <div className="col-md-3">• <strong>Images:</strong> JPG, PNG, GIF, WebP</div>
+                              <div className="col-md-3">• <strong>Videos:</strong> MP4, MOV, AVI, WebM</div>
+                              <div className="col-md-3">• <strong>Audio:</strong> MP3, WAV, OGG</div>
+                              <div className="col-md-3">• <strong>Documents:</strong> PDF, DOC, DOCX, TXT</div>
+                            </div>
+                          </div>
+                          
+                          <Link to="/admin/media" className="btn btn-success btn-lg">
+                            <i className="bi bi-arrow-right me-2"></i>
+                            Go to Media Library
+                          </Link>
+                        </div>
+                        <div className="text-center py-4">
+                          <i className="bi bi-images display-1 text-success"></i>
+                          <h4 className="mt-3 text-success">Media Library System Ready</h4>
+                          <p className="text-muted">Professional digital asset management for photos, videos, and documents with organization and permissions.</p>
                         </div>
                       </div>
                     </div>
@@ -4049,21 +4398,95 @@ export default function AdminDashboard() {
                         <h5 className="mb-0">Financial Management</h5>
                       </div>
                       <div className="card-body">
-                        <div className="alert alert-info">
-                          <i className="bi bi-info-circle me-2"></i>
-                          Financial management features will be implemented here. This will include:
-                          <ul className="mt-2 mb-0">
-                            <li>Payment processing and tracking</li>
-                            <li>Financial reporting and statements</li>
-                            <li>Budget planning and management</li>
-                            <li>Invoice generation and management</li>
-                            <li>Financial analytics and insights</li>
+                        <div className="alert alert-success">
+                          <i className="bi bi-check-circle me-2"></i>
+                          <strong>💰 Comprehensive Financial Management System Available!</strong> Complete accounting and financial control:
+                          
+                          <div className="row mt-3 mb-3">
+                            <div className="col-md-6">
+                              <h6 className="text-success"><i className="bi bi-credit-card me-2"></i>Payment Tracking</h6>
+                              <ul className="small">
+                                <li><strong>Income Recording:</strong> Registration fees, memberships, sponsorships, fundraising, merchandise, tournaments, donations</li>
+                                <li><strong>Expense Tracking:</strong> Equipment, uniforms, facilities, coaching, travel, insurance, utilities, marketing</li>
+                                <li><strong>Payment Methods:</strong> Credit/debit cards, cash, checks, bank transfers, PayPal, Stripe</li>
+                                <li><strong>Transaction Status:</strong> Completed, pending, failed, refunded, cancelled</li>
+                                <li><strong>Reference Numbers:</strong> Track check #, invoice #, confirmation codes</li>
+                                <li><strong>Transaction History:</strong> Complete audit trail with dates and amounts</li>
                           </ul>
                         </div>
-                        <div className="text-center py-5">
-                          <i className="bi bi-currency-dollar display-1 text-muted"></i>
-                          <h4 className="mt-3 text-muted">Financial Management</h4>
-                          <p className="text-muted">Coming soon...</p>
+                            <div className="col-md-6">
+                              <h6 className="text-success"><i className="bi bi-file-earmark-text me-2"></i>Invoicing System</h6>
+                              <ul className="small">
+                                <li><strong>Professional Invoices:</strong> Auto-generated invoice numbers</li>
+                                <li><strong>Itemized Billing:</strong> Multiple line items per invoice</li>
+                                <li><strong>Automatic Calculations:</strong> Subtotal, tax, and total</li>
+                                <li><strong>Invoice Status:</strong> Draft, sent, paid, overdue, cancelled</li>
+                                <li><strong>Payment Terms:</strong> Net 15, Net 30, Net 60, Due on receipt</li>
+                                <li><strong>Due Date Tracking:</strong> Never miss payment deadlines</li>
+                                <li><strong>Customer Management:</strong> Track customer details and emails</li>
+                              </ul>
+                        </div>
+                      </div>
+                          
+                          <div className="bg-white p-3 rounded mb-3">
+                            <h6 className="text-dark mb-2"><i className="bi bi-arrow-counterclockwise me-2"></i>Refund Processing</h6>
+                            <div className="row small">
+                              <div className="col-md-4">• Process refund requests with reason tracking</div>
+                              <div className="col-md-4">• Multiple refund methods (original payment, check, cash, transfer)</div>
+                              <div className="col-md-4">• Complete refund history and audit trail</div>
+                              <div className="col-md-4">• Refund amount tracking and analytics</div>
+                              <div className="col-md-4">• Document reasons for compliance</div>
+                              <div className="col-md-4">• Link refunds to original transactions</div>
+                            </div>
+                          </div>
+                          
+                          <div className="bg-light p-3 rounded mb-3">
+                            <h6 className="text-dark mb-2"><i className="bi bi-graph-up me-2"></i>Financial Reports & Analytics</h6>
+                            <div className="row small">
+                              <div className="col-md-3">• <strong>Income Statement:</strong> Revenue vs. expenses</div>
+                              <div className="col-md-3">• <strong>Cash Flow:</strong> Money in/out analysis</div>
+                              <div className="col-md-3">• <strong>Category Breakdown:</strong> Income/expense by category</div>
+                              <div className="col-md-3">• <strong>Trend Analysis:</strong> Financial trends over time</div>
+                              <div className="col-md-3">• <strong>Net Income:</strong> Profitability tracking</div>
+                              <div className="col-md-3">• <strong>Outstanding Invoices:</strong> Money owed to club</div>
+                              <div className="col-md-3">• <strong>Budget vs. Actual:</strong> Performance tracking</div>
+                              <div className="col-md-3">• <strong>Export Reports:</strong> PDF and Excel formats</div>
+                            </div>
+                          </div>
+                          
+                          <div className="bg-white p-3 rounded mb-3">
+                            <h6 className="text-dark mb-2"><i className="bi bi-piggy-bank me-2"></i>Budget Planning</h6>
+                            <div className="row small">
+                              <div className="col-md-4">• Set annual budget goals by category</div>
+                              <div className="col-md-4">• Track actual spending vs. budget</div>
+                              <div className="col-md-4">• Variance analysis and alerts</div>
+                              <div className="col-md-4">• Budget allocation optimization</div>
+                              <div className="col-md-4">• Multi-year budget planning</div>
+                              <div className="col-md-4">• Department-level budgets</div>
+                            </div>
+                          </div>
+                          
+                          <div className="bg-light p-3 rounded mb-3">
+                            <h6 className="text-dark mb-2"><i className="bi bi-funnel me-2"></i>Advanced Filtering</h6>
+                            <div className="row small">
+                              <div className="col-md-4">• Filter by income/expense type</div>
+                              <div className="col-md-4">• Filter by category (20+ categories)</div>
+                              <div className="col-md-4">• Filter by transaction status</div>
+                              <div className="col-md-4">• Date range filtering</div>
+                              <div className="col-md-4">• Payment method filtering</div>
+                              <div className="col-md-4">• Search by description, payer, reference</div>
+                            </div>
+                          </div>
+                          
+                          <Link to="/admin/finance" className="btn btn-success btn-lg">
+                            <i className="bi bi-arrow-right me-2"></i>
+                            Go to Financial Management
+                          </Link>
+                        </div>
+                        <div className="text-center py-4">
+                          <i className="bi bi-cash-stack display-1 text-success"></i>
+                          <h4 className="mt-3 text-success">Financial Management System Ready</h4>
+                          <p className="text-muted">Track all transactions, create invoices, process refunds, generate reports, and plan budgets with complete financial control.</p>
                         </div>
                       </div>
                     </div>
@@ -4278,21 +4701,119 @@ export default function AdminDashboard() {
                         <h5 className="mb-0">Application Management</h5>
                       </div>
                       <div className="card-body">
-                        <div className="alert alert-info">
-                          <i className="bi bi-info-circle me-2"></i>
-                          Application management features will be implemented here. This will include:
-                          <ul className="mt-2 mb-0">
-                            <li>Review and process applications</li>
-                            <li>Application status tracking</li>
-                            <li>Approval and rejection workflows</li>
-                            <li>Application analytics and reporting</li>
-                            <li>Automated notifications</li>
+                        <div className="alert alert-success">
+                          <i className="bi bi-check-circle me-2"></i>
+                          <strong>🚀 Enhanced Application Management System Now Available!</strong> Access the enterprise-grade application processing system with powerful features:
+                          
+                          <div className="row mt-3 mb-3">
+                            <div className="col-md-6">
+                              <h6 className="text-success"><i className="bi bi-check-circle-fill me-2"></i>Core Features</h6>
+                              <ul className="small">
+                                <li>12 application types (Player, Coach, Volunteer, Transfer, Scholarship, etc.)</li>
+                                <li>7-stage status workflow with automated notifications</li>
+                                <li>4-level priority system (Low, Medium, High, Urgent)</li>
+                                <li>Real-time status tracking and updates</li>
+                                <li>Advanced multi-criteria filtering</li>
                           </ul>
                         </div>
-                        <div className="text-center py-5">
-                          <i className="bi bi-file-earmark-text display-1 text-muted"></i>
-                          <h4 className="mt-3 text-muted">Application Management</h4>
-                          <p className="text-muted">Coming soon...</p>
+                            <div className="col-md-6">
+                              <h6 className="text-success"><i className="bi bi-lightning-fill me-2"></i>Advanced Features</h6>
+                              <ul className="small">
+                                <li><strong>Bulk Actions:</strong> Select & process multiple applications</li>
+                                <li><strong>Assignment System:</strong> Distribute workload to team members</li>
+                                <li><strong>Smart Sorting:</strong> Sort by date, priority, name, or type</li>
+                                <li><strong>Timeline View:</strong> Complete audit trail for each application</li>
+                                <li><strong>Analytics Dashboard:</strong> Comprehensive reporting & insights</li>
+                              </ul>
+                        </div>
+                      </div>
+                          
+                          <div className="bg-white p-3 rounded mb-3">
+                            <h6 className="text-dark mb-2"><i className="bi bi-graph-up me-2"></i>Analytics & Insights</h6>
+                            <div className="row small">
+                              <div className="col-md-4">• Approval rate tracking</div>
+                              <div className="col-md-4">• Processing time metrics</div>
+                              <div className="col-md-4">• Type-based performance</div>
+                              <div className="col-md-4">• Status breakdown charts</div>
+                              <div className="col-md-4">• Priority distribution</div>
+                              <div className="col-md-4">• Team workload analysis</div>
+                    </div>
+                  </div>
+                          
+                          <Link to="/admin/applications" className="btn btn-success btn-lg">
+                            <i className="bi bi-arrow-right me-2"></i>
+                            Launch Application Management System
+                          </Link>
+                        </div>
+                        <div className="text-center py-4">
+                          <i className="bi bi-file-earmark-check display-1 text-success"></i>
+                          <h4 className="mt-3 text-success">Application Management Ready</h4>
+                          <p className="text-muted">Click the button above to access the comprehensive application management system.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeSection === 'forms' && (
+              <div>
+                <div className="row">
+                  <div className="col-12">
+                    <div className="card">
+                      <div className="card-header">
+                        <h5 className="mb-0">Form Management</h5>
+                      </div>
+                      <div className="card-body">
+                        <div className="alert alert-success">
+                          <i className="bi bi-check-circle me-2"></i>
+                          <strong>📝 Comprehensive Form Builder Now Available!</strong> Create, manage, and distribute professional forms with ease:
+                          
+                          <div className="row mt-3 mb-3">
+                            <div className="col-md-6">
+                              <h6 className="text-success"><i className="bi bi-hammer me-2"></i>Form Builder Features</h6>
+                              <ul className="small">
+                                <li>Drag-and-drop form designer</li>
+                                <li>15+ field types (text, email, phone, dropdown, signature, etc.)</li>
+                                <li>Conditional logic support</li>
+                                <li>Custom validation rules</li>
+                                <li>Field ordering and organization</li>
+                              </ul>
+                            </div>
+                            <div className="col-md-6">
+                              <h6 className="text-success"><i className="bi bi-gear me-2"></i>Form Management</h6>
+                              <ul className="small">
+                                <li>9 form categories (Registration, Medical, Consent, Evaluation, etc.)</li>
+                                <li>Form status control (Draft, Active, Archived)</li>
+                                <li>Duplicate and template system</li>
+                                <li>Import/Export forms as JSON</li>
+                                <li>Public form links</li>
+                              </ul>
+                            </div>
+                          </div>
+                          
+                          <div className="bg-white p-3 rounded mb-3">
+                            <h6 className="text-dark mb-2"><i className="bi bi-inbox me-2"></i>Submission Management</h6>
+                            <div className="row small">
+                              <div className="col-md-4">• Real-time submission tracking</div>
+                              <div className="col-md-4">• Email notifications</div>
+                              <div className="col-md-4">• Export to CSV/Excel</div>
+                              <div className="col-md-4">• Automated responses</div>
+                              <div className="col-md-4">• Access control options</div>
+                              <div className="col-md-4">• Mobile responsive forms</div>
+                            </div>
+                          </div>
+                          
+                          <Link to="/admin/forms" className="btn btn-success btn-lg">
+                            <i className="bi bi-arrow-right me-2"></i>
+                            Launch Form Builder
+                          </Link>
+                        </div>
+                        <div className="text-center py-4">
+                          <i className="bi bi-ui-checks display-1 text-success"></i>
+                          <h4 className="mt-3 text-success">Form Management System Ready</h4>
+                          <p className="text-muted">Create registration forms, waivers, surveys, and more with our powerful form builder.</p>
                         </div>
                       </div>
                     </div>
@@ -4403,24 +4924,260 @@ export default function AdminDashboard() {
                   <div className="col-12">
                     <div className="card">
                       <div className="card-header">
-                        <h5 className="mb-0">Scheduling & Calendar</h5>
+                        <h5 className="mb-0">Scheduling & Calendar Management</h5>
                       </div>
                       <div className="card-body">
-                        <div className="alert alert-info">
-                          <i className="bi bi-info-circle me-2"></i>
-                          Scheduling features will be implemented here. This will include:
-                          <ul className="mt-2 mb-0">
-                            <li>Practice and game scheduling</li>
-                            <li>Calendar management and views</li>
-                            <li>Resource booking (fields, equipment)</li>
-                            <li>Conflict detection and resolution</li>
-                            <li>Automated scheduling notifications</li>
+                        <div className="alert alert-success">
+                          <i className="bi bi-check-circle me-2"></i>
+                          <strong>📅 Master Calendar & Scheduling System Available!</strong> Coordinate ALL club activities (public + internal):
+                          
+                          <div className="row mt-3 mb-3">
+                            <div className="col-md-6">
+                              <h6 className="text-success"><i className="bi bi-globe me-2"></i>PUBLIC SCHEDULING</h6>
+                              <ul className="small">
+                                <li><strong>Team Practices</strong> - Visible on public calendar</li>
+                                <li><strong>Match Schedules</strong> - Game times for parents</li>
+                                <li><strong>Training Sessions</strong> - Public training times</li>
+                                <li><strong>Events</strong> - Tournaments, camps, tryouts</li>
+                                <li><strong>Public Calendar</strong> - Website integration</li>
                           </ul>
+                              <div className="mt-2 p-2 bg-blue-50 rounded">
+                                <small className="text-blue-800">
+                                  <strong>Purpose:</strong> Keep families informed of all activities
+                                </small>
                         </div>
-                        <div className="text-center py-5">
-                          <i className="bi bi-calendar-week display-1 text-muted"></i>
-                          <h4 className="mt-3 text-muted">Scheduling & Calendar</h4>
-                          <p className="text-muted">Coming soon...</p>
+                        </div>
+                            <div className="col-md-6">
+                              <h6 className="text-success"><i className="bi bi-building me-2"></i>INTERNAL SCHEDULING</h6>
+                              <ul className="small">
+                                <li><strong>Staff Meetings</strong> - Board, committee meetings</li>
+                                <li><strong>Planning Sessions</strong> - Strategic planning</li>
+                                <li><strong>Facility Maintenance</strong> - Downtime coordination</li>
+                                <li><strong>Coach Meetings</strong> - Internal coordination</li>
+                                <li><strong>Private Calendar</strong> - Staff-only view</li>
+                              </ul>
+                              <div className="mt-2 p-2 bg-gray-100 rounded">
+                                <small className="text-gray-800">
+                                  <strong>Purpose:</strong> Internal operations and coordination
+                                </small>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="bg-white p-3 rounded mb-3">
+                            <h6 className="text-dark mb-2"><i className="bi bi-gear me-2"></i>Core Features</h6>
+                            <div className="row small">
+                              <div className="col-md-4">• 9 schedule types (Practice, Match, Meeting, etc.)</div>
+                              <div className="col-md-4">• 3 visibility levels (Public, Members, Internal)</div>
+                              <div className="col-md-4">• Resource booking system</div>
+                              <div className="col-md-4">• Automatic conflict detection</div>
+                              <div className="col-md-4">• Recurring schedule patterns</div>
+                              <div className="col-md-4">• Multi-view calendar (Day/Week/Month)</div>
+                            </div>
+                          </div>
+                          
+                          <div className="bg-light p-3 rounded mb-3">
+                            <h6 className="text-dark mb-2"><i className="bi bi-building-fill-gear me-2"></i>Resource Management</h6>
+                            <div className="row small">
+                              <div className="col-md-4">• Field and facility booking</div>
+                              <div className="col-md-4">• Equipment reservation</div>
+                              <div className="col-md-4">• Availability tracking</div>
+                              <div className="col-md-4">• Double-booking prevention</div>
+                              <div className="col-md-4">• Resource utilization analytics</div>
+                              <div className="col-md-4">• Booking conflicts resolution</div>
+                            </div>
+                          </div>
+                          
+                          <Link to="/admin/scheduling" className="btn btn-success btn-lg">
+                            <i className="bi bi-arrow-right me-2"></i>
+                            Go to Scheduling & Calendar
+                          </Link>
+                        </div>
+                        <div className="text-center py-4">
+                          <i className="bi bi-calendar-week-fill display-1 text-success"></i>
+                          <h4 className="mt-3 text-success">Scheduling System Ready</h4>
+                          <p className="text-muted">Master calendar coordinating public schedules and internal operations with conflict prevention.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeSection === 'standings' && (
+              <div>
+                <div className="row">
+                  <div className="col-12">
+                    <div className="card">
+                      <div className="card-header">
+                        <h5 className="mb-0">Standings Management</h5>
+                      </div>
+                      <div className="card-body">
+                        <div className="alert alert-success">
+                          <i className="bi bi-check-circle me-2"></i>
+                          <strong>🏆 Comprehensive Standings System Available!</strong> Manage league tables and rankings (PUBLIC + INTERNAL):
+                          
+                          <div className="row mt-3 mb-3">
+                            <div className="col-md-6">
+                              <h6 className="text-success"><i className="bi bi-globe me-2"></i>PUBLIC STANDINGS</h6>
+                              <ul className="small">
+                                <li><strong>League Tables</strong> - Visible on website for fans</li>
+                                <li><strong>Team Rankings</strong> - Current positions</li>
+                                <li><strong>Win/Loss/Draw Records</strong> - Match results</li>
+                                <li><strong>Goals Statistics</strong> - Scoring data</li>
+                                <li><strong>Current Form</strong> - Last 5 results (W/L/D)</li>
+                                <li><strong>Position Changes</strong> - Up/down arrows</li>
+                                <li><strong>Season History</strong> - Past standings</li>
+                              </ul>
+                              <div className="mt-2 p-2 bg-blue-50 rounded">
+                                <small className="text-blue-800">
+                                  <strong>Purpose:</strong> Show fans and parents how teams are performing in competitions
+                                </small>
+                              </div>
+                            </div>
+                            <div className="col-md-6">
+                              <h6 className="text-success"><i className="bi bi-building me-2"></i>INTERNAL STANDINGS</h6>
+                              <ul className="small">
+                                <li><strong>Practice Performance</strong> - Internal rankings</li>
+                                <li><strong>Development Tracking</strong> - Player progress</li>
+                                <li><strong>Evaluation Tables</strong> - Staff assessments</li>
+                                <li><strong>Selection Rankings</strong> - Team selection data</li>
+                                <li><strong>Trial Period Results</strong> - Tryout standings</li>
+                                <li><strong>Private Metrics</strong> - Internal analysis</li>
+                                <li><strong>Staff-Only Data</strong> - Confidential evaluations</li>
+                              </ul>
+                              <div className="mt-2 p-2 bg-gray-100 rounded">
+                                <small className="text-gray-800">
+                                  <strong>Purpose:</strong> Internal evaluation and team management decisions
+                                </small>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="bg-white p-3 rounded mb-3">
+                            <h6 className="text-dark mb-2"><i className="bi bi-calculator me-2"></i>Automatic Calculations</h6>
+                            <div className="row small">
+                              <div className="col-md-4">• Automatic points calculation</div>
+                              <div className="col-md-4">• Goal difference computation</div>
+                              <div className="col-md-4">• Win rate percentages</div>
+                              <div className="col-md-4">• Automatic table sorting</div>
+                              <div className="col-md-4">• Tiebreaker rules (4 methods)</div>
+                              <div className="col-md-4">• Position change tracking</div>
+                              <div className="col-md-4">• Form indicators (last 5 games)</div>
+                              <div className="col-md-4">• Promotion/relegation zones</div>
+                              <div className="col-md-4">• Real-time updates</div>
+                            </div>
+                          </div>
+                          
+                          <div className="bg-light p-3 rounded mb-3">
+                            <h6 className="text-dark mb-2"><i className="bi bi-trophy-fill me-2"></i>League Features</h6>
+                            <div className="row small">
+                              <div className="col-md-4">• Multiple divisions (U6 to Adult)</div>
+                              <div className="col-md-4">• 5 league types (League, Cup, Tournament, etc.)</div>
+                              <div className="col-md-4">• Customizable points system</div>
+                              <div className="col-md-4">• Season management</div>
+                              <div className="col-md-4">• Export to CSV/PDF</div>
+                              <div className="col-md-4">• Mobile responsive tables</div>
+                            </div>
+                          </div>
+                          
+                          <Link to="/admin/standings" className="btn btn-success btn-lg">
+                            <i className="bi bi-arrow-right me-2"></i>
+                            Go to Standings Management
+                          </Link>
+                        </div>
+                        <div className="text-center py-4">
+                          <i className="bi bi-trophy-fill display-1 text-success"></i>
+                          <h4 className="mt-3 text-success">Standings System Ready</h4>
+                          <p className="text-muted">Create public league tables and internal evaluation rankings with automatic calculations.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeSection === 'statistics' && (
+              <div>
+                <div className="row">
+                  <div className="col-12">
+                    <div className="card">
+                      <div className="card-header">
+                        <h5 className="mb-0">Statistics & Analytics</h5>
+                      </div>
+                      <div className="card-body">
+                        <div className="alert alert-success">
+                          <i className="bi bi-check-circle me-2"></i>
+                          <strong>📊 Comprehensive Statistics & Analytics System Available!</strong> Data-driven insights for better decision making:
+                          
+                          <div className="row mt-3 mb-3">
+                            <div className="col-md-6">
+                              <h6 className="text-success"><i className="bi bi-trophy me-2"></i>Match Statistics</h6>
+                              <ul className="small">
+                                <li>Win/Loss/Draw records and percentages</li>
+                                <li>Goals scored and conceded tracking</li>
+                                <li>Clean sheets and shutouts</li>
+                                <li>Home vs away performance analysis</li>
+                                <li>Win streaks and form tracking</li>
+                                <li>Biggest wins and losses</li>
+                                <li>Head-to-head records</li>
+                              </ul>
+                            </div>
+                            <div className="col-md-6">
+                              <h6 className="text-success"><i className="bi bi-people me-2"></i>Player Analytics</h6>
+                              <ul className="small">
+                                <li>Top scorers and assist leaders</li>
+                                <li>Goals per match averages</li>
+                                <li>Shot accuracy and efficiency</li>
+                                <li>Appearances and minutes played</li>
+                                <li>Disciplinary records (cards)</li>
+                                <li>Player comparisons</li>
+                                <li>Performance rankings</li>
+                              </ul>
+                            </div>
+                          </div>
+                          
+                          <div className="bg-white p-3 rounded mb-3">
+                            <h6 className="text-dark mb-2"><i className="bi bi-graph-up me-2"></i>Advanced Analytics</h6>
+                            <div className="row small">
+                              <div className="col-md-4">• Goal difference analysis</div>
+                              <div className="col-md-4">• Win rate calculations</div>
+                              <div className="col-md-4">• Scoring patterns</div>
+                              <div className="col-md-4">• Defensive metrics</div>
+                              <div className="col-md-4">• Performance trends</div>
+                              <div className="col-md-4">• Season comparisons</div>
+                              <div className="col-md-4">• Team benchmarking</div>
+                              <div className="col-md-4">• Player development tracking</div>
+                              <div className="col-md-4">• Tactical insights</div>
+                            </div>
+                          </div>
+                          
+                          <div className="bg-light p-3 rounded mb-3">
+                            <h6 className="text-dark mb-2"><i className="bi bi-file-earmark-bar-graph me-2"></i>Reports & Insights</h6>
+                            <div className="row small">
+                              <div className="col-md-4">• Automated season reports</div>
+                              <div className="col-md-4">• Player performance reports</div>
+                              <div className="col-md-4">• Team comparison reports</div>
+                              <div className="col-md-4">• Export to PDF/Excel</div>
+                              <div className="col-md-4">• Custom report builder</div>
+                              <div className="col-md-4">• Visual charts and graphs</div>
+                              <div className="col-md-4">• Print-friendly formats</div>
+                              <div className="col-md-4">• Email report distribution</div>
+                              <div className="col-md-4">• Historical data archives</div>
+                            </div>
+                          </div>
+                          
+                          <Link to="/admin/statistics" className="btn btn-success btn-lg">
+                            <i className="bi bi-arrow-right me-2"></i>
+                            Go to Statistics & Analytics
+                          </Link>
+                        </div>
+                        <div className="text-center py-4">
+                          <i className="bi bi-graph-up-arrow display-1 text-success"></i>
+                          <h4 className="mt-3 text-success">Statistics System Ready</h4>
+                          <p className="text-muted">Comprehensive analytics dashboard with match stats, player performance, and season insights.</p>
                         </div>
                       </div>
                     </div>
@@ -4470,21 +5227,25 @@ export default function AdminDashboard() {
                         <h5 className="mb-0">Coach Management</h5>
                       </div>
                       <div className="card-body">
-                        <div className="alert alert-info">
-                          <i className="bi bi-info-circle me-2"></i>
-                          Coach management features will be implemented here. This will include:
-                          <ul className="mt-2 mb-0">
+                        <div className="alert alert-success">
+                          <i className="bi bi-check-circle me-2"></i>
+                          <strong>Coach Management is now available!</strong> Access the full coaches management system with features including:
+                          <ul className="mt-2 mb-3">
                             <li>Coach profiles and certifications</li>
-                            <li>Training session planning</li>
+                            <li>Specialization and experience tracking</li>
                             <li>Team assignment and management</li>
                             <li>Performance evaluation tools</li>
                             <li>Communication with players and parents</li>
                           </ul>
+                          <Link to="/admin/coaches" className="btn btn-success">
+                            <i className="bi bi-arrow-right me-2"></i>
+                            Go to Coaches Management
+                          </Link>
                         </div>
-                        <div className="text-center py-5">
-                          <i className="bi bi-person-workspace display-1 text-muted"></i>
-                          <h4 className="mt-3 text-muted">Coach Management</h4>
-                          <p className="text-muted">Coming soon...</p>
+                        <div className="text-center py-4">
+                          <i className="bi bi-person-workspace display-1 text-success"></i>
+                          <h4 className="mt-3 text-success">Coach Management Ready</h4>
+                          <p className="text-muted">Click the button above to access the full coaches management system.</p>
                         </div>
                       </div>
                     </div>
@@ -4502,21 +5263,25 @@ export default function AdminDashboard() {
                         <h5 className="mb-0">Parent Management</h5>
                       </div>
                       <div className="card-body">
-                        <div className="alert alert-info">
-                          <i className="bi bi-info-circle me-2"></i>
-                          Parent management features will be implemented here. This will include:
-                          <ul className="mt-2 mb-0">
+                        <div className="alert alert-success">
+                          <i className="bi bi-check-circle me-2"></i>
+                          <strong>Parent Management is now available!</strong> Access the full parents management system with features including:
+                          <ul className="mt-2 mb-3">
                             <li>Parent profiles and contact information</li>
-                            <li>Child association and guardianship</li>
+                            <li>Children and family management</li>
+                            <li>Volunteer interests tracking</li>
                             <li>Communication preferences and history</li>
-                            <li>Volunteer opportunity management</li>
-                            <li>Payment and billing management</li>
+                            <li>Emergency contact management</li>
                           </ul>
+                          <Link to="/admin/parents" className="btn btn-success">
+                            <i className="bi bi-arrow-right me-2"></i>
+                            Go to Parents Management
+                          </Link>
                         </div>
-                        <div className="text-center py-5">
-                          <i className="bi bi-people display-1 text-muted"></i>
-                          <h4 className="mt-3 text-muted">Parent Management</h4>
-                          <p className="text-muted">Coming soon...</p>
+                        <div className="text-center py-4">
+                          <i className="bi bi-people display-1 text-success"></i>
+                          <h4 className="mt-3 text-success">Parents Management Ready</h4>
+                          <p className="text-muted">Click the button above to access the full parents management system.</p>
                         </div>
                       </div>
                     </div>
@@ -4534,21 +5299,66 @@ export default function AdminDashboard() {
                         <h5 className="mb-0">Match Management</h5>
                       </div>
                       <div className="card-body">
-                        <div className="alert alert-info">
-                          <i className="bi bi-info-circle me-2"></i>
-                          Match management features will be implemented here. This will include:
-                          <ul className="mt-2 mb-0">
-                            <li>Match scheduling and organization</li>
-                            <li>Score tracking and statistics</li>
-                            <li>Referee assignment and management</li>
-                            <li>Match reports and documentation</li>
-                            <li>Tournament and league management</li>
+                        <div className="alert alert-success">
+                          <i className="bi bi-check-circle me-2"></i>
+                          <strong>⚽ Comprehensive Match Management System Available!</strong> Complete match scheduling and tracking system:
+                          
+                          <div className="row mt-3 mb-3">
+                            <div className="col-md-6">
+                              <h6 className="text-success"><i className="bi bi-calendar-event me-2"></i>Match Scheduling</h6>
+                              <ul className="small">
+                                <li>6 match types (League, Cup, Friendly, Tournament, Playoff, Exhibition)</li>
+                                <li>7 status stages (Scheduled, Confirmed, In Progress, Halftime, Completed, etc.)</li>
+                                <li>Date, time, and venue management</li>
+                                <li>Referee and officials assignment</li>
+                                <li>Weather and attendance tracking</li>
                           </ul>
                         </div>
-                        <div className="text-center py-5">
-                          <i className="bi bi-trophy display-1 text-muted"></i>
-                          <h4 className="mt-3 text-muted">Match Management</h4>
-                          <p className="text-muted">Coming soon...</p>
+                            <div className="col-md-6">
+                              <h6 className="text-success"><i className="bi bi-graph-up me-2"></i>Score & Statistics</h6>
+                              <ul className="small">
+                                <li>Live score updates</li>
+                                <li>Detailed match statistics (shots, possession, corners, fouls)</li>
+                                <li>Cards tracking (yellow/red cards)</li>
+                                <li>Team lineups and formations</li>
+                                <li>Match events timeline</li>
+                              </ul>
+                        </div>
+                      </div>
+                          
+                          <div className="bg-white p-3 rounded mb-3">
+                            <h6 className="text-dark mb-2"><i className="bi bi-trophy me-2"></i>Analytics & Reporting</h6>
+                            <div className="row small">
+                              <div className="col-md-4">• Win/Loss/Draw records</div>
+                              <div className="col-md-4">• Goals scored/conceded</div>
+                              <div className="col-md-4">• Win rate percentage</div>
+                              <div className="col-md-4">• Goal difference tracking</div>
+                              <div className="col-md-4">• Performance analytics</div>
+                              <div className="col-md-4">• Match reports generation</div>
+                            </div>
+                          </div>
+                          
+                          <div className="bg-light p-3 rounded mb-3">
+                            <h6 className="text-dark mb-2"><i className="bi bi-list-check me-2"></i>Features</h6>
+                            <div className="row small">
+                              <div className="col-md-4">• Advanced filtering (type, status, date range)</div>
+                              <div className="col-md-4">• Live match tracking with real-time updates</div>
+                              <div className="col-md-4">• Upcoming matches dashboard</div>
+                              <div className="col-md-4">• Match history and archives</div>
+                              <div className="col-md-4">• Export match data</div>
+                              <div className="col-md-4">• Mobile responsive interface</div>
+                            </div>
+                          </div>
+                          
+                          <Link to="/admin/matches" className="btn btn-success btn-lg">
+                            <i className="bi bi-arrow-right me-2"></i>
+                            Go to Match Management
+                          </Link>
+                        </div>
+                        <div className="text-center py-4">
+                          <i className="bi bi-trophy-fill display-1 text-success"></i>
+                          <h4 className="mt-3 text-success">Match Management System Ready</h4>
+                          <p className="text-muted">Schedule matches, track scores, manage officials, and analyze performance all in one place.</p>
                         </div>
                       </div>
                     </div>
@@ -4563,24 +5373,71 @@ export default function AdminDashboard() {
                   <div className="col-12">
                     <div className="card">
                       <div className="card-header">
-                        <h5 className="mb-0">Training Programs</h5>
+                        <h5 className="mb-0">Training Management</h5>
                       </div>
                       <div className="card-body">
-                        <div className="alert alert-info">
-                          <i className="bi bi-info-circle me-2"></i>
-                          Training program features will be implemented here. This will include:
-                          <ul className="mt-2 mb-0">
-                            <li>Training session planning and templates</li>
-                            <li>Skill development tracking</li>
-                            <li>Progress assessment and reporting</li>
-                            <li>Training video and resource library</li>
-                            <li>Individual and group training plans</li>
+                        <div className="alert alert-success">
+                          <i className="bi bi-check-circle me-2"></i>
+                          <strong>🎯 Comprehensive Training Management System Available!</strong> Complete training planning and development system:
+                          
+                          <div className="row mt-3 mb-3">
+                            <div className="col-md-6">
+                              <h6 className="text-success"><i className="bi bi-calendar-check me-2"></i>Session Planning</h6>
+                              <ul className="small">
+                                <li>9 training types (Technical, Tactical, Physical, Mental, etc.)</li>
+                                <li>Session scheduling with date, time, and location</li>
+                                <li>Objectives and focus area setting</li>
+                                <li>4 intensity levels (Low, Medium, High, Very High)</li>
+                                <li>Coach and assistant assignments</li>
+                                <li>Equipment requirements tracking</li>
                           </ul>
                         </div>
-                        <div className="text-center py-5">
-                          <i className="bi bi-clipboard-data display-1 text-muted"></i>
-                          <h4 className="mt-3 text-muted">Training Programs</h4>
-                          <p className="text-muted">Coming soon...</p>
+                            <div className="col-md-6">
+                              <h6 className="text-success"><i className="bi bi-trophy me-2"></i>Development Tracking</h6>
+                              <ul className="small">
+                                <li>Attendance tracking per session</li>
+                                <li>Progress monitoring and assessments</li>
+                                <li>Skill focus areas (14 categories)</li>
+                                <li>Session notes and feedback</li>
+                                <li>Training history and archives</li>
+                                <li>Player development analytics</li>
+                              </ul>
+                        </div>
+                      </div>
+                          
+                          <div className="bg-white p-3 rounded mb-3">
+                            <h6 className="text-dark mb-2"><i className="bi bi-book me-2"></i>Drill Library & Resources</h6>
+                            <div className="row small">
+                              <div className="col-md-4">• 9 drill categories</div>
+                              <div className="col-md-4">• Pre-built drill templates</div>
+                              <div className="col-md-4">• Custom drill creation</div>
+                              <div className="col-md-4">• Drill diagrams and videos</div>
+                              <div className="col-md-4">• Equipment lists</div>
+                              <div className="col-md-4">• Age-appropriate exercises</div>
+                            </div>
+                          </div>
+                          
+                          <div className="bg-light p-3 rounded mb-3">
+                            <h6 className="text-dark mb-2"><i className="bi bi-graph-up me-2"></i>Analytics & Reporting</h6>
+                            <div className="row small">
+                              <div className="col-md-4">• Training completion rates</div>
+                              <div className="col-md-4">• Average attendance tracking</div>
+                              <div className="col-md-4">• Training frequency metrics</div>
+                              <div className="col-md-4">• Total training hours</div>
+                              <div className="col-md-4">• Type distribution analysis</div>
+                              <div className="col-md-4">• Export session data</div>
+                            </div>
+                          </div>
+                          
+                          <Link to="/admin/training" className="btn btn-success btn-lg">
+                            <i className="bi bi-arrow-right me-2"></i>
+                            Go to Training Management
+                          </Link>
+                        </div>
+                        <div className="text-center py-4">
+                          <i className="bi bi-clipboard-check display-1 text-success"></i>
+                          <h4 className="mt-3 text-success">Training Management System Ready</h4>
+                          <p className="text-muted">Plan training sessions, track player development, manage drill libraries, and analyze training effectiveness.</p>
                         </div>
                       </div>
                     </div>
@@ -4662,21 +5519,26 @@ export default function AdminDashboard() {
                         <h5 className="mb-0">Volunteer Management</h5>
                       </div>
                       <div className="card-body">
-                        <div className="alert alert-info">
-                          <i className="bi bi-info-circle me-2"></i>
-                          Volunteer management features will be implemented here. This will include:
-                          <ul className="mt-2 mb-0">
+                        <div className="alert alert-success">
+                          <i className="bi bi-check-circle me-2"></i>
+                          <strong>Volunteer Management is now available!</strong> Access the comprehensive volunteers management system with features including:
+                          <ul className="mt-2 mb-3">
                             <li>Volunteer registration and profiles</li>
-                            <li>Opportunity posting and matching</li>
-                            <li>Volunteer hour tracking</li>
+                            <li>Skills and category management</li>
+                            <li>Background check and training tracking</li>
+                            <li>Availability and scheduling</li>
                             <li>Recognition and reward systems</li>
-                            <li>Background check and screening</li>
+                            <li>Bulk actions and reporting</li>
                           </ul>
+                          <Link to="/admin/volunteers" className="btn btn-success">
+                            <i className="bi bi-arrow-right me-2"></i>
+                            Go to Volunteers Management
+                          </Link>
                         </div>
-                        <div className="text-center py-5">
-                          <i className="bi bi-heart display-1 text-muted"></i>
-                          <h4 className="mt-3 text-muted">Volunteer Management</h4>
-                          <p className="text-muted">Coming soon...</p>
+                        <div className="text-center py-4">
+                          <i className="bi bi-heart display-1 text-success"></i>
+                          <h4 className="mt-3 text-success">Volunteers Management Ready</h4>
+                          <p className="text-muted">Click the button above to access the comprehensive volunteers management system.</p>
                         </div>
                       </div>
                     </div>
@@ -4694,21 +5556,82 @@ export default function AdminDashboard() {
                         <h5 className="mb-0">Sponsor Management</h5>
                       </div>
                       <div className="card-body">
-                        <div className="alert alert-info">
-                          <i className="bi bi-info-circle me-2"></i>
-                          Sponsor management features will be implemented here. This will include:
-                          <ul className="mt-2 mb-0">
-                            <li>Sponsor profiles and contact management</li>
-                            <li>Sponsorship package management</li>
-                            <li>Contract and agreement tracking</li>
-                            <li>Payment and billing management</li>
-                            <li>Sponsor recognition and benefits</li>
+                        <div className="alert alert-success">
+                          <i className="bi bi-check-circle me-2"></i>
+                          <strong>🤝 Comprehensive Sponsor Management System Available!</strong> Build and maintain valuable partnerships:
+                          
+                          <div className="row mt-3 mb-3">
+                            <div className="col-md-6">
+                              <h6 className="text-success"><i className="bi bi-building me-2"></i>Sponsor Profiles</h6>
+                              <ul className="small">
+                                <li>Complete company information and contacts</li>
+                                <li>Logo and branding assets storage</li>
+                                <li>Contract tracking and management</li>
+                                <li>Payment schedules and history</li>
+                                <li>Communication logs and notes</li>
+                                <li>Website and social media links</li>
+                                <li>Address and location details</li>
                           </ul>
                         </div>
-                        <div className="text-center py-5">
-                          <i className="bi bi-award display-1 text-muted"></i>
-                          <h4 className="mt-3 text-muted">Sponsor Management</h4>
-                          <p className="text-muted">Coming soon...</p>
+                            <div className="col-md-6">
+                              <h6 className="text-success"><i className="bi bi-trophy me-2"></i>Sponsorship Tiers</h6>
+                              <ul className="small">
+                                <li><strong>💎 Platinum:</strong> $10,000+ (Premium benefits)</li>
+                                <li><strong>🥇 Gold:</strong> $5,000+ (Enhanced visibility)</li>
+                                <li><strong>🥈 Silver:</strong> $2,500+ (Standard package)</li>
+                                <li><strong>🥉 Bronze:</strong> $1,000+ (Basic recognition)</li>
+                                <li><strong>🎁 In-Kind:</strong> Product/service donations</li>
+                              </ul>
+                        </div>
+                      </div>
+                          
+                          <div className="bg-white p-3 rounded mb-3">
+                            <h6 className="text-dark mb-2"><i className="bi bi-calendar-check me-2"></i>Contract Management</h6>
+                            <div className="row small">
+                              <div className="col-md-4">• Start and end date tracking</div>
+                              <div className="col-md-4">• Automatic expiration alerts</div>
+                              <div className="col-md-4">• Renewal reminders (30/60/90 days)</div>
+                              <div className="col-md-4">• Contract document storage</div>
+                              <div className="col-md-4">• Status tracking (Active, Pending, Expired)</div>
+                              <div className="col-md-4">• Multi-year agreements</div>
+                            </div>
+                          </div>
+                          
+                          <div className="bg-light p-3 rounded mb-3">
+                            <h6 className="text-dark mb-2"><i className="bi bi-cash-stack me-2"></i>Financial Tracking</h6>
+                            <div className="row small">
+                              <div className="col-md-4">• Payment frequency options (Annual, Quarterly, Monthly)</div>
+                              <div className="col-md-4">• Total revenue calculation</div>
+                              <div className="col-md-4">• Revenue by tier analytics</div>
+                              <div className="col-md-4">• Average sponsor value</div>
+                              <div className="col-md-4">• Payment schedule tracking</div>
+                              <div className="col-md-4">• Financial reporting</div>
+                            </div>
+                          </div>
+                          
+                          <div className="bg-white p-3 rounded mb-3">
+                            <h6 className="text-dark mb-2"><i className="bi bi-gift me-2"></i>Sponsor Benefits</h6>
+                            <div className="row small">
+                              <div className="col-md-3">• Logo on jerseys/equipment</div>
+                              <div className="col-md-3">• Website placement and links</div>
+                              <div className="col-md-3">• Social media recognition</div>
+                              <div className="col-md-3">• Banner at games/events</div>
+                              <div className="col-md-3">• Season passes allocation</div>
+                              <div className="col-md-3">• Newsletter features</div>
+                              <div className="col-md-3">• Press release inclusion</div>
+                              <div className="col-md-3">• Event recognition</div>
+                            </div>
+                          </div>
+                          
+                          <Link to="/admin/sponsors" className="btn btn-success btn-lg">
+                            <i className="bi bi-arrow-right me-2"></i>
+                            Go to Sponsor Management
+                          </Link>
+                        </div>
+                        <div className="text-center py-4">
+                          <i className="bi bi-award display-1 text-success"></i>
+                          <h4 className="mt-3 text-success">Sponsor Management System Ready</h4>
+                          <p className="text-muted">Manage partnerships, track revenue, automate renewals, and deliver sponsor benefits effectively.</p>
                         </div>
                       </div>
                     </div>
@@ -4726,21 +5649,187 @@ export default function AdminDashboard() {
                         <h5 className="mb-0">Membership Management</h5>
                       </div>
                       <div className="card-body">
-                        <div className="alert alert-info">
-                          <i className="bi bi-info-circle me-2"></i>
-                          Membership management features will be implemented here. This will include:
-                          <ul className="mt-2 mb-0">
-                            <li>Membership types and tiers</li>
-                            <li>Registration and renewal processes</li>
-                            <li>Membership benefits and privileges</li>
-                            <li>Payment and billing management</li>
-                            <li>Membership analytics and reporting</li>
+                        <div className="alert alert-success">
+                          <i className="bi bi-check-circle me-2"></i>
+                          <strong>👥 Comprehensive Membership Management System Available!</strong> Complete membership lifecycle management:
+                          
+                          <div className="row mt-3 mb-3">
+                            <div className="col-md-6">
+                              <h6 className="text-success"><i className="bi bi-person-badge me-2"></i>Member Management</h6>
+                              <ul className="small">
+                                <li><strong>Complete Profiles:</strong> Personal info, contact details, emergency contacts</li>
+                                <li><strong>Unique Member Numbers:</strong> Auto-generated MEM-xxxxx format</li>
+                                <li><strong>Member History:</strong> Track membership timeline and changes</li>
+                                <li><strong>Family Memberships:</strong> Link family members together</li>
+                                <li><strong>Status Tracking:</strong> Active, pending, expired, suspended, cancelled</li>
+                                <li><strong>Advanced Search:</strong> Find by name, email, member number</li>
+                                <li><strong>Bulk Operations:</strong> Renew multiple members at once</li>
+                                <li><strong>Export Data:</strong> CSV export for external analysis</li>
                           </ul>
                         </div>
-                        <div className="text-center py-5">
-                          <i className="bi bi-person-check display-1 text-muted"></i>
-                          <h4 className="mt-3 text-muted">Membership Management</h4>
-                          <p className="text-muted">Coming soon...</p>
+                            <div className="col-md-6">
+                              <h6 className="text-success"><i className="bi bi-trophy me-2"></i>Membership Tiers (5 Levels)</h6>
+                              <ul className="small">
+                                <li><strong>🥉 Basic ($50/year):</strong> Events, newsletter, 10% merch discount</li>
+                                <li><strong>🥈 Standard ($100/year):</strong> Priority registration, members events, 15% discount</li>
+                                <li><strong>🥇 Premium ($200/year):</strong> VIP access, reserved seating, 20% discount, coaching session</li>
+                                <li><strong>💎 Elite ($500/year):</strong> Unlimited passes, VIP parking, 30% discount, private coaching</li>
+                                <li><strong>👨‍👩‍👧‍👦 Family ($150/year):</strong> Up to 4 members, standard benefits for all</li>
+                                <li><strong>Custom Tiers:</strong> Create your own membership levels</li>
+                                <li><strong>Flexible Pricing:</strong> Monthly, quarterly, semi-annual, annual, lifetime</li>
+                              </ul>
+                        </div>
+                      </div>
+                          
+                          <div className="bg-white p-3 rounded mb-3">
+                            <h6 className="text-dark mb-2"><i className="bi bi-arrow-repeat me-2"></i>Renewal System</h6>
+                            <div className="row small">
+                              <div className="col-md-4">• <strong>Auto-Renewal:</strong> Automatic membership renewal with saved payment</div>
+                              <div className="col-md-4">• <strong>Renewal Reminders:</strong> Automated emails 30/60/90 days before expiry</div>
+                              <div className="col-md-4">• <strong>Expiration Tracking:</strong> Color-coded alerts for expiring memberships</div>
+                              <div className="col-md-4">• <strong>Bulk Renewals:</strong> Renew multiple members simultaneously</div>
+                              <div className="col-md-4">• <strong>Grace Period:</strong> Configurable grace period after expiration</div>
+                              <div className="col-md-4">• <strong>Manual Renewal:</strong> Process renewals manually when needed</div>
+                            </div>
+                          </div>
+                          
+                          <div className="bg-light p-3 rounded mb-3">
+                            <h6 className="text-dark mb-2"><i className="bi bi-cash-stack me-2"></i>Payment & Billing</h6>
+                            <div className="row small">
+                              <div className="col-md-3">• Multiple payment methods (cards, PayPal, Stripe, check, cash)</div>
+                              <div className="col-md-3">• Billing cycle options (monthly, quarterly, annual, lifetime)</div>
+                              <div className="col-md-3">• Discount code support</div>
+                              <div className="col-md-3">• Payment history tracking</div>
+                              <div className="col-md-3">• Invoice generation</div>
+                              <div className="col-md-3">• Failed payment handling</div>
+                              <div className="col-md-3">• Prorated memberships</div>
+                              <div className="col-md-3">• Payment reminders</div>
+                            </div>
+                          </div>
+                          
+                          <div className="bg-white p-3 rounded mb-3">
+                            <h6 className="text-dark mb-2"><i className="bi bi-graph-up me-2"></i>Analytics & Reporting</h6>
+                            <div className="row small">
+                              <div className="col-md-4">• Total membership revenue tracking</div>
+                              <div className="col-md-4">• Revenue by tier breakdown</div>
+                              <div className="col-md-4">• Average revenue per member</div>
+                              <div className="col-md-4">• Retention rate calculation</div>
+                              <div className="col-md-4">• Growth trends and projections</div>
+                              <div className="col-md-4">• Expiration forecasting</div>
+                              <div className="col-md-4">• Member acquisition analysis</div>
+                              <div className="col-md-4">• Churn rate monitoring</div>
+                              <div className="col-md-4">• Export reports to Excel/PDF</div>
+                            </div>
+                          </div>
+                          
+                          <div className="bg-light p-3 rounded mb-3">
+                            <h6 className="text-dark mb-2"><i className="bi bi-gear me-2"></i>Admin Controls</h6>
+                            <div className="row small">
+                              <div className="col-md-4">• Tier management (create, edit, delete)</div>
+                              <div className="col-md-4">• Benefit customization per tier</div>
+                              <div className="col-md-4">• Pricing adjustments</div>
+                              <div className="col-md-4">• Member status changes (suspend, cancel, reactivate)</div>
+                              <div className="col-md-4">• Manual expiry date adjustments</div>
+                              <div className="col-md-4">• Upgrade/downgrade members between tiers</div>
+                              <div className="col-md-4">• Discount code creation and management</div>
+                              <div className="col-md-4">• Email template customization</div>
+                              <div className="col-md-4">• Automated workflow configuration</div>
+                            </div>
+                          </div>
+                          
+                          <Link to="/admin/membership" className="btn btn-success btn-lg">
+                            <i className="bi bi-arrow-right me-2"></i>
+                            Go to Membership Management
+                          </Link>
+                        </div>
+                        <div className="text-center py-4">
+                          <i className="bi bi-person-check-fill display-1 text-success"></i>
+                          <h4 className="mt-3 text-success">Membership Management System Ready</h4>
+                          <p className="text-muted">Manage members, tiers, renewals, payments with comprehensive analytics and automation.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeSection === 'payments' && (
+              <div>
+                <div className="row">
+                  <div className="col-12">
+                    <div className="card">
+                      <div className="card-header">
+                        <h5 className="mb-0">Payment Management</h5>
+                      </div>
+                      <div className="card-body">
+                        <div className="alert alert-success">
+                          <i className="bi bi-check-circle me-2"></i>
+                          <strong>💳 Comprehensive Payment Management System Available!</strong> Process and track all club payments:
+                          
+                          <div className="row mt-3 mb-3">
+                            <div className="col-md-6">
+                              <h6 className="text-success"><i className="bi bi-credit-card me-2"></i>Payment Processing</h6>
+                              <ul className="small">
+                                <li><strong>10+ Payment Methods:</strong> Cards, PayPal, Zelle, Venmo, Cash App, Bank Transfer, Check, Cash</li>
+                                <li><strong>Card Processing:</strong> Track card type (Visa, MC, Amex) and last 4 digits</li>
+                                <li><strong>Transaction IDs:</strong> Reference numbers for all payments</li>
+                                <li><strong>Payment Types:</strong> Registration, Membership, Tournament, Training, Equipment, Merchandise, Marketplace, Donations</li>
+                                <li><strong>Real-Time Status:</strong> Completed, pending, failed, refunded, cancelled</li>
+                                <li><strong>Payer Information:</strong> Name, email, and contact tracking</li>
+                              </ul>
+                            </div>
+                            <div className="col-md-6">
+                              <h6 className="text-success"><i className="bi bi-graph-up me-2"></i>Tracking & Analytics</h6>
+                              <ul className="small">
+                                <li><strong>Revenue Tracking:</strong> Total revenue, completed payments, pending amounts</li>
+                                <li><strong>Refund Management:</strong> Track refunds (full/partial), refund history, reasons</li>
+                                <li><strong>Payment Analytics:</strong> Today's count, this week/month totals</li>
+                                <li><strong>Method Performance:</strong> Revenue by payment method breakdown</li>
+                                <li><strong>Success Rate:</strong> Payment completion percentage</li>
+                                <li><strong>Refund Rate:</strong> Refund percentage monitoring</li>
+                              </ul>
+                            </div>
+                          </div>
+                          
+                          <div className="bg-white p-3 rounded mb-3">
+                            <h6 className="text-dark mb-2"><i className="bi bi-funnel me-2"></i>Advanced Features</h6>
+                            <div className="row small">
+                              <div className="col-md-4">• Search by donor, email, transaction ID</div>
+                              <div className="col-md-4">• Filter by method, status, payment type</div>
+                              <div className="col-md-4">• Date range filtering</div>
+                              <div className="col-md-4">• Export to CSV for accounting</div>
+                              <div className="col-md-4">• Payment details view</div>
+                              <div className="col-md-4">• Quick refund processing</div>
+                              <div className="col-md-4">• Manual payment recording</div>
+                              <div className="col-md-4">• Transaction history</div>
+                              <div className="col-md-4">• Revenue reports</div>
+                            </div>
+                          </div>
+                          
+                          <div className="bg-light p-3 rounded mb-3">
+                            <h6 className="text-dark mb-2"><i className="bi bi-link-45deg me-2"></i>System Integrations</h6>
+                            <div className="row small">
+                              <div className="col-md-3">• <strong>Registrations:</strong> Player registration payments</div>
+                              <div className="col-md-3">• <strong>Memberships:</strong> Membership dues tracking</div>
+                              <div className="col-md-3">• <strong>Marketplace:</strong> Equipment sales payments</div>
+                              <div className="col-md-3">• <strong>Tournaments:</strong> Tournament entry fees</div>
+                              <div className="col-md-3">• <strong>Training:</strong> Training session payments</div>
+                              <div className="col-md-3">• <strong>Events:</strong> Event registration fees</div>
+                              <div className="col-md-3">• <strong>Merchandise:</strong> Store purchases</div>
+                              <div className="col-md-3">• <strong>Donations:</strong> Charitable contributions</div>
+                            </div>
+                          </div>
+                          
+                          <Link to="/admin/payments" className="btn btn-success btn-lg">
+                            <i className="bi bi-arrow-right me-2"></i>
+                            Go to Payment Management
+                          </Link>
+                        </div>
+                        <div className="text-center py-4">
+                          <i className="bi bi-credit-card-fill display-1 text-success"></i>
+                          <h4 className="mt-3 text-success">Payment Management System Ready</h4>
+                          <p className="text-muted">Process payments, track revenue, manage refunds with complete integration across all club systems.</p>
                         </div>
                       </div>
                     </div>

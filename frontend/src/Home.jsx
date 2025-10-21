@@ -419,6 +419,13 @@ export default function Home() {
 
           </div>
           
+      {/* Updates & Announcements Section */}
+      <div className="py-8 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <AdvertisingSection />
+        </div>
+      </div>
+          
       {/* Main Content Sections */}
       {homepageContent && (
         <main className="bg-gray-50">
@@ -561,10 +568,6 @@ export default function Home() {
           </div>
         </section>
           )}
-
-
-
-          <AdvertisingSection />
         </main>
       )}
     </div>
