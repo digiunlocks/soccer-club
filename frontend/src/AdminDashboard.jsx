@@ -5838,6 +5838,187 @@ export default function AdminDashboard() {
               </div>
             )}
 
+            {activeSection === 'invoicing' && (
+              <div>
+                <div className="row">
+                  <div className="col-12">
+                    <div className="card">
+                      <div className="card-header">
+                        <h5 className="mb-0">Invoicing System</h5>
+                      </div>
+                      <div className="card-body">
+                        <div className="alert alert-info">
+                          <i className="bi bi-check-circle me-2"></i>
+                          <strong>📄 Professional Invoicing System Available!</strong> Create, send, and track invoices:
+                          
+                          <div className="row mt-3 mb-3">
+                            <div className="col-md-6">
+                              <h6 className="text-info"><i className="bi bi-file-text me-2"></i>Invoice Creation</h6>
+                              <ul className="small">
+                                <li><strong>Professional Templates:</strong> Pre-built templates for common services</li>
+                                <li><strong>11+ Invoice Types:</strong> Registration, Membership, Tournament, Training, Equipment, Camp, Sponsorship, Facility, Merchandise, Services</li>
+                                <li><strong>Line Items:</strong> Add multiple items with quantity and rates</li>
+                                <li><strong>Auto Calculations:</strong> Subtotal, tax, discount, and total</li>
+                                <li><strong>Flexible Discounts:</strong> Percentage or fixed amount discounts</li>
+                                <li><strong>Custom Terms:</strong> Payment terms and notes</li>
+                              </ul>
+                            </div>
+                            <div className="col-md-6">
+                              <h6 className="text-info"><i className="bi bi-send me-2"></i>Delivery & Tracking</h6>
+                              <ul className="small">
+                                <li><strong>Email Invoices:</strong> Send directly to clients via email</li>
+                                <li><strong>Status Tracking:</strong> Draft, Sent, Viewed, Partial, Paid, Overdue, Cancelled</li>
+                                <li><strong>Due Date Management:</strong> Track payment deadlines</li>
+                                <li><strong>Overdue Alerts:</strong> Automatic overdue flagging</li>
+                                <li><strong>Partial Payments:</strong> Track partial payment progress</li>
+                                <li><strong>Payment Reminders:</strong> Automated reminder system</li>
+                              </ul>
+                            </div>
+                          </div>
+                          
+                          <div className="bg-white p-3 rounded mb-3">
+                            <h6 className="text-dark mb-2"><i className="bi bi-calculator me-2"></i>Advanced Features</h6>
+                            <div className="row small">
+                              <div className="col-md-4">• Professional invoice templates</div>
+                              <div className="col-md-4">• Auto-generated invoice numbers</div>
+                              <div className="col-md-4">• Customizable line items</div>
+                              <div className="col-md-4">• Tax rate calculations</div>
+                              <div className="col-md-4">• Discount management (% or $)</div>
+                              <div className="col-md-4">• Payment terms customization</div>
+                              <div className="col-md-4">• Client information management</div>
+                              <div className="col-md-4">• Invoice status workflow</div>
+                              <div className="col-md-4">• Overdue tracking</div>
+                              <div className="col-md-4">• PDF export</div>
+                              <div className="col-md-4">• CSV export for accounting</div>
+                              <div className="col-md-4">• Search and filter invoices</div>
+                            </div>
+                          </div>
+                          
+                          <div className="bg-light p-3 rounded mb-3">
+                            <h6 className="text-dark mb-2"><i className="bi bi-grid-3x3 me-2"></i>Invoice Types</h6>
+                            <div className="row small">
+                              <div className="col-md-3">• <strong>Registration:</strong> Player registration fees</div>
+                              <div className="col-md-3">• <strong>Membership:</strong> Annual/monthly dues</div>
+                              <div className="col-md-3">• <strong>Tournament:</strong> Tournament entry fees</div>
+                              <div className="col-md-3">• <strong>Training:</strong> Training session fees</div>
+                              <div className="col-md-3">• <strong>Equipment:</strong> Equipment purchases</div>
+                              <div className="col-md-3">• <strong>Camp:</strong> Camp and clinic fees</div>
+                              <div className="col-md-3">• <strong>Sponsorship:</strong> Sponsor invoices</div>
+                              <div className="col-md-3">• <strong>Facility:</strong> Facility rental</div>
+                              <div className="col-md-3">• <strong>Merchandise:</strong> Store purchases</div>
+                              <div className="col-md-3">• <strong>Services:</strong> Service fees</div>
+                              <div className="col-md-3">• <strong>Other:</strong> Custom invoices</div>
+                            </div>
+                          </div>
+                          
+                          <Link to="/admin/invoicing" className="btn btn-info btn-lg">
+                            <i className="bi bi-arrow-right me-2"></i>
+                            Go to Invoicing System
+                          </Link>
+                        </div>
+                        <div className="text-center py-4">
+                          <i className="bi bi-file-text-fill display-1 text-info"></i>
+                          <h4 className="mt-3 text-info">Professional Invoicing System Ready</h4>
+                          <p className="text-muted">Create, send, and track professional invoices for all club services with automated calculations and payment tracking.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeSection === 'equipment' && (
+              <div>
+                <div className="row">
+                  <div className="col-12">
+                    <div className="card">
+                      <div className="card-header">
+                        <h5 className="mb-0">Equipment Management</h5>
+                      </div>
+                      <div className="card-body">
+                        <div className="alert alert-primary">
+                          <i className="bi bi-check-circle me-2"></i>
+                          <strong>📦 Comprehensive Equipment Management System Available!</strong> Track and manage all club assets:
+                          
+                          <div className="row mt-3 mb-3">
+                            <div className="col-md-6">
+                              <h6 className="text-primary"><i className="bi bi-box me-2"></i>Inventory Management</h6>
+                              <ul className="small">
+                                <li><strong>12+ Categories:</strong> Balls, Goals, Cones, Uniforms, Goalkeeper Gear, Training, Medical, Safety, Field, Technology, Storage</li>
+                                <li><strong>Real-time Tracking:</strong> Quantity, location, condition, status</li>
+                                <li><strong>Value Management:</strong> Unit price, total value, investment tracking</li>
+                                <li><strong>Purchase History:</strong> Date, supplier, cost tracking</li>
+                                <li><strong>Condition Monitoring:</strong> Excellent, Good, Fair, Poor, Damaged, Retired</li>
+                                <li><strong>Location Tracking:</strong> 9 locations (facilities, fields, storage)</li>
+                              </ul>
+                            </div>
+                            <div className="col-md-6">
+                              <h6 className="text-primary"><i className="bi bi-tools me-2"></i>Advanced Features</h6>
+                              <ul className="small">
+                                <li><strong>Status Management:</strong> Available, In Use, Rented, Maintenance, Repair, Lost, Retired</li>
+                                <li><strong>Maintenance Schedules:</strong> Weekly, Monthly, Quarterly, Annual tracking</li>
+                                <li><strong>Rental System:</strong> Rent out equipment with daily rates</li>
+                                <li><strong>Warranty Tracking:</strong> Expiry dates and coverage</li>
+                                <li><strong>Serial Numbers:</strong> Track individual items</li>
+                                <li><strong>Reports & Analytics:</strong> Value by category, utilization rates</li>
+                              </ul>
+                            </div>
+                          </div>
+                          
+                          <div className="bg-white p-3 rounded mb-3">
+                            <h6 className="text-dark mb-2"><i className="bi bi-graph-up me-2"></i>Key Features</h6>
+                            <div className="row small">
+                              <div className="col-md-4">• Real-time inventory tracking</div>
+                              <div className="col-md-4">• Equipment value management</div>
+                              <div className="col-md-4">• Purchase history & suppliers</div>
+                              <div className="col-md-4">• Condition assessments</div>
+                              <div className="col-md-4">• Location management</div>
+                              <div className="col-md-4">• Maintenance scheduling</div>
+                              <div className="col-md-4">• Rental system with rates</div>
+                              <div className="col-md-4">• Low stock alerts</div>
+                              <div className="col-md-4">• Repair tracking</div>
+                              <div className="col-md-4">• CSV export</div>
+                              <div className="col-md-4">• Visual analytics</div>
+                              <div className="col-md-4">• Warranty management</div>
+                            </div>
+                          </div>
+                          
+                          <div className="bg-light p-3 rounded mb-3">
+                            <h6 className="text-dark mb-2"><i className="bi bi-grid-3x3 me-2"></i>Equipment Categories</h6>
+                            <div className="row small">
+                              <div className="col-md-3">• ⚽ <strong>Soccer Balls:</strong> Match & training balls</div>
+                              <div className="col-md-3">• 🥅 <strong>Goals & Nets:</strong> Portable & fixed goals</div>
+                              <div className="col-md-3">• 🔶 <strong>Training Cones:</strong> Cones, markers, flags</div>
+                              <div className="col-md-3">• 👕 <strong>Uniforms:</strong> Jerseys, shorts, socks</div>
+                              <div className="col-md-3">• 🧤 <strong>Goalkeeper:</strong> Gloves, pads, jerseys</div>
+                              <div className="col-md-3">• 🏋️ <strong>Training Equipment:</strong> Agility gear, weights</div>
+                              <div className="col-md-3">• 🏥 <strong>Medical:</strong> First aid, ice packs</div>
+                              <div className="col-md-3">• 🦺 <strong>Safety:</strong> Shin guards, vests</div>
+                              <div className="col-md-3">• 🏟️ <strong>Field Equipment:</strong> Line markers, benches</div>
+                              <div className="col-md-3">• 💻 <strong>Technology:</strong> Tablets, cameras, software</div>
+                              <div className="col-md-3">• 🎒 <strong>Storage:</strong> Bags, carts, shelves</div>
+                              <div className="col-md-3">• 📦 <strong>Other:</strong> Miscellaneous items</div>
+                            </div>
+                          </div>
+                          
+                          <Link to="/admin/equipment" className="btn btn-primary btn-lg">
+                            <i className="bi bi-arrow-right me-2"></i>
+                            Go to Equipment Management
+                          </Link>
+                        </div>
+                        <div className="text-center py-4">
+                          <i className="bi bi-box-seam display-1 text-primary"></i>
+                          <h4 className="mt-3 text-primary">Equipment Management System Ready</h4>
+                          <p className="text-muted">Track inventory, manage purchases, schedule maintenance, and rent equipment with complete asset management.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {activeSection === 'waivers' && (
               <div>
                 <div className="row">
