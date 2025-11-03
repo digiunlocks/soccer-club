@@ -109,50 +109,30 @@ const InvoicingSystem = () => {
     calculateTotals();
   }, [invoiceForm.items, invoiceForm.taxRate, invoiceForm.discount, invoiceForm.discountType]);
 
-  const loadInvoices = () => {
-    // Mock data - replace with actual API call
-    const mockInvoices = [
-      {
-        _id: '1',
-        invoiceNumber: 'INV-2025-001',
-        clientName: 'John Smith',
-        clientEmail: 'john@example.com',
-        invoiceType: 'registration',
-        total: 225.00,
-        paidAmount: 225.00,
-        status: 'paid',
-        issueDate: '2025-01-15',
-        dueDate: '2025-02-14',
-        items: [{ description: 'Player Registration', quantity: 1, rate: 150, amount: 150 }]
-      },
-      {
-        _id: '2',
-        invoiceNumber: 'INV-2025-002',
-        clientName: 'Sarah Johnson',
-        clientEmail: 'sarah@example.com',
-        invoiceType: 'membership',
-        total: 200.00,
-        paidAmount: 0,
-        status: 'sent',
-        issueDate: '2025-01-20',
-        dueDate: '2025-02-19',
-        items: [{ description: 'Annual Membership', quantity: 1, rate: 200, amount: 200 }]
-      },
-      {
-        _id: '3',
-        invoiceNumber: 'INV-2025-003',
-        clientName: 'Mike Davis',
-        clientEmail: 'mike@example.com',
-        invoiceType: 'tournament',
-        total: 350.00,
-        paidAmount: 0,
-        status: 'overdue',
-        issueDate: '2024-12-10',
-        dueDate: '2025-01-09',
-        items: [{ description: 'Tournament Entry', quantity: 1, rate: 350, amount: 350 }]
+  const loadInvoices = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/invoices', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setInvoices(data.invoices || []);
+      } else {
+        throw new Error('Failed to fetch invoices');
       }
-    ];
-    setInvoices(mockInvoices);
+    } catch (error) {
+      console.error('Error loading invoices:', error);
+      setMessage('Failed to load invoices');
+      setTimeout(() => setMessage(''), 3000);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const calculateTotals = () => {
@@ -248,32 +228,109 @@ const InvoicingSystem = () => {
     });
   };
 
-  const saveInvoice = () => {
+  const saveInvoice = async () => {
     if (!invoiceForm.clientName || !invoiceForm.clientEmail) {
       setMessage('Please fill in client name and email');
       setTimeout(() => setMessage(''), 3000);
       return;
     }
 
-    if (!invoiceForm.invoiceNumber) {
-      setInvoiceForm(prev => ({ ...prev, invoiceNumber: generateInvoiceNumber() }));
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      
+      const invoiceData = {
+        ...invoiceForm,
+        dueDate: invoiceForm.dueDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+      };
+
+      const response = await fetch('/api/invoices', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(invoiceData)
+      });
+
+      if (response.ok) {
+        setMessage('Invoice saved successfully!');
+        setShowModal(false);
+        resetForm();
+        loadInvoices();
+      } else {
+        const error = await response.json();
+        setMessage(error.error || 'Failed to save invoice');
+      }
+    } catch (error) {
+      console.error('Error saving invoice:', error);
+      setMessage('Failed to save invoice');
+    } finally {
+      setLoading(false);
+      setTimeout(() => setMessage(''), 3000);
     }
-
-    setMessage('Invoice saved successfully!');
-    setShowModal(false);
-    setTimeout(() => setMessage(''), 3000);
-    loadInvoices();
   };
 
-  const sendInvoice = (invoice) => {
-    setMessage(`Invoice ${invoice.invoiceNumber} sent to ${invoice.clientEmail}`);
-    setTimeout(() => setMessage(''), 3000);
+  const sendInvoice = async (invoice) => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      
+      const response = await fetch(`/api/invoices/${invoice._id}/send`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        setMessage(`Invoice ${invoice.invoiceNumber} sent to ${invoice.clientEmail}`);
+        loadInvoices();
+      } else {
+        const error = await response.json();
+        setMessage(error.error || 'Failed to send invoice');
+      }
+    } catch (error) {
+      console.error('Error sending invoice:', error);
+      setMessage('Failed to send invoice');
+    } finally {
+      setLoading(false);
+      setTimeout(() => setMessage(''), 3000);
+    }
   };
 
-  const markAsPaid = (invoice) => {
-    setMessage(`Invoice ${invoice.invoiceNumber} marked as paid!`);
-    setTimeout(() => setMessage(''), 3000);
-    loadInvoices();
+  const markAsPaid = async (invoice) => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      
+      const response = await fetch(`/api/invoices/${invoice._id}/payment`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          amount: invoice.total - invoice.paidAmount,
+          method: 'manual'
+        })
+      });
+
+      if (response.ok) {
+        setMessage(`Invoice ${invoice.invoiceNumber} marked as paid!`);
+        loadInvoices();
+      } else {
+        const error = await response.json();
+        setMessage(error.error || 'Failed to mark as paid');
+      }
+    } catch (error) {
+      console.error('Error marking as paid:', error);
+      setMessage('Failed to mark as paid');
+    } finally {
+      setLoading(false);
+      setTimeout(() => setMessage(''), 3000);
+    }
   };
 
   const getFilteredInvoices = () => {
@@ -322,30 +379,101 @@ const InvoicingSystem = () => {
     }).format(amount || 0);
   };
 
-  const exportInvoices = () => {
-    const csv = [
-      ['Invoice #', 'Date', 'Client', 'Email', 'Type', 'Amount', 'Paid', 'Balance', 'Status', 'Due Date'],
-      ...filteredInvoices.map(inv => [
-        inv.invoiceNumber,
-        inv.issueDate,
-        inv.clientName,
-        inv.clientEmail,
-        invoiceTypes.find(t => t.id === inv.invoiceType)?.name || inv.invoiceType,
-        inv.total,
-        inv.paidAmount,
-        inv.total - inv.paidAmount,
-        inv.status,
-        inv.dueDate
-      ])
-    ];
+  const exportInvoices = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const params = new URLSearchParams({
+        status: filter.status,
+        type: filter.type,
+        dateFrom: filter.dateFrom,
+        dateTo: filter.dateTo
+      });
+      
+      const response = await fetch(`/api/invoices/export/csv?${params}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
 
-    const csvContent = csv.map(row => row.join(',')).join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `invoices-${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `invoices-${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      } else {
+        setMessage('Failed to export invoices');
+        setTimeout(() => setMessage(''), 3000);
+      }
+    } catch (error) {
+      console.error('Export error:', error);
+      setMessage('Failed to export invoices');
+      setTimeout(() => setMessage(''), 3000);
+    }
+  };
+
+  const deleteInvoice = async (invoice) => {
+    if (!window.confirm(`Are you sure you want to delete invoice ${invoice.invoiceNumber}?`)) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      
+      const response = await fetch(`/api/invoices/${invoice._id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        setMessage(`Invoice ${invoice.invoiceNumber} deleted successfully`);
+        loadInvoices();
+      } else {
+        const error = await response.json();
+        setMessage(error.error || 'Failed to delete invoice');
+      }
+    } catch (error) {
+      console.error('Error deleting invoice:', error);
+      setMessage('Failed to delete invoice');
+    } finally {
+      setLoading(false);
+      setTimeout(() => setMessage(''), 3000);
+    }
+  };
+
+  const sendReminder = async (invoice) => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      
+      const response = await fetch(`/api/invoices/${invoice._id}/reminder`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        setMessage(`Payment reminder sent for invoice ${invoice.invoiceNumber}`);
+        loadInvoices();
+      } else {
+        const error = await response.json();
+        setMessage(error.error || 'Failed to send reminder');
+      }
+    } catch (error) {
+      console.error('Error sending reminder:', error);
+      setMessage('Failed to send reminder');
+    } finally {
+      setLoading(false);
+      setTimeout(() => setMessage(''), 3000);
+    }
   };
 
   return (
@@ -714,6 +842,24 @@ const InvoicingSystem = () => {
                                 >
                                   <i className="bi bi-download"></i>
                                 </button>
+                                {(invoice.status === 'sent' || invoice.status === 'overdue') && (
+                                  <button
+                                    onClick={() => sendReminder(invoice)}
+                                    className="text-yellow-600 hover:text-yellow-800"
+                                    title="Send Payment Reminder"
+                                  >
+                                    <i className="bi bi-bell"></i>
+                                  </button>
+                                )}
+                                {invoice.status === 'draft' && (
+                                  <button
+                                    onClick={() => deleteInvoice(invoice)}
+                                    className="text-red-600 hover:text-red-800"
+                                    title="Delete Invoice"
+                                  >
+                                    <i className="bi bi-trash"></i>
+                                  </button>
+                                )}
                               </div>
                             </td>
                           </tr>

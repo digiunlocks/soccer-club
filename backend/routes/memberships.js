@@ -3,6 +3,7 @@ const router = express.Router();
 const { Membership, MembershipTier, MembershipAnalytics } = require('../models/Membership');
 const authenticateToken = require('../middleware/auth');
 const checkAdmin = require('../middleware/admin');
+const FinanceIntegrationService = require('../services/financeIntegrationService');
 
 // ==================== MEMBERSHIP TIER ROUTES ====================
 
@@ -208,6 +209,15 @@ router.post('/', authenticateToken, checkAdmin, async (req, res) => {
     await membership.save();
     
     await membership.populate('user tier');
+    
+    // 💰 Automatically record membership payment in finance system
+    try {
+      await FinanceIntegrationService.recordMembershipPayment(membership, membership.user);
+      console.log('💰 [Finance Integration] Membership payment recorded in finance system');
+    } catch (financeError) {
+      console.error('⚠️  [Finance Integration] Failed to record membership payment:', financeError.message);
+      // Don't fail the membership creation if finance recording fails
+    }
     
     console.log('✅ [Membership] Membership created:', membership._id);
     res.status(201).json({ message: 'Membership created successfully', membership });

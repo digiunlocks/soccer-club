@@ -477,46 +477,90 @@ export default function MarketplaceAdminManager() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Statistics Cards */}
+        {/* Enhanced Statistics Overview */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between">
+          {/* Awaiting Action - Most Important */}
+          <div className={`rounded-lg shadow-sm border-2 p-6 ${stats.pendingItems > 0 ? 'border-yellow-400 bg-yellow-50' : 'border-gray-200 bg-white'}`}>
+            <div className="flex items-center justify-between mb-2">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Items</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.totalItems}</p>
+                <p className="text-xs font-medium text-gray-600 uppercase">Awaiting Action</p>
+                <p className="text-3xl font-bold text-yellow-600">{stats.pendingItems}</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {stats.flaggedItems > 0 && `+ ${stats.flaggedItems} flagged`}
+                </p>
               </div>
-              <FaChartBar className="w-8 h-8 text-blue-500" />
+              <div className="p-3 bg-yellow-100 rounded-lg">
+                <FaClock className="w-6 h-6 text-yellow-600" />
+              </div>
+            </div>
+            {stats.pendingItems > 0 && (
+              <button
+                onClick={() => {setActiveTab('pending'); window.scrollTo({ top: 400, behavior: 'smooth' });}}
+                className="w-full mt-3 px-3 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition-colors text-sm font-medium"
+              >
+                Review Now
+              </button>
+            )}
+          </div>
+
+          {/* Total Engagement */}
+          <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg shadow-sm border border-blue-200 p-6">
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <p className="text-xs font-medium text-blue-700 uppercase">Total Views</p>
+                <p className="text-3xl font-bold text-blue-600">{stats.totalViews || 0}</p>
+                <p className="text-xs text-blue-600 mt-1">Across {stats.totalItems} items</p>
+              </div>
+              <div className="p-3 bg-blue-200 rounded-lg">
+                <FaEye className="w-6 h-6 text-blue-700" />
+              </div>
+            </div>
+            <div className="text-xs text-blue-600 font-medium">
+              Avg: {stats.totalItems > 0 ? Math.round((stats.totalViews || 0) / stats.totalItems) : 0} views/item
             </div>
           </div>
-          
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between">
+
+          {/* Active Listings */}
+          <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg shadow-sm border border-green-200 p-6">
+            <div className="flex items-center justify-between mb-2">
               <div>
-                <p className="text-sm font-medium text-gray-600">Pending Review</p>
-                <p className="text-2xl font-bold text-yellow-600">{stats.pendingItems}</p>
+                <p className="text-xs font-medium text-green-700 uppercase">Active Listings</p>
+                <p className="text-3xl font-bold text-green-600">{stats.approvedItems}</p>
+                <p className="text-xs text-green-600 mt-1">
+                  {stats.totalItems > 0 ? Math.round((stats.approvedItems / stats.totalItems) * 100) : 0}% of total
+                </p>
               </div>
-              <FaClock className="w-8 h-8 text-yellow-500" />
+              <div className="p-3 bg-green-200 rounded-lg">
+                <FaCheckCircle className="w-6 h-6 text-green-700" />
+              </div>
+            </div>
+            <div className="text-xs text-green-600 font-medium">
+              {stats.totalFavorites || 0} total favorites
             </div>
           </div>
-          
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between">
+
+          {/* Issues & Alerts */}
+          <div className={`rounded-lg shadow-sm border-2 p-6 ${stats.flaggedItems > 0 ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-white'}`}>
+            <div className="flex items-center justify-between mb-2">
               <div>
-                <p className="text-sm font-medium text-gray-600">Approved</p>
-                <p className="text-2xl font-bold text-green-600">{stats.approvedItems}</p>
+                <p className="text-xs font-medium text-gray-600 uppercase">Issues & Alerts</p>
+                <p className="text-3xl font-bold text-red-600">{stats.flaggedItems}</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {stats.rejectedItems || 0} rejected items
+                </p>
               </div>
-              <FaCheckCircle className="w-8 h-8 text-green-500" />
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Flagged Items</p>
-                <p className="text-2xl font-bold text-red-600">{stats.flaggedItems}</p>
+              <div className="p-3 bg-red-100 rounded-lg">
+                <FaFlag className="w-6 h-6 text-red-600" />
               </div>
-              <FaFlag className="w-8 h-8 text-red-500" />
             </div>
+            {stats.flaggedItems > 0 && (
+              <button
+                onClick={() => {setActiveTab('flagged'); window.scrollTo({ top: 400, behavior: 'smooth' });}}
+                className="w-full mt-3 px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors text-sm font-medium"
+              >
+                Review Flags
+              </button>
+            )}
           </div>
         </div>
 

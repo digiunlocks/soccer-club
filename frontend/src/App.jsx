@@ -73,7 +73,7 @@ import FinanceManager from "./FinanceManager";
 import MembershipManager from "./MembershipManager";
 import PaymentManagementSystem from "./PaymentManagementSystem";
 import InvoicingSystem from "./InvoicingSystem";
-import EquipmentManagementSystem from "./EquipmentManagementSystem";
+import InventoryManagementSystem from "./InventoryManagementSystem";
 import Messages from "./Messages";
 import UserTransactions from "./UserTransactions";
 import PrivacySettings from "./PrivacySettings";
@@ -417,7 +417,7 @@ export default function App() {
           <Route path="/admin/news" element={<NewsManager />} />
           <Route path="/admin/payments" element={<PaymentManagementSystem />} />
           <Route path="/admin/invoicing" element={<InvoicingSystem />} />
-          <Route path="/admin/equipment" element={<EquipmentManagementSystem />} />
+          <Route path="/admin/inventory" element={<InventoryManagementSystem />} />
           <Route path="/admin/settings" element={<SiteSettings />} />
           <Route path="/admin/schedules" element={<ScheduleManager />} />
           <Route path="/admin/gallery" element={<Gallery />} />

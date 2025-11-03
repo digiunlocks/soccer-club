@@ -96,7 +96,13 @@ const programRoutes = require('./routes/program');
 app.use('/api/programs', programRoutes);
 
 const paymentRoutes = require('./routes/payment');
-app.use('/api/payments', paymentRoutes);
+app.use('/api/payment', paymentRoutes);
+
+const invoiceRoutes = require('./routes/invoices');
+app.use('/api/invoices', invoiceRoutes);
+
+const equipmentRoutes = require('./routes/equipment');
+app.use('/api/equipment', equipmentRoutes);
 
 const settingsRoutes = require('./routes/settings');
 app.use('/api/settings', settingsRoutes);
@@ -112,6 +118,12 @@ app.use('/api/marketplace', marketplaceUnifiedRoutes);
 
 const scheduleRoutes = require('./routes/schedules');
 app.use('/api/schedules', scheduleRoutes);
+const standingRoutes = require('./routes/standings');
+app.use('/api/standings', standingRoutes);
+const sponsorRoutes = require('./routes/sponsors');
+app.use('/api/sponsors', sponsorRoutes);
+const financialTransactionRoutes = require('./routes/financialTransactions');
+app.use('/api/financial-transactions', financialTransactionRoutes);
 
 const galleryRoutes = require('./routes/gallery');
 app.use('/api/gallery', galleryRoutes);

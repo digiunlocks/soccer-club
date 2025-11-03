@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
-const EquipmentManagementSystem = () => {
-  const [activeTab, setActiveTab] = useState('overview');
+const InventoryManagementSystem = () => {
+  const [activeTab, setActiveTab] = useState('inventory');
   const [equipment, setEquipment] = useState([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -14,6 +14,17 @@ const EquipmentManagementSystem = () => {
     category: 'all',
     status: 'all',
     location: 'all'
+  });
+  const [stats, setStats] = useState({
+    totalItems: 0,
+    totalValue: 0,
+    categories: 0,
+    available: 0,
+    inUse: 0,
+    maintenance: 0,
+    rented: 0,
+    lowStock: 0,
+    needsMaintenance: 0
   });
 
   const [equipmentForm, setEquipmentForm] = useState({
@@ -43,8 +54,8 @@ const EquipmentManagementSystem = () => {
   });
 
   const tabs = [
-    { id: 'overview', name: 'Overview', icon: '📊' },
     { id: 'inventory', name: 'Inventory', icon: '📦' },
+    { id: 'overview', name: 'Overview', icon: '📊' },
     { id: 'purchases', name: 'Purchases', icon: '🛒' },
     { id: 'rentals', name: 'Rentals', icon: '🔄' },
     { id: 'maintenance', name: 'Maintenance', icon: '🔧' },
@@ -107,7 +118,7 @@ const EquipmentManagementSystem = () => {
   ];
 
   useEffect(() => {
-    document.title = 'Equipment Management - Seattle Leopards FC Admin';
+    document.title = 'Inventory Management - Seattle Leopards FC Admin';
     loadEquipment();
   }, []);
 
@@ -115,79 +126,161 @@ const EquipmentManagementSystem = () => {
     calculateTotalValue();
   }, [equipmentForm.quantity, equipmentForm.unitPrice]);
 
-  const loadEquipment = () => {
-    // Mock data - replace with actual API call
-    const mockEquipment = [
+  const loadEquipment = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        setMessage('Please log in to access equipment management');
+        setTimeout(() => setMessage(''), 3000);
+        return;
+      }
+      
+      console.log('Loading equipment with token:', token.substring(0, 20) + '...');
+      
+      const response = await fetch('/api/equipment', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      console.log('Equipment API response status:', response.status);
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Equipment data received:', data);
+        setEquipment(data.equipment || []);
+        
+        // Load stats
+        const statsResponse = await fetch('/api/equipment/stats', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (statsResponse.ok) {
+          const statsData = await statsResponse.json();
+          setStats(statsData.overview || {
+            totalItems: 0,
+            totalValue: 0,
+            categories: 0,
+            available: 0,
+            inUse: 0,
+            maintenance: 0,
+            rented: 0,
+            lowStock: 0,
+            needsMaintenance: 0
+          });
+        }
+      } else {
+        const errorData = await response.json();
+        console.error('API Error:', errorData);
+        setMessage(`Failed to load equipment: ${errorData.error || 'Unknown error'}`);
+        setTimeout(() => setMessage(''), 5000);
+      }
+    } catch (error) {
+      console.error('Error loading equipment:', error);
+      setMessage(`Network error: ${error.message}`);
+      setTimeout(() => setMessage(''), 5000);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const addSampleEquipment = async () => {
+    const sampleEquipment = [
       {
-        _id: '1',
         name: 'Official Match Soccer Ball',
         category: 'balls',
+        description: 'Professional match soccer ball for games and training',
         quantity: 25,
         unitPrice: 45.00,
-        totalValue: 1125.00,
         condition: 'excellent',
         location: 'storage_room',
         status: 'available',
-        purchaseDate: '2024-09-15',
+        purchaseDate: new Date('2024-09-15').toISOString().split('T')[0],
         supplier: 'Nike Sports Equipment',
         isRentable: true,
         rentalRate: 5.00
       },
       {
-        _id: '2',
         name: 'Training Cones (Set of 50)',
         category: 'cones',
+        description: 'Orange training cones for drills and practice',
         quantity: 3,
         unitPrice: 35.00,
-        totalValue: 105.00,
         condition: 'good',
         location: 'equipment_shed',
         status: 'available',
-        purchaseDate: '2024-08-20',
+        purchaseDate: new Date('2024-08-20').toISOString().split('T')[0],
         supplier: 'Pro Training Supplies'
       },
       {
-        _id: '3',
         name: 'Team Uniform Kit - Home',
         category: 'uniforms',
+        description: 'Complete home uniform set for team',
         quantity: 20,
         unitPrice: 65.00,
-        totalValue: 1300.00,
         condition: 'excellent',
         location: 'main_facility',
         status: 'in_use',
-        purchaseDate: '2025-01-10',
+        purchaseDate: new Date('2025-01-10').toISOString().split('T')[0],
         supplier: 'Adidas Team Gear',
         size: 'Various'
       },
       {
-        _id: '4',
         name: 'Goalkeeper Gloves',
         category: 'goalkeeper',
+        description: 'Professional goalkeeper gloves',
         quantity: 8,
         unitPrice: 55.00,
-        totalValue: 440.00,
         condition: 'good',
         location: 'storage_room',
         status: 'available',
-        purchaseDate: '2024-11-05',
+        purchaseDate: new Date('2024-11-05').toISOString().split('T')[0],
         supplier: 'Goalkeeper Pro'
       },
       {
-        _id: '5',
         name: 'Portable Goal (8x6 ft)',
         category: 'goals',
+        description: 'Portable soccer goal for training',
         quantity: 4,
         unitPrice: 350.00,
-        totalValue: 1400.00,
         condition: 'good',
         location: 'field_1',
         status: 'in_use',
-        purchaseDate: '2024-07-15',
+        purchaseDate: new Date('2024-07-15').toISOString().split('T')[0],
         supplier: 'Field Equipment Inc.'
       }
     ];
-    setEquipment(mockEquipment);
+
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      
+      for (const equipment of sampleEquipment) {
+        await fetch('/api/equipment', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(equipment)
+        });
+      }
+      
+      setMessage('Sample equipment added successfully!');
+      loadEquipment();
+    } catch (error) {
+      console.error('Error adding sample equipment:', error);
+      setMessage('Failed to add sample equipment');
+    } finally {
+      setLoading(false);
+      setTimeout(() => setMessage(''), 3000);
+    }
   };
 
   const calculateTotalValue = () => {
@@ -195,18 +288,42 @@ const EquipmentManagementSystem = () => {
     setEquipmentForm(prev => ({ ...prev, totalValue: total.toFixed(2) }));
   };
 
-  const saveEquipment = () => {
+  const saveEquipment = async () => {
     if (!equipmentForm.name || !equipmentForm.category) {
       setMessage('Please fill in equipment name and category');
       setTimeout(() => setMessage(''), 3000);
       return;
     }
 
-    setMessage('Equipment saved successfully!');
-    setShowModal(false);
-    resetForm();
-    setTimeout(() => setMessage(''), 3000);
-    loadEquipment();
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      
+      const response = await fetch('/api/equipment', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(equipmentForm)
+      });
+
+      if (response.ok) {
+        setMessage('Equipment saved successfully!');
+        setShowModal(false);
+        resetForm();
+        loadEquipment();
+      } else {
+        const error = await response.json();
+        setMessage(error.error || 'Failed to save equipment');
+      }
+    } catch (error) {
+      console.error('Error saving equipment:', error);
+      setMessage('Failed to save equipment');
+    } finally {
+      setLoading(false);
+      setTimeout(() => setMessage(''), 3000);
+    }
   };
 
   const resetForm = () => {
@@ -257,23 +374,6 @@ const EquipmentManagementSystem = () => {
 
   const filteredEquipment = getFilteredEquipment();
 
-  const stats = {
-    totalItems: equipment.reduce((sum, item) => sum + parseInt(item.quantity), 0),
-    totalValue: equipment.reduce((sum, item) => sum + parseFloat(item.totalValue), 0),
-    categories: categories.length,
-    available: equipment.filter(item => item.status === 'available').reduce((sum, item) => sum + parseInt(item.quantity), 0),
-    inUse: equipment.filter(item => item.status === 'in_use').reduce((sum, item) => sum + parseInt(item.quantity), 0),
-    maintenance: equipment.filter(item => item.status === 'maintenance' || item.status === 'repair').length,
-    rented: equipment.filter(item => item.status === 'rented').reduce((sum, item) => sum + parseInt(item.quantity), 0),
-    byCategory: categories.map(cat => ({
-      ...cat,
-      count: equipment.filter(item => item.category === cat.id).reduce((sum, item) => sum + parseInt(item.quantity), 0),
-      value: equipment.filter(item => item.category === cat.id).reduce((sum, item) => sum + parseFloat(item.totalValue), 0)
-    })).filter(cat => cat.count > 0),
-    lowStock: equipment.filter(item => parseInt(item.quantity) < 5).length,
-    needsMaintenance: equipment.filter(item => item.status === 'maintenance' || item.status === 'repair').length
-  };
-
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -282,30 +382,71 @@ const EquipmentManagementSystem = () => {
     }).format(amount || 0);
   };
 
-  const exportEquipment = () => {
-    const csv = [
-      ['Name', 'Category', 'Quantity', 'Unit Price', 'Total Value', 'Condition', 'Status', 'Location', 'Purchase Date', 'Supplier'],
-      ...filteredEquipment.map(item => [
-        item.name,
-        categories.find(c => c.id === item.category)?.name || item.category,
-        item.quantity,
-        item.unitPrice,
-        item.totalValue,
-        item.condition,
-        item.status,
-        locations.find(l => l.id === item.location)?.name || item.location,
-        item.purchaseDate,
-        item.supplier || ''
-      ])
-    ];
+  const exportEquipment = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const params = new URLSearchParams({
+        category: filter.category,
+        status: filter.status,
+        location: filter.location
+      });
+      
+      const response = await fetch(`/api/equipment/export/csv?${params}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
 
-    const csvContent = csv.map(row => row.join(',')).join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `equipment-inventory-${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `equipment-${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      } else {
+        setMessage('Failed to export equipment');
+        setTimeout(() => setMessage(''), 3000);
+      }
+    } catch (error) {
+      console.error('Export error:', error);
+      setMessage('Failed to export equipment');
+      setTimeout(() => setMessage(''), 3000);
+    }
+  };
+
+  const deleteEquipment = async (equipment) => {
+    if (!window.confirm(`Are you sure you want to delete ${equipment.name}?`)) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      
+      const response = await fetch(`/api/equipment/${equipment._id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        setMessage(`${equipment.name} deleted successfully`);
+        loadEquipment();
+      } else {
+        const error = await response.json();
+        setMessage(error.error || 'Failed to delete equipment');
+      }
+    } catch (error) {
+      console.error('Error deleting equipment:', error);
+      setMessage('Failed to delete equipment');
+    } finally {
+      setLoading(false);
+      setTimeout(() => setMessage(''), 3000);
+    }
   };
 
   return (
@@ -315,9 +456,9 @@ const EquipmentManagementSystem = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Equipment Management</h1>
+              <h1 className="text-3xl font-bold text-gray-900">Inventory Management</h1>
               <p className="mt-1 text-sm text-gray-500">
-                Track, manage, and maintain all club equipment inventory
+                Track, manage, and maintain all club inventory and equipment
               </p>
             </div>
             <div className="flex space-x-3">
@@ -413,91 +554,613 @@ const EquipmentManagementSystem = () => {
 
               <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-6 rounded-lg shadow-sm border border-orange-200">
                 <div className="flex items-center justify-between mb-2">
-                  <div className="text-4xl">🔧</div>
-                  <div className="text-orange-600"><i className="bi bi-tools text-xl"></i></div>
+                  <div className="text-4xl">⚠️</div>
+                  <div className="text-orange-600"><i className="bi bi-exclamation-triangle text-xl"></i></div>
                 </div>
-                <div className="text-3xl font-bold text-orange-900">{stats.maintenance}</div>
-                <div className="text-sm text-orange-700 mt-1">Maintenance</div>
+                <div className="text-3xl font-bold text-orange-900">{stats.lowStock}</div>
+                <div className="text-sm text-orange-700 mt-1">Low Stock</div>
               </div>
             </div>
 
-            {/* Status Breakdown */}
-            <div className="grid grid-cols-4 gap-4">
-              <div className="bg-white p-6 rounded-lg shadow-sm border">
-                <div className="text-2xl font-bold text-blue-900">{stats.inUse}</div>
-                <div className="text-sm text-blue-700 mt-1">In Use</div>
+            {/* Additional Metrics */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 p-6 rounded-lg shadow-sm border border-indigo-200">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-4xl">🔧</div>
+                  <div className="text-indigo-600"><i className="bi bi-tools text-xl"></i></div>
+                </div>
+                <div className="text-3xl font-bold text-indigo-900">{stats.maintenance}</div>
+                <div className="text-sm text-indigo-700 mt-1">In Maintenance</div>
               </div>
-              <div className="bg-white p-6 rounded-lg shadow-sm border">
-                <div className="text-2xl font-bold text-purple-900">{stats.rented}</div>
-                <div className="text-sm text-purple-700 mt-1">Rented Out</div>
+
+              <div className="bg-gradient-to-br from-pink-50 to-pink-100 p-6 rounded-lg shadow-sm border border-pink-200">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-4xl">🔄</div>
+                  <div className="text-pink-600"><i className="bi bi-arrow-repeat text-xl"></i></div>
+                </div>
+                <div className="text-3xl font-bold text-pink-900">{stats.rented}</div>
+                <div className="text-sm text-pink-700 mt-1">Rented Out</div>
               </div>
-              <div className="bg-white p-6 rounded-lg shadow-sm border">
-                <div className="text-2xl font-bold text-red-900">{stats.lowStock}</div>
-                <div className="text-sm text-red-700 mt-1">Low Stock Items</div>
-              </div>
-              <div className="bg-white p-6 rounded-lg shadow-sm border">
-                <div className="text-2xl font-bold text-teal-900">{stats.categories}</div>
+
+              <div className="bg-gradient-to-br from-teal-50 to-teal-100 p-6 rounded-lg shadow-sm border border-teal-200">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-4xl">📊</div>
+                  <div className="text-teal-600"><i className="bi bi-graph-up text-xl"></i></div>
+                </div>
+                <div className="text-3xl font-bold text-teal-900">{stats.categories}</div>
                 <div className="text-sm text-teal-700 mt-1">Categories</div>
               </div>
+
+              <div className="bg-gradient-to-br from-red-50 to-red-100 p-6 rounded-lg shadow-sm border border-red-200">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-4xl">🚨</div>
+                  <div className="text-red-600"><i className="bi bi-alarm text-xl"></i></div>
+                </div>
+                <div className="text-3xl font-bold text-red-900">{stats.needsMaintenance}</div>
+                <div className="text-sm text-red-700 mt-1">Needs Maintenance</div>
+              </div>
             </div>
 
-            {/* Equipment by Category */}
+            {/* Quick Actions */}
             <div className="bg-white rounded-lg shadow-sm border p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Equipment by Category</h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {stats.byCategory.map((cat) => (
-                  <div key={cat.id} className={`bg-${cat.color}-50 p-4 rounded-lg border border-${cat.color}-200`}>
-                    <div className="text-3xl mb-2 text-center">{cat.icon}</div>
-                    <div className="font-semibold text-gray-900 text-sm text-center">{cat.name}</div>
-                    <div className="text-lg font-bold text-center text-gray-900 mt-2">{cat.count}</div>
-                    <div className="text-xs text-gray-600 text-center mt-1">{formatCurrency(cat.value)}</div>
+              <h3 className="text-lg font-bold text-gray-900 mb-4">Quick Actions</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <button
+                  onClick={addSampleEquipment}
+                  className="bg-green-600 text-white px-4 py-3 rounded-lg hover:bg-green-700 transition-colors text-center"
+                >
+                  <i className="bi bi-download text-xl mb-2 block"></i>
+                  Add Sample Data
+                </button>
+                <button
+                  onClick={exportEquipment}
+                  className="bg-purple-600 text-white px-4 py-3 rounded-lg hover:bg-purple-700 transition-colors text-center"
+                >
+                  <i className="bi bi-file-earmark-arrow-down text-xl mb-2 block"></i>
+                  Export Data
+                </button>
+                <button
+                  onClick={() => setActiveTab('reports')}
+                  className="bg-orange-600 text-white px-4 py-3 rounded-lg hover:bg-orange-700 transition-colors text-center"
+                >
+                  <i className="bi bi-graph-up text-xl mb-2 block"></i>
+                  View Reports
+                </button>
+              </div>
+            </div>
+
+            {/* Recent Activity */}
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">Recent Activity</h3>
+              <div className="space-y-3">
+                {equipment.slice(0, 5).map((item) => (
+                  <div key={item._id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">
+                        {categories.find(c => c.id === item.category)?.icon}
+                      </div>
+                      <div>
+                        <div className="font-semibold text-gray-900">{item.name}</div>
+                        <div className="text-sm text-gray-600">
+                          {item.quantity} units • {formatCurrency(item.totalValue)}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className={`px-2 py-1 text-xs rounded-full ${
+                        item.status === 'available' ? 'bg-green-100 text-green-800' :
+                        item.status === 'in_use' ? 'bg-blue-100 text-blue-800' :
+                        item.status === 'maintenance' ? 'bg-orange-100 text-orange-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {item.status.replace('_', ' ')}
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
+          </div>
+        )}
 
-            {/* What is Equipment Management */}
-            <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">📦 What is Equipment Management?</h2>
-              <p className="text-gray-700 mb-4">
-                Equipment Management is your complete solution for tracking, managing, and maintaining all club assets. 
-                From soccer balls and training cones to uniforms and medical supplies, keep detailed records of purchases, 
-                location, condition, maintenance schedules, and rental activities.
+        {/* Purchases Tab */}
+        {activeTab === 'purchases' && (
+          <div className="space-y-6">
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-2">🛒 Purchase Management</h2>
+              <p className="text-gray-700">
+                Track equipment purchases, suppliers, and procurement history. Manage purchase orders and vendor relationships.
               </p>
+            </div>
 
+            {/* Purchase History Table */}
+            <div className="bg-white rounded-lg shadow-sm border">
+              <div className="px-6 py-4 border-b border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900">Purchase History</h3>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Item</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quantity</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Unit Price</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Supplier</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {equipment.map((item) => (
+                      <tr key={item._id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 text-sm">
+                          {item.purchaseDate ? new Date(item.purchaseDate).toLocaleDateString() : 'N/A'}
+                        </td>
+                        <td className="px-6 py-4 text-sm font-medium text-gray-900">{item.name}</td>
+                        <td className="px-6 py-4 text-sm">{item.quantity}</td>
+                        <td className="px-6 py-4 text-sm">{formatCurrency(item.unitPrice)}</td>
+                        <td className="px-6 py-4 text-sm font-bold text-green-600">{formatCurrency(item.totalValue)}</td>
+                        <td className="px-6 py-4 text-sm text-gray-600">{item.supplier || 'N/A'}</td>
+                        <td className="px-6 py-4 text-sm">
+                          <button
+                            onClick={() => {
+                              setSelectedItem(item);
+                              setModalType('view');
+                              setShowModal(true);
+                            }}
+                            className="text-blue-600 hover:text-blue-800 mr-2"
+                          >
+                            <i className="bi bi-eye"></i>
+                          </button>
+                          <button
+                            onClick={() => {
+                              setEquipmentForm({...item});
+                              setModalType('edit');
+                              setShowModal(true);
+                            }}
+                            className="text-gray-600 hover:text-gray-800"
+                          >
+                            <i className="bi bi-pencil"></i>
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot className="bg-gray-50">
+                    <tr>
+                      <td colSpan="4" className="px-6 py-4 text-sm font-bold text-gray-900 text-right">
+                        Total Investment:
+                      </td>
+                      <td className="px-6 py-4 text-sm font-bold text-green-600">
+                        {formatCurrency(stats.totalValue)}
+                      </td>
+                      <td></td>
+                      <td></td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+
+            {/* Supplier Management */}
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">Supplier Management</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {Array.from(new Set(equipment.map(item => item.supplier).filter(Boolean))).map(supplier => {
+                  const supplierItems = equipment.filter(item => item.supplier === supplier);
+                  const totalSpent = supplierItems.reduce((sum, item) => sum + parseFloat(item.totalValue), 0);
+                  
+                  return (
+                    <div key={supplier} className="bg-gray-50 rounded-lg p-4">
+                      <h4 className="font-semibold text-gray-900 mb-2">{supplier}</h4>
+                      <div className="text-sm text-gray-600">
+                        <div>Items: {supplierItems.length}</div>
+                        <div>Total Spent: {formatCurrency(totalSpent)}</div>
+                        <div>Last Purchase: {supplierItems[0]?.purchaseDate ? new Date(supplierItems[0].purchaseDate).toLocaleDateString() : 'N/A'}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Maintenance Tab */}
+        {activeTab === 'maintenance' && (
+          <div className="space-y-6">
+            <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-lg border p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-2">🔧 Maintenance Management</h2>
+              <p className="text-gray-700">
+                Track equipment maintenance schedules, repairs, and service history. Ensure all equipment is properly maintained.
+              </p>
+            </div>
+
+            {/* Maintenance Alerts */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-white rounded-lg shadow-sm border p-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">Maintenance Alerts</h3>
+                <div className="space-y-3">
+                  {equipment.filter(item => item.status === 'maintenance' || item.status === 'repair').map((item) => (
+                    <div key={item._id} className="flex items-center justify-between p-3 bg-orange-50 rounded-lg border border-orange-200">
+                      <div className="flex items-center">
+                        <div className="text-2xl mr-3">
+                          {categories.find(c => c.id === item.category)?.icon}
+                        </div>
+                        <div>
+                          <div className="font-semibold text-gray-900">{item.name}</div>
+                          <div className="text-sm text-gray-600">
+                            Status: {item.status} • Last: {item.lastMaintenance ? new Date(item.lastMaintenance).toLocaleDateString() : 'Never'}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <button
+                          onClick={() => {
+                            setSelectedItem(item);
+                            setModalType('maintenance');
+                            setShowModal(true);
+                          }}
+                          className="bg-orange-600 text-white px-3 py-1 rounded text-sm hover:bg-orange-700"
+                        >
+                          Update
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-sm border p-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">Maintenance Schedule</h3>
+                <div className="space-y-3">
+                  {equipment.filter(item => item.maintenanceSchedule !== 'none').map((item) => (
+                    <div key={item._id} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+                      <div className="flex items-center">
+                        <div className="text-2xl mr-3">
+                          {categories.find(c => c.id === item.category)?.icon}
+                        </div>
+                        <div>
+                          <div className="font-semibold text-gray-900">{item.name}</div>
+                          <div className="text-sm text-gray-600">
+                            Schedule: {item.maintenanceSchedule} • Next: {item.nextMaintenance ? new Date(item.nextMaintenance).toLocaleDateString() : 'Not scheduled'}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className={`px-2 py-1 text-xs rounded-full ${
+                          item.nextMaintenance && new Date(item.nextMaintenance) <= new Date() 
+                            ? 'bg-red-100 text-red-800' 
+                            : 'bg-green-100 text-green-800'
+                        }`}>
+                          {item.nextMaintenance && new Date(item.nextMaintenance) <= new Date() ? 'Due' : 'Scheduled'}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Maintenance History */}
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">Maintenance History</h3>
+              <div className="text-center py-8 text-gray-500">
+                <i className="bi bi-tools text-4xl mb-2"></i>
+                <p>Maintenance records will appear here once equipment maintenance is tracked.</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Reports Tab */}
+        {activeTab === 'reports' && (
+          <div className="space-y-6">
+            <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg border p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-2">📈 Inventory Reports & Analytics</h2>
+              <p className="text-gray-700">
+                Comprehensive reports and analytics for inventory management, financial tracking, and operational insights.
+              </p>
+            </div>
+
+            {/* Key Metrics Dashboard */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-lg shadow-sm border border-green-200">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-4xl">💰</div>
+                  <div className="text-green-600"><i className="bi bi-currency-dollar text-xl"></i></div>
+                </div>
+                <div className="text-3xl font-bold text-green-900">{formatCurrency(stats.totalValue || 0)}</div>
+                <div className="text-sm text-green-700 mt-1">Total Investment</div>
+              </div>
+
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-lg shadow-sm border border-blue-200">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-4xl">📦</div>
+                  <div className="text-blue-600"><i className="bi bi-box text-xl"></i></div>
+                </div>
+                <div className="text-3xl font-bold text-blue-900">{stats.totalItems || 0}</div>
+                <div className="text-sm text-blue-700 mt-1">Total Items</div>
+              </div>
+
+              <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-lg shadow-sm border border-purple-200">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-4xl">✅</div>
+                  <div className="text-purple-600"><i className="bi bi-check-circle text-xl"></i></div>
+                </div>
+                <div className="text-3xl font-bold text-purple-900">{stats.available || 0}</div>
+                <div className="text-sm text-purple-700 mt-1">Available</div>
+              </div>
+
+              <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-6 rounded-lg shadow-sm border border-orange-200">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-4xl">⚠️</div>
+                  <div className="text-orange-600"><i className="bi bi-exclamation-triangle text-xl"></i></div>
+                </div>
+                <div className="text-3xl font-bold text-orange-900">{stats.lowStock || 0}</div>
+                <div className="text-sm text-orange-700 mt-1">Low Stock</div>
+              </div>
+            </div>
+
+            {/* Detailed Reports */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Financial Summary */}
+              <div className="bg-white rounded-lg shadow-sm border p-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">Financial Summary</h3>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                    <span className="text-gray-700">Total Investment</span>
+                    <span className="font-bold text-green-600 text-lg">{formatCurrency(stats.totalValue || 0)}</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                    <span className="text-gray-700">Average Item Value</span>
+                    <span className="font-bold text-blue-600 text-lg">
+                      {formatCurrency((stats.totalValue || 0) / (equipment.length || 1))}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
+                    <span className="text-gray-700">Total Items</span>
+                    <span className="font-bold text-purple-600 text-lg">{stats.totalItems || 0}</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-indigo-50 rounded-lg">
+                    <span className="text-gray-700">Categories</span>
+                    <span className="font-bold text-indigo-600 text-lg">{stats.categories || 0}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Status Overview */}
+              <div className="bg-white rounded-lg shadow-sm border p-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">Status Overview</h3>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                    <span className="text-gray-700">Available</span>
+                    <span className="font-bold text-green-600 text-lg">{stats.available || 0}</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                    <span className="text-gray-700">In Use</span>
+                    <span className="font-bold text-blue-600 text-lg">{stats.inUse || 0}</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-orange-50 rounded-lg">
+                    <span className="text-gray-700">Maintenance</span>
+                    <span className="font-bold text-orange-600 text-lg">{stats.maintenance || 0}</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
+                    <span className="text-gray-700">Rented</span>
+                    <span className="font-bold text-purple-600 text-lg">{stats.rented || 0}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Category Breakdown */}
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">Value by Category</h3>
+              {equipment.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <i className="bi bi-graph-up text-4xl mb-2"></i>
+                  <p>No data available. Add equipment to see category breakdown.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {categories.map(cat => {
+                    const categoryItems = equipment.filter(item => item.category === cat.id);
+                    const categoryValue = categoryItems.reduce((sum, item) => sum + parseFloat(item.totalValue || 0), 0);
+                    const percentage = (stats.totalValue || 0) > 0 ? (categoryValue / (stats.totalValue || 1)) * 100 : 0;
+                    
+                    if (categoryItems.length === 0) return null;
+                    
+                    return (
+                      <div key={cat.id} className="border rounded-lg p-4">
+                        <div className="flex justify-between text-sm mb-2">
+                          <span className="flex items-center font-semibold">
+                            <span className="mr-2 text-xl">{cat.icon}</span>
+                            {cat.name} ({categoryItems.length} items)
+                          </span>
+                          <span className="font-bold text-green-600 text-lg">{formatCurrency(categoryValue)}</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-4">
+                          <div
+                            className="bg-blue-600 h-4 rounded-full transition-all duration-300"
+                            style={{ width: `${percentage}%` }}
+                          ></div>
+                        </div>
+                        <div className="text-xs text-gray-500 mt-2">{percentage.toFixed(1)}% of total value</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Alerts & Notifications */}
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">Alerts & Notifications</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-white p-4 rounded-lg border">
-                  <h3 className="font-semibold text-gray-900 mb-2">📊 Inventory Tracking</h3>
-                  <ul className="text-sm text-gray-600 space-y-1">
-                    <li>• Real-time quantity tracking</li>
-                    <li>• 12+ equipment categories</li>
-                    <li>• Location management</li>
-                    <li>• Condition monitoring</li>
-                    <li>• Purchase history</li>
-                    <li>• Value tracking</li>
-                  </ul>
+                <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-sm text-red-700">Low Stock Items</div>
+                      <div className="text-2xl font-bold text-red-600">{stats.lowStock || 0}</div>
+                    </div>
+                    <i className="bi bi-exclamation-triangle text-2xl text-red-500"></i>
+                  </div>
                 </div>
-                <div className="bg-white p-4 rounded-lg border">
-                  <h3 className="font-semibold text-gray-900 mb-2">🔧 Maintenance</h3>
-                  <ul className="text-sm text-gray-600 space-y-1">
-                    <li>• Maintenance schedules</li>
-                    <li>• Repair tracking</li>
-                    <li>• Service history</li>
-                    <li>• Warranty management</li>
-                    <li>• Condition assessment</li>
-                    <li>• Cost tracking</li>
-                  </ul>
+                <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-sm text-orange-700">Needs Maintenance</div>
+                      <div className="text-2xl font-bold text-orange-600">{stats.needsMaintenance || 0}</div>
+                    </div>
+                    <i className="bi bi-tools text-2xl text-orange-500"></i>
+                  </div>
                 </div>
-                <div className="bg-white p-4 rounded-lg border">
-                  <h3 className="font-semibold text-gray-900 mb-2">💼 Rentals & Reports</h3>
-                  <ul className="text-sm text-gray-600 space-y-1">
-                    <li>• Equipment rentals</li>
-                    <li>• Rental rate management</li>
-                    <li>• Usage tracking</li>
-                    <li>• Financial reports</li>
-                    <li>• CSV export</li>
-                    <li>• Audit trails</li>
-                  </ul>
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-sm text-blue-700">Active Rentals</div>
+                      <div className="text-2xl font-bold text-blue-600">{stats.rented || 0}</div>
+                    </div>
+                    <i className="bi bi-arrow-repeat text-2xl text-blue-500"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Export Options */}
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">Export Reports</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <button
+                  onClick={exportEquipment}
+                  className="bg-green-600 text-white px-6 py-4 rounded-lg hover:bg-green-700 transition-colors text-center"
+                >
+                  <i className="bi bi-file-earmark-excel text-2xl mb-2 block"></i>
+                  <div className="font-semibold">Export to CSV</div>
+                  <div className="text-sm opacity-90">Download inventory data</div>
+                </button>
+                <button
+                  onClick={() => setMessage('PDF export coming soon!')}
+                  className="bg-red-600 text-white px-6 py-4 rounded-lg hover:bg-red-700 transition-colors text-center"
+                >
+                  <i className="bi bi-file-earmark-pdf text-2xl mb-2 block"></i>
+                  <div className="font-semibold">Export to PDF</div>
+                  <div className="text-sm opacity-90">Generate report document</div>
+                </button>
+                <button
+                  onClick={() => setMessage('Print view coming soon!')}
+                  className="bg-gray-600 text-white px-6 py-4 rounded-lg hover:bg-gray-700 transition-colors text-center"
+                >
+                  <i className="bi bi-printer text-2xl mb-2 block"></i>
+                  <div className="font-semibold">Print Report</div>
+                  <div className="text-sm opacity-90">Print current view</div>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Rentals Tab */}
+        {activeTab === 'rentals' && (
+          <div className="space-y-6">
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-2">🔄 Equipment Rental System</h2>
+              <p className="text-gray-700">
+                Track equipment rentals, rates, and generate additional revenue by renting out unused equipment.
+              </p>
+            </div>
+
+            {/* Rental Management */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-white rounded-lg shadow-sm border p-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">Available for Rent</h3>
+                <div className="space-y-3">
+                  {equipment.filter(item => item.isRentable && item.status === 'available').map((item) => {
+                    const category = categories.find(c => c.id === item.category);
+                    
+                    return (
+                      <div key={item._id} className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
+                        <div className="flex items-center">
+                          <div className="text-2xl mr-3">{category?.icon}</div>
+                          <div>
+                            <div className="font-semibold text-gray-900">{item.name}</div>
+                            <div className="text-sm text-gray-600">
+                              {item.quantity} available • {formatCurrency(item.rentalRate)}/day
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => {
+                            setSelectedItem(item);
+                            setModalType('rent');
+                            setShowModal(true);
+                          }}
+                          className="bg-purple-600 text-white px-3 py-1 rounded text-sm hover:bg-purple-700"
+                        >
+                          Rent
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-sm border p-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">Active Rentals</h3>
+                <div className="space-y-3">
+                  {equipment.filter(item => item.status === 'rented').map((item) => {
+                    const category = categories.find(c => c.id === item.category);
+                    
+                    return (
+                      <div key={item._id} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+                        <div className="flex items-center">
+                          <div className="text-2xl mr-3">{category?.icon}</div>
+                          <div>
+                            <div className="font-semibold text-gray-900">{item.name}</div>
+                            <div className="text-sm text-gray-600">
+                              Rented • {formatCurrency(item.rentalRate)}/day
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => {
+                            setSelectedItem(item);
+                            setModalType('return');
+                            setShowModal(true);
+                          }}
+                          className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700"
+                        >
+                          Return
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Rental Revenue */}
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">Rental Revenue</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                  <div className="text-2xl font-bold text-green-600">
+                    {formatCurrency(equipment.filter(item => item.isRentable).reduce((sum, item) => sum + (item.rentalRate * 30), 0))}
+                  </div>
+                  <div className="text-sm text-green-700">Potential Monthly Revenue</div>
+                </div>
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  <div className="text-2xl font-bold text-blue-600">
+                    {equipment.filter(item => item.isRentable).length}
+                  </div>
+                  <div className="text-sm text-blue-700">Rentable Items</div>
+                </div>
+                <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                  <div className="text-2xl font-bold text-purple-600">
+                    {formatCurrency(equipment.filter(item => item.isRentable).reduce((sum, item) => sum + item.rentalRate, 0) / equipment.filter(item => item.isRentable).length || 0)}
+                  </div>
+                  <div className="text-sm text-purple-700">Average Daily Rate</div>
                 </div>
               </div>
             </div>
@@ -512,7 +1175,7 @@ const EquipmentManagementSystem = () => {
               <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
                 <input
                   type="text"
-                  placeholder="Search equipment..."
+                  placeholder="Search inventory..."
                   value={filter.search}
                   onChange={(e) => setFilter(f => ({ ...f, search: e.target.value }))}
                   className="border rounded px-3 py-2"
@@ -555,17 +1218,27 @@ const EquipmentManagementSystem = () => {
                 </button>
               </div>
               <div className="text-sm text-gray-600">
-                Showing {filteredEquipment.length} of {equipment.length} items
+                Showing {filteredEquipment.length} of {equipment.length} inventory items
               </div>
+            </div>
+
+            {/* Inventory Header */}
+            <div className="mb-6">
+              <h2 className="text-xl font-semibold text-gray-900">Inventory Items</h2>
             </div>
 
             {/* Equipment Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredEquipment.length === 0 ? (
+              {loading ? (
+                <div className="col-span-3 text-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                  <p className="text-lg font-semibold text-gray-900">Loading inventory...</p>
+                </div>
+              ) : filteredEquipment.length === 0 ? (
                 <div className="col-span-3 text-center py-12">
                   <div className="text-6xl mb-4">📦</div>
-                  <p className="text-lg font-semibold text-gray-900 mb-2">No equipment found</p>
-                  <p className="text-sm text-gray-600">Add equipment to start tracking your inventory</p>
+                  <p className="text-lg font-semibold text-gray-900 mb-2">No inventory items found</p>
+                  <p className="text-sm text-gray-600">Use the "Add Equipment" button above to get started</p>
                 </div>
               ) : (
                 filteredEquipment.map((item) => {
@@ -650,6 +1323,12 @@ const EquipmentManagementSystem = () => {
                             className="flex-1 bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 text-sm"
                           >
                             <i className="bi bi-pencil me-2"></i>Edit
+                          </button>
+                          <button
+                            onClick={() => deleteEquipment(item)}
+                            className="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 text-sm"
+                          >
+                            <i className="bi bi-trash me-2"></i>Delete
                           </button>
                         </div>
                       </div>
@@ -787,66 +1466,6 @@ const EquipmentManagementSystem = () => {
           </div>
         )}
 
-        {/* Reports Tab */}
-        {activeTab === 'reports' && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white rounded-lg shadow-sm border p-6">
-                <h3 className="font-bold text-gray-900 mb-4">Equipment Value by Category</h3>
-                <div className="space-y-3">
-                  {stats.byCategory.map((cat) => {
-                    const percentage = (cat.value / stats.totalValue) * 100;
-                    
-                    return (
-                      <div key={cat.id}>
-                        <div className="flex justify-between text-sm mb-1">
-                          <span>{cat.icon} {cat.name}</span>
-                          <span className="font-bold text-green-600">{formatCurrency(cat.value)}</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div
-                            className={`bg-${cat.color}-600 h-2 rounded-full`}
-                            style={{ width: `${percentage}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="bg-white rounded-lg shadow-sm border p-6">
-                <h3 className="font-bold text-gray-900 mb-4">Quick Stats</h3>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center p-3 bg-blue-50 rounded">
-                    <span className="text-sm text-gray-700">Average Item Value</span>
-                    <span className="font-bold text-blue-600">
-                      {formatCurrency(stats.totalValue / equipment.length || 0)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-green-50 rounded">
-                    <span className="text-sm text-gray-700">Utilization Rate</span>
-                    <span className="font-bold text-green-600">
-                      {Math.round((stats.inUse / stats.totalItems) * 100)}%
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-purple-50 rounded">
-                    <span className="text-sm text-gray-700">Available Capacity</span>
-                    <span className="font-bold text-purple-600">
-                      {Math.round((stats.available / stats.totalItems) * 100)}%
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-orange-50 rounded">
-                    <span className="text-sm text-gray-700">Items Needing Attention</span>
-                    <span className="font-bold text-orange-600">
-                      {stats.maintenance + stats.lowStock}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Add/Edit Equipment Modal */}
         {showModal && (modalType === 'add' || modalType === 'edit') && (
@@ -1186,5 +1805,5 @@ const EquipmentManagementSystem = () => {
   );
 };
 
-export default EquipmentManagementSystem;
+export default InventoryManagementSystem;
 

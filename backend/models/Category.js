@@ -58,6 +58,23 @@ const categorySchema = new mongoose.Schema({
     sortOrder: {
       type: Number,
       default: 0
+    },
+    // Optional fee overrides for subcategory
+    postingFee: {
+      type: Number,
+      min: 0
+    },
+    renewalFee: {
+      type: Number,
+      min: 0
+    },
+    extensionFee: {
+      type: Number,
+      min: 0
+    },
+    featuredFee: {
+      type: Number,
+      min: 0
     }
   }],
   itemCount: {
@@ -65,7 +82,41 @@ const categorySchema = new mongoose.Schema({
     default: 0
   },
   
-  // Pricing Settings
+  // Simplified Fee Structure (Direct fees)
+  postingFee: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+  renewalFee: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+  extensionFee: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+  featuredFee: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+  defaultExpirationDays: {
+    type: Number,
+    default: 90,
+    min: 1,
+    max: 365
+  },
+  maxExtensions: {
+    type: Number,
+    default: 3,
+    min: 0,
+    max: 10
+  },
+  
+  // Pricing Settings (Advanced structure)
   pricingSettings: {
     enabled: {
       type: Boolean,

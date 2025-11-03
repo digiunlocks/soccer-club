@@ -3,6 +3,54 @@ const router = express.Router();
 const Payment = require('../models/Payment');
 const { auth } = require('./auth');
 
+// Get all payments (admin endpoint)
+router.get('/all', auth, async (req, res) => {
+  try {
+    const payments = await Payment.find().sort({ createdAt: -1, paymentDate: -1 });
+    res.json(payments);
+  } catch (err) {
+    console.error('Error fetching all payments:', err);
+    res.status(500).json({ error: 'Failed to fetch payments' });
+  }
+});
+
+// Get payment statistics
+router.get('/stats', auth, async (req, res) => {
+  try {
+    const payments = await Payment.find();
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const monthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+
+    const completedPayments = payments.filter(p => p.status === 'completed');
+    const pendingPayments = payments.filter(p => p.status === 'pending');
+    const refundedPayments = payments.filter(p => p.status === 'refunded');
+    const todayPayments = payments.filter(p => new Date(p.paymentDate || p.createdAt) >= today);
+    const weekPayments = payments.filter(p => new Date(p.paymentDate || p.createdAt) >= weekAgo);
+    const monthPayments = payments.filter(p => new Date(p.paymentDate || p.createdAt) >= monthAgo);
+
+    const stats = {
+      totalRevenue: completedPayments.reduce((sum, p) => sum + p.amount, 0),
+      completedPayments: completedPayments.length,
+      pendingAmount: pendingPayments.reduce((sum, p) => sum + p.amount, 0),
+      refundedAmount: refundedPayments.reduce((sum, p) => sum + p.amount, 0),
+      todayRevenue: todayPayments.filter(p => p.status === 'completed').reduce((sum, p) => sum + p.amount, 0),
+      todayCount: todayPayments.length,
+      weekRevenue: weekPayments.filter(p => p.status === 'completed').reduce((sum, p) => sum + p.amount, 0),
+      monthRevenue: monthPayments.filter(p => p.status === 'completed').reduce((sum, p) => sum + p.amount, 0),
+      avgTransactionAmount: completedPayments.length > 0 ? completedPayments.reduce((sum, p) => sum + p.amount, 0) / completedPayments.length : 0,
+      successRate: payments.length > 0 ? (completedPayments.length / payments.length) * 100 : 0,
+      refundRate: completedPayments.length > 0 ? (refundedPayments.length / completedPayments.length) * 100 : 0
+    };
+
+    res.json(stats);
+  } catch (err) {
+    console.error('Error calculating stats:', err);
+    res.status(500).json({ error: 'Failed to calculate statistics' });
+  }
+});
+
 // Get all payments (optionally filter by status, method, donor name, card type, last4, user, or date range)
 router.get('/', auth, async (req, res) => {
   const { status, method, name, cardType, cardLast4, user, startDate, endDate } = req.query;
@@ -188,16 +236,35 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
-// Issue a refund (partial or full, with log, status, and method restriction)
-router.put('/:id/refund', auth, async (req, res) => {
+// Update an existing payment
+router.put('/:id', auth, async (req, res) => {
   try {
-    const { refundAmount, refundReason } = req.body;
+    const payment = await Payment.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true }
+    );
+    
+    if (!payment) {
+      return res.status(404).json({ error: 'Payment not found' });
+    }
+    
+    res.json(payment);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// Issue a refund (partial or full, with log)
+router.post('/:id/refund', auth, async (req, res) => {
+  try {
+    const { refundAmount, refundReason, refundMethod, refundNotes } = req.body;
     const payment = await Payment.findById(req.params.id);
     if (!payment) return res.status(404).json({ error: 'Payment not found' });
     
-    // Restrict refund by method (e.g., only paypal, card)
-    if (!['paypal', 'card'].includes(payment.method)) {
-      return res.status(400).json({ error: 'Refunds only allowed for PayPal or Card payments' });
+    // Validate payment can be refunded
+    if (payment.status !== 'completed') {
+      return res.status(400).json({ error: 'Only completed payments can be refunded' });
     }
     
     const amount = Number(refundAmount);
@@ -211,6 +278,8 @@ router.put('/:id/refund', auth, async (req, res) => {
     payment.refunds.push({
       amount,
       reason: refundReason || '',
+      refundMethod: refundMethod || 'original',
+      notes: refundNotes || '',
       status: 'processed',
       admin: req.user.name || req.user.email,
       refundedAt: new Date(),

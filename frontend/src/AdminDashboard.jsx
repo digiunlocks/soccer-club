@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import UnifiedMarketplaceManager from './components/UnifiedMarketplaceManager';
+import UnifiedPaymentManager from './components/UnifiedPaymentManager';
 
 
 export default function AdminDashboard() {
@@ -169,7 +171,7 @@ export default function AdminDashboard() {
   });
 
   // Sample teams and coaches data
-  const [teams] = useState([
+  const [sampleTeamsData] = useState([
     { id: 1, name: 'U-12 Boys', coach: 'Coach Martinez', level: 'Competitive' },
     { id: 2, name: 'U-14 Girls', coach: 'Jane Smith', level: 'Recreational' },
     { id: 3, name: 'U-16 Boys', coach: 'Coach Wilson', level: 'Competitive' },
@@ -189,6 +191,507 @@ export default function AdminDashboard() {
     enableRegistration: true,
     maintenanceMode: false
   });
+
+  // Club Info state
+  const [clubInfo, setClubInfo] = useState({
+    name: "",
+    shortName: "",
+    founded: "",
+    location: "",
+    address: "",
+    city: "",
+    state: "",
+    zipCode: "",
+    country: "",
+    phone: "",
+    email: "",
+    website: "",
+    description: "",
+    mission: "",
+    vision: "",
+    values: [],
+    president: "",
+    vicePresident: "",
+    secretary: "",
+    treasurer: "",
+    technicalDirector: "",
+    headCoach: "",
+    facebook: "",
+    twitter: "",
+    instagram: "",
+    linkedin: "",
+    youtube: "",
+    primaryColor: "#1e40af",
+    secondaryColor: "#f59e0b",
+    logo: "",
+    motto: "",
+    homeField: "",
+    trainingFacilities: [],
+    officeLocation: "",
+    registrationNumber: "",
+    taxId: "",
+    nonProfit: false,
+    insuranceProvider: "",
+    insuranceNumber: "",
+    totalMembers: 0,
+    activePlayers: 0,
+    coaches: 0,
+    volunteers: 0,
+    teams: 0,
+    awards: [],
+    championships: [],
+    recognitions: []
+  });
+  const [clubInfoLoading, setClubInfoLoading] = useState(false);
+  const [clubInfoActiveTab, setClubInfoActiveTab] = useState('basic');
+
+  // Policies state
+  const [policies, setPolicies] = useState({
+    general: {
+      clubName: 'Seattle Leopards FC',
+      codeOfConduct: '',
+      membershipTerms: '',
+      privacyPolicy: '',
+      refundPolicy: '',
+      lastUpdated: new Date().toISOString()
+    },
+    safety: {
+      safetyGuidelines: '',
+      emergencyProcedures: '',
+      injuryReporting: '',
+      equipmentSafety: '',
+      weatherPolicy: '',
+      lastUpdated: new Date().toISOString()
+    },
+    disciplinary: {
+      disciplinaryCode: '',
+      suspensionPolicy: '',
+      appealProcess: '',
+      zeroTolerance: '',
+      reportingProcedures: '',
+      lastUpdated: new Date().toISOString()
+    },
+    financial: {
+      paymentTerms: '',
+      feeStructure: '',
+      refundPolicy: '',
+      latePaymentPolicy: '',
+      financialAid: '',
+      lastUpdated: new Date().toISOString()
+    },
+    technology: {
+      dataProtection: '',
+      socialMediaPolicy: '',
+      photoVideoPolicy: '',
+      communicationPolicy: '',
+      onlineSafety: '',
+      lastUpdated: new Date().toISOString()
+    },
+    volunteer: {
+      volunteerCode: '',
+      backgroundChecks: '',
+      trainingRequirements: '',
+      volunteerRights: '',
+      volunteerResponsibilities: '',
+      lastUpdated: new Date().toISOString()
+    }
+  });
+  const [policiesLoading, setPoliciesLoading] = useState(false);
+  const [policiesActiveTab, setPoliciesActiveTab] = useState('general');
+
+  // Documentation state
+  const [documentsActiveTab, setDocumentsActiveTab] = useState('overview');
+  const [documents, setDocuments] = useState([]);
+  const [documentsLoading, setDocumentsLoading] = useState(false);
+  const [documentFilter, setDocumentFilter] = useState({
+    search: '',
+    category: 'all',
+    status: 'all'
+  });
+  const [newDocument, setNewDocument] = useState({
+    title: '',
+    description: '',
+    category: 'policies',
+    version: '1.0',
+    file: null,
+    status: 'draft'
+  });
+
+  const documentCategories = [
+    { id: 'policies', name: 'Policies & Procedures', icon: '📋', color: 'blue' },
+    { id: 'forms', name: 'Forms & Templates', icon: '📄', color: 'green' },
+    { id: 'handbooks', name: 'Handbooks & Guides', icon: '📚', color: 'purple' },
+    { id: 'training', name: 'Training Materials', icon: '🎓', color: 'orange' },
+    { id: 'legal', name: 'Legal Documents', icon: '⚖️', color: 'red' },
+    { id: 'financial', name: 'Financial Documents', icon: '💰', color: 'teal' },
+    { id: 'medical', name: 'Medical Forms', icon: '🏥', color: 'pink' },
+    { id: 'other', name: 'Other Documents', icon: '📎', color: 'gray' }
+  ];
+
+  // Applications state
+  const [applicationsActiveTab, setApplicationsActiveTab] = useState('overview');
+  const [applications, setApplications] = useState([]);
+  const [applicationsLoading, setApplicationsLoading] = useState(false);
+  const [applicationFilter, setApplicationFilter] = useState({
+    search: '',
+    type: 'all',
+    status: 'all',
+    priority: 'all'
+  });
+  const [selectedApplication, setSelectedApplication] = useState(null);
+  const [showAppModal, setShowAppModal] = useState(false);
+
+  const applicationTypes = [
+    { id: 'player', name: 'Player Registration', icon: '⚽', color: 'blue' },
+    { id: 'coach', name: 'Coach Application', icon: '👨‍🏫', color: 'green' },
+    { id: 'volunteer', name: 'Volunteer Application', icon: '🤝', color: 'purple' },
+    { id: 'transfer', name: 'Transfer Request', icon: '🔄', color: 'orange' },
+    { id: 'scholarship', name: 'Scholarship/Financial Aid', icon: '💰', color: 'teal' },
+    { id: 'team', name: 'Team Formation', icon: '👥', color: 'indigo' },
+    { id: 'other', name: 'Other Applications', icon: '📋', color: 'gray' }
+  ];
+
+  const applicationStatusOptions = [
+    { id: 'pending', name: 'Pending Review', color: 'warning', icon: '⏳' },
+    { id: 'under_review', name: 'Under Review', color: 'info', icon: '👁️' },
+    { id: 'approved', name: 'Approved', color: 'success', icon: '✅' },
+    { id: 'rejected', name: 'Rejected', color: 'danger', icon: '❌' },
+    { id: 'on_hold', name: 'On Hold', color: 'warning', icon: '⏸️' },
+    { id: 'requires_info', name: 'Requires Information', color: 'secondary', icon: 'ℹ️' }
+  ];
+
+  // Forms state
+  const [formsActiveTab, setFormsActiveTab] = useState('overview');
+  const [forms, setForms] = useState([]);
+  const [formsLoading, setFormsLoading] = useState(false);
+  const [formFilter, setFormFilter] = useState({
+    search: '',
+    category: 'all',
+    status: 'all'
+  });
+  const [selectedForm, setSelectedForm] = useState(null);
+  const [showFormModal, setShowFormModal] = useState(false);
+
+  const formCategories = [
+    { id: 'registration', name: 'Registration Forms', icon: '📝', color: 'blue' },
+    { id: 'medical', name: 'Medical Forms', icon: '🏥', color: 'red' },
+    { id: 'consent', name: 'Consent & Waivers', icon: '✍️', color: 'orange' },
+    { id: 'evaluation', name: 'Evaluation Forms', icon: '⭐', color: 'yellow' },
+    { id: 'feedback', name: 'Feedback Forms', icon: '💬', color: 'green' },
+    { id: 'application', name: 'Application Forms', icon: '📋', color: 'purple' },
+    { id: 'event', name: 'Event Forms', icon: '🎉', color: 'pink' },
+    { id: 'financial', name: 'Financial Forms', icon: '💰', color: 'teal' },
+    { id: 'other', name: 'Other Forms', icon: '📄', color: 'gray' }
+  ];
+
+  // Teams state
+  const [teamsActiveTab, setTeamsActiveTab] = useState('overview');
+  const [managedTeams, setManagedTeams] = useState([]);
+  const [teamsLoading, setTeamsLoading] = useState(false);
+  const [showTeamForm, setShowTeamForm] = useState(false);
+  const [editingTeam, setEditingTeam] = useState(null);
+  const [teamForm, setTeamForm] = useState({
+    name: "",
+    ageGroup: "",
+    level: "",
+    status: "Forming",
+    coach: "",
+    assistantCoach: "",
+    maxPlayers: 16,
+    currentPlayers: 0,
+    practiceDays: "",
+    practiceTime: "",
+    gameDay: "",
+    gameTime: "",
+    location: "",
+    fees: 0,
+    season: "",
+    description: "",
+    visible: true
+  });
+
+  const AGE_GROUPS = ["Under 6", "Under 8", "Under 10", "Under 12", "Under 14", "Under 16", "Under 18", "Adult", "Women's", "Coed"];
+  const TEAM_LEVELS = ["Recreational", "Competitive", "Elite", "Development", "All-Star"];
+  const TEAM_STATUSES = ["Active", "Inactive", "Forming", "Full", "Tryouts"];
+
+  // Matches state
+  const [matchesActiveTab, setMatchesActiveTab] = useState('overview');
+  const [matches, setMatches] = useState([]);
+  const [matchesLoading, setMatchesLoading] = useState(false);
+  const [showMatchForm, setShowMatchForm] = useState(false);
+  const [editingMatch, setEditingMatch] = useState(null);
+  const [matchForm, setMatchForm] = useState({
+    homeTeam: "",
+    awayTeam: "",
+    date: "",
+    time: "",
+    location: "",
+    type: "League",
+    status: "Scheduled",
+    homeScore: 0,
+    awayScore: 0,
+    notes: ""
+  });
+
+  // Training state
+  const [trainingsActiveTab, setTrainingsActiveTab] = useState('overview');
+  const [trainings, setTrainings] = useState([]);
+  const [trainingsLoading, setTrainingsLoading] = useState(false);
+  const [showTrainingForm, setShowTrainingForm] = useState(false);
+  const [editingTraining, setEditingTraining] = useState(null);
+  const [trainingForm, setTrainingForm] = useState({
+    title: "",
+    description: "",
+    team: "",
+    coach: "",
+    date: "",
+    startTime: "",
+    endTime: "",
+    location: "",
+    type: "Technical",
+    capacity: 20,
+    enrolled: 0
+  });
+
+  // Events state
+  const [eventsActiveTab, setEventsActiveTab] = useState('overview');
+  const [events, setEvents] = useState([]);
+  const [eventsLoading, setEventsLoading] = useState(false);
+  const [showEventForm, setShowEventForm] = useState(false);
+  const [editingEvent, setEditingEvent] = useState(null);
+  const [eventForm, setEventForm] = useState({
+    title: "",
+    description: "",
+    date: "",
+    startTime: "",
+    endTime: "",
+    location: "",
+    type: "Tournament",
+    status: "Upcoming",
+    capacity: 100,
+    registered: 0,
+    price: 0
+  });
+
+  // Scheduling state
+  const [schedulesActiveTab, setSchedulesActiveTab] = useState('overview');
+  const [schedules, setSchedules] = useState([]);
+  const [schedulesLoading, setSchedulesLoading] = useState(false);
+  const [showScheduleForm, setShowScheduleForm] = useState(false);
+  const [editingSchedule, setEditingSchedule] = useState(null);
+  const [scheduleForm, setScheduleForm] = useState({
+    title: "",
+    description: "",
+    team: "",
+    eventType: "Practice",
+    startDate: "",
+    startTime: "",
+    endTime: "",
+    location: "",
+    isPublic: true,
+    status: "scheduled",
+    notes: ""
+  });
+
+  // Standings state
+  const [standings, setStandings] = useState([]);
+  const [standingsLoading, setStandingsLoading] = useState(false);
+  const [showStandingForm, setShowStandingForm] = useState(false);
+  const [editingStanding, setEditingStanding] = useState(null);
+  const [standingForm, setStandingForm] = useState({
+    season: "",
+    league: "",
+    division: "",
+    team: "",
+    played: 0,
+    won: 0,
+    drawn: 0,
+    lost: 0,
+    goalsFor: 0,
+    goalsAgainst: 0,
+    goalDifference: 0,
+    points: 0,
+    form: "",
+    isPublic: true,
+    notes: ""
+  });
+
+  // Media Library state
+  const [mediaItems, setMediaItems] = useState([]);
+  const [mediaLoading, setMediaLoading] = useState(false);
+  const [mediaTab, setMediaTab] = useState('all'); // all, pending, flagged
+  const [uploadingMedia, setUploadingMedia] = useState(false);
+  const [showUploadForm, setShowUploadForm] = useState(false);
+  const [mediaForm, setMediaForm] = useState({
+    title: "",
+    description: "",
+    category: "Match Photos",
+    file: null
+  });
+
+  // Sponsors state
+  const [sponsors, setSponsors] = useState([]);
+  const [sponsorsLoading, setSponsorsLoading] = useState(false);
+  const [showSponsorForm, setShowSponsorForm] = useState(false);
+  const [editingSponsor, setEditingSponsor] = useState(null);
+  const [sponsorForm, setSponsorForm] = useState({
+    companyName: "",
+    contactPerson: "",
+    email: "",
+    phone: "",
+    website: "",
+    tier: "Bronze",
+    amount: 0,
+    paymentFrequency: "Annual",
+    contractStart: "",
+    contractEnd: "",
+    status: "Pending",
+    address: "",
+    benefits: "",
+    notes: "",
+    isVisible: true
+  });
+
+  // Membership state
+  const [membershipTab, setMembershipTab] = useState('tiers'); // tiers, members
+  const [memberships, setMemberships] = useState([]);
+  const [membershipTiers, setMembershipTiers] = useState([]);
+  const [membershipsLoading, setMembershipsLoading] = useState(false);
+  const [showMembershipForm, setShowMembershipForm] = useState(false);
+  const [editingMembership, setEditingMembership] = useState(null);
+  const [showTierForm, setShowTierForm] = useState(false);
+  const [editingTier, setEditingTier] = useState(null);
+  const [membershipStats, setMembershipStats] = useState({
+    totalMembers: 0,
+    activeMembers: 0,
+    expiredMembers: 0,
+    totalRevenue: 0,
+    monthlyRevenue: 0
+  });
+  const [membershipForm, setMembershipForm] = useState({
+    userId: "",
+    tierId: "",
+    startDate: "",
+    endDate: "",
+    amount: 0,
+    paymentMethod: "credit_card",
+    notes: ""
+  });
+  const [tierForm, setTierForm] = useState({
+    name: "",
+    description: "",
+    price: 0,
+    duration: 12,
+    features: [],
+    discountPercentage: 0,
+    isActive: true,
+    color: "#3B82F6"
+  });
+
+  // Finance state
+  const [financeTab, setFinanceTab] = useState('transactions');
+  const [transactions, setTransactions] = useState([]);
+  const [financeLoading, setFinanceLoading] = useState(false);
+
+  // Marketplace state
+  const [marketplaceStats, setMarketplaceStats] = useState({
+    activeListings: 0,
+    activeSellers: 0,
+    totalRevenue: 0,
+    expiringItems: 0,
+    pendingReview: 0,
+    flaggedItems: 0,
+    soldItems: 0
+  });
+  const [showTransactionForm, setShowTransactionForm] = useState(false);
+  const [editingTransaction, setEditingTransaction] = useState(null);
+  const [financeSummary, setFinanceSummary] = useState({
+    totalIncome: 0,
+    totalExpense: 0,
+    netIncome: 0,
+    incomeCount: 0,
+    expenseCount: 0
+  });
+  const [transactionForm, setTransactionForm] = useState({
+    type: "income",
+    category: "",
+    description: "",
+    amount: 0,
+    date: new Date().toISOString().split('T')[0],
+    paymentMethod: "cash",
+    status: "completed",
+    referenceNumber: "",
+    payer: "",
+    payee: "",
+    notes: ""
+  });
+
+  const incomeCategories = [
+    "Registration Fees", "Membership Dues", "Sponsorships", "Fundraising",
+    "Merchandise Sales", "Tournament Fees", "Donations", "Grants", "Other Income"
+  ];
+
+  const expenseCategories = [
+    "Equipment", "Uniforms", "Facility Rental", "Coaching Fees", "Travel",
+    "Insurance", "Utilities", "Marketing", "Referee Fees", "Tournament Fees",
+    "Maintenance", "Office Supplies", "Software/Technology", "Other Expenses"
+  ];
+
+  // Payment state
+  const [paymentTab, setPaymentTab] = useState('all');
+  const [payments, setPayments] = useState([]);
+  const [paymentsLoading, setPaymentsLoading] = useState(false);
+  const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [editingPayment, setEditingPayment] = useState(null);
+  const [paymentStats, setPaymentStats] = useState({
+    totalRevenue: 0,
+    completedPayments: 0,
+    pendingAmount: 0,
+    todayRevenue: 0,
+    todayCount: 0,
+    refundedAmount: 0
+  });
+  const [paymentForm, setPaymentForm] = useState({
+    payerName: "",
+    payerEmail: "",
+    paymentType: "Registration Fees",
+    paymentMethod: "credit_card",
+    amount: 0,
+    status: "completed",
+    transactionId: "",
+    cardType: "",
+    cardLastFour: "",
+    notes: "",
+    paymentDate: new Date().toISOString().split('T')[0]
+  });
+
+  const paymentTypes = [
+    "Registration Fees",
+    "Membership Dues", 
+    "Tournament Fees",
+    "Training Sessions",
+    "Equipment Purchase",
+    "Uniform Purchase",
+    "Camp/Clinic Fees",
+    "Merchandise",
+    "Marketplace Purchase",
+    "Donations",
+    "Sponsorship",
+    "Other"
+  ];
+
+  const paymentMethods = [
+    { value: "credit_card", label: "Credit Card", icon: "💳" },
+    { value: "debit_card", label: "Debit Card", icon: "💳" },
+    { value: "paypal", label: "PayPal", icon: "🅿️" },
+    { value: "venmo", label: "Venmo", icon: "📱" },
+    { value: "zelle", label: "Zelle", icon: "💵" },
+    { value: "cash_app", label: "Cash App", icon: "💵" },
+    { value: "bank_transfer", label: "Bank Transfer", icon: "🏦" },
+    { value: "check", label: "Check", icon: "📝" },
+    { value: "cash", label: "Cash", icon: "💵" },
+    { value: "other", label: "Other", icon: "💰" }
+  ];
 
   // Enhanced overview data
   const [overviewStats, setOverviewStats] = useState({
@@ -599,6 +1102,1869 @@ export default function AdminDashboard() {
     }));
   };
 
+  // Club Info Functions
+  const fetchClubInfo = async () => {
+    try {
+      setClubInfoLoading(true);
+      const token = localStorage.getItem("token");
+      const response = await fetch('http://localhost:5000/api/club-info', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setClubInfo(data);
+      }
+    } catch (error) {
+      console.error('Error fetching club info:', error);
+      toast.error('Failed to fetch club information');
+    } finally {
+      setClubInfoLoading(false);
+    }
+  };
+
+  const saveClubInfo = async () => {
+    try {
+      setClubInfoLoading(true);
+      const token = localStorage.getItem("token");
+      const response = await fetch('http://localhost:5000/api/club-info', {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(clubInfo)
+      });
+
+      if (response.ok) {
+        toast.success('Club information updated successfully!');
+      } else {
+        const error = await response.json();
+        toast.error(error.message || 'Failed to update club information');
+      }
+    } catch (error) {
+      console.error('Error updating club info:', error);
+      toast.error('Failed to update club information');
+    } finally {
+      setClubInfoLoading(false);
+    }
+  };
+
+  const handleClubInfoChange = (field, value) => {
+    setClubInfo(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleClubInfoArrayChange = (field, index, value) => {
+    setClubInfo(prev => ({
+      ...prev,
+      [field]: prev[field].map((item, i) => i === index ? value : item)
+    }));
+  };
+
+  const addClubInfoArrayItem = (field, newItem) => {
+    setClubInfo(prev => ({
+      ...prev,
+      [field]: [...prev[field], newItem]
+    }));
+  };
+
+  const removeClubInfoArrayItem = (field, index) => {
+    setClubInfo(prev => ({
+      ...prev,
+      [field]: prev[field].filter((_, i) => i !== index)
+    }));
+  };
+
+  // Fetch club info when section changes to club-info
+  useEffect(() => {
+    if (activeSection === 'club-info') {
+      fetchClubInfo();
+    }
+  }, [activeSection]);
+
+  // Policies Functions
+  const loadPolicies = async () => {
+    try {
+      setPoliciesLoading(true);
+      const token = localStorage.getItem("token");
+      const response = await fetch('http://localhost:5000/api/policies', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setPolicies(data);
+      }
+    } catch (error) {
+      console.error('Error loading policies:', error);
+    } finally {
+      setPoliciesLoading(false);
+    }
+  };
+
+  const savePolicies = async () => {
+    try {
+      setPoliciesLoading(true);
+      const token = localStorage.getItem("token");
+      const response = await fetch('http://localhost:5000/api/policies', {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(policies),
+      });
+
+      if (response.ok) {
+        toast.success('Policies saved successfully!');
+      } else {
+        toast.error('Error saving policies');
+      }
+    } catch (error) {
+      console.error('Error saving policies:', error);
+      toast.error('Error saving policies');
+    } finally {
+      setPoliciesLoading(false);
+    }
+  };
+
+  const updatePolicy = (category, field, value) => {
+    setPolicies(prev => ({
+      ...prev,
+      [category]: {
+        ...prev[category],
+        [field]: value,
+        lastUpdated: new Date().toISOString()
+      }
+    }));
+  };
+
+  // Fetch policies when section changes to policies
+  useEffect(() => {
+    if (activeSection === 'policies') {
+      loadPolicies();
+    }
+  }, [activeSection]);
+
+  // Documentation Functions
+  const loadDocuments = async () => {
+    try {
+      setDocumentsLoading(true);
+      const token = localStorage.getItem("token");
+      const response = await fetch('http://localhost:5000/api/documents', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setDocuments(data);
+      }
+    } catch (error) {
+      console.error('Error loading documents:', error);
+    } finally {
+      setDocumentsLoading(false);
+    }
+  };
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setNewDocument(prev => ({ ...prev, file }));
+    }
+  };
+
+  const uploadDocument = async () => {
+    if (!newDocument.title || !newDocument.file) {
+      toast.error('Please provide title and file');
+      return;
+    }
+
+    try {
+      setDocumentsLoading(true);
+      const token = localStorage.getItem("token");
+      const formData = new FormData();
+      formData.append('file', newDocument.file);
+      formData.append('title', newDocument.title);
+      formData.append('description', newDocument.description);
+      formData.append('category', newDocument.category);
+      formData.append('version', newDocument.version);
+      formData.append('status', newDocument.status);
+
+      const response = await fetch('http://localhost:5000/api/documents/upload', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      if (response.ok) {
+        toast.success('Document uploaded successfully!');
+        setNewDocument({
+          title: '',
+          description: '',
+          category: 'policies',
+          version: '1.0',
+          file: null,
+          status: 'draft'
+        });
+        loadDocuments();
+        setDocumentsActiveTab('all');
+      } else {
+        toast.error('Error uploading document');
+      }
+    } catch (error) {
+      console.error('Error uploading document:', error);
+      toast.error('Error uploading document');
+    } finally {
+      setDocumentsLoading(false);
+    }
+  };
+
+  const deleteDocument = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this document?')) return;
+
+    try {
+      setDocumentsLoading(true);
+      const token = localStorage.getItem("token");
+      const response = await fetch(`http://localhost:5000/api/documents/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        toast.success('Document deleted successfully!');
+        loadDocuments();
+      } else {
+        toast.error('Error deleting document');
+      }
+    } catch (error) {
+      console.error('Error deleting document:', error);
+      toast.error('Error deleting document');
+    } finally {
+      setDocumentsLoading(false);
+    }
+  };
+
+  const filteredDocuments = documents.filter(doc => {
+    if (documentFilter.search && !doc.title.toLowerCase().includes(documentFilter.search.toLowerCase()) &&
+        !doc.description?.toLowerCase().includes(documentFilter.search.toLowerCase())) {
+      return false;
+    }
+    if (documentFilter.category !== 'all' && doc.category !== documentFilter.category) return false;
+    if (documentFilter.status !== 'all' && doc.status !== documentFilter.status) return false;
+    return true;
+  });
+
+  const documentStats = {
+    total: documents.length,
+    published: documents.filter(d => d.status === 'published').length,
+    draft: documents.filter(d => d.status === 'draft').length,
+    archived: documents.filter(d => d.status === 'archived').length,
+    byCategory: documentCategories.map(cat => ({
+      ...cat,
+      count: documents.filter(d => d.category === cat.id).length
+    }))
+  };
+
+  const getDocStatusColor = (status) => {
+    const colors = {
+      draft: 'warning',
+      published: 'success',
+      archived: 'secondary',
+      pending: 'info'
+    };
+    return colors[status] || 'secondary';
+  };
+
+  // Fetch documents when section changes to documents
+  useEffect(() => {
+    if (activeSection === 'documents') {
+      loadDocuments();
+    }
+  }, [activeSection]);
+
+  // Applications Functions
+  const loadApplications = async () => {
+    try {
+      setApplicationsLoading(true);
+      const token = localStorage.getItem("token");
+      const response = await fetch('http://localhost:5000/api/applications', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setApplications(data);
+      }
+    } catch (error) {
+      console.error('Error loading applications:', error);
+    } finally {
+      setApplicationsLoading(false);
+    }
+  };
+
+  const updateApplicationStatus = async (id, status) => {
+    try {
+      setApplicationsLoading(true);
+      const token = localStorage.getItem("token");
+      const response = await fetch(`http://localhost:5000/api/applications/${id}/status`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status })
+      });
+
+      if (response.ok) {
+        toast.success(`Application ${status} successfully!`);
+        loadApplications();
+        setShowAppModal(false);
+      } else {
+        toast.error('Error updating application status');
+      }
+    } catch (error) {
+      console.error('Error updating status:', error);
+      toast.error('Error updating application status');
+    } finally {
+      setApplicationsLoading(false);
+    }
+  };
+
+  const deleteApplication = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this application?')) return;
+
+    try {
+      setApplicationsLoading(true);
+      const token = localStorage.getItem("token");
+      const response = await fetch(`http://localhost:5000/api/applications/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        toast.success('Application deleted successfully!');
+        loadApplications();
+      } else {
+        toast.error('Error deleting application');
+      }
+    } catch (error) {
+      console.error('Error deleting application:', error);
+      toast.error('Error deleting application');
+    } finally {
+      setApplicationsLoading(false);
+    }
+  };
+
+  const filteredApplications = applications.filter(app => {
+    if (applicationFilter.search && 
+        !app.applicantName?.toLowerCase().includes(applicationFilter.search.toLowerCase()) &&
+        !app.applicantEmail?.toLowerCase().includes(applicationFilter.search.toLowerCase())) {
+      return false;
+    }
+    if (applicationFilter.type !== 'all' && app.type !== applicationFilter.type) return false;
+    if (applicationFilter.status !== 'all' && app.status !== applicationFilter.status) return false;
+    return true;
+  });
+
+  const applicationStats = {
+    total: applications.length,
+    pending: applications.filter(a => a.status === 'pending').length,
+    underReview: applications.filter(a => a.status === 'under_review').length,
+    approved: applications.filter(a => a.status === 'approved').length,
+    rejected: applications.filter(a => a.status === 'rejected').length,
+    byType: applicationTypes.map(type => ({
+      ...type,
+      count: applications.filter(a => a.type === type.id).length
+    }))
+  };
+
+  // Fetch applications when section changes to applications
+  useEffect(() => {
+    if (activeSection === 'applications') {
+      loadApplications();
+    }
+  }, [activeSection]);
+
+  // Forms Functions
+  const loadForms = async () => {
+    try {
+      setFormsLoading(true);
+      const token = localStorage.getItem("token");
+      const response = await fetch('http://localhost:5000/api/forms', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setForms(data);
+      }
+    } catch (error) {
+      console.error('Error loading forms:', error);
+    } finally {
+      setFormsLoading(false);
+    }
+  };
+
+  const deleteForm = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this form?')) return;
+
+    try {
+      setFormsLoading(true);
+      const token = localStorage.getItem("token");
+      const response = await fetch(`http://localhost:5000/api/forms/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        toast.success('Form deleted successfully!');
+        loadForms();
+      } else {
+        toast.error('Error deleting form');
+      }
+    } catch (error) {
+      console.error('Error deleting form:', error);
+      toast.error('Error deleting form');
+    } finally {
+      setFormsLoading(false);
+    }
+  };
+
+  const updateFormStatus = async (id, status) => {
+    try {
+      setFormsLoading(true);
+      const token = localStorage.getItem("token");
+      const response = await fetch(`http://localhost:5000/api/forms/${id}/status`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status })
+      });
+
+      if (response.ok) {
+        toast.success('Form status updated!');
+        loadForms();
+      } else {
+        toast.error('Error updating form status');
+      }
+    } catch (error) {
+      console.error('Error updating status:', error);
+      toast.error('Error updating form status');
+    } finally {
+      setFormsLoading(false);
+    }
+  };
+
+  const filteredForms = forms.filter(form => {
+    if (formFilter.search && 
+        !form.title?.toLowerCase().includes(formFilter.search.toLowerCase()) &&
+        !form.description?.toLowerCase().includes(formFilter.search.toLowerCase())) {
+      return false;
+    }
+    if (formFilter.category !== 'all' && form.category !== formFilter.category) return false;
+    if (formFilter.status !== 'all' && form.status !== formFilter.status) return false;
+    return true;
+  });
+
+  const formStats = {
+    total: forms.length,
+    active: forms.filter(f => f.status === 'active').length,
+    draft: forms.filter(f => f.status === 'draft').length,
+    archived: forms.filter(f => f.status === 'archived').length,
+    byCategory: formCategories.map(cat => ({
+      ...cat,
+      count: forms.filter(f => f.category === cat.id).length
+    }))
+  };
+
+  // Fetch forms when section changes to forms
+  useEffect(() => {
+    if (activeSection === 'forms') {
+      loadForms();
+    }
+  }, [activeSection]);
+
+  // Teams Functions
+  const loadTeams = async () => {
+    try {
+      setTeamsLoading(true);
+      const token = localStorage.getItem("token");
+      const response = await fetch('http://localhost:5000/api/teams', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setManagedTeams(data);
+      }
+    } catch (error) {
+      console.error('Error loading teams:', error);
+    } finally {
+      setTeamsLoading(false);
+    }
+  };
+
+  const handleTeamFormChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setTeamForm(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
+
+  const handleTeamSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setTeamsLoading(true);
+      const token = localStorage.getItem("token");
+      const url = editingTeam 
+        ? `http://localhost:5000/api/teams/${editingTeam._id}` 
+        : 'http://localhost:5000/api/teams';
+      const method = editingTeam ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(teamForm)
+      });
+
+      if (response.ok) {
+        const savedTeam = await response.json();
+        if (editingTeam) {
+          setManagedTeams(prev => prev.map(team => 
+            team._id === savedTeam._id ? savedTeam : team
+          ));
+          toast.success('Team updated successfully');
+        } else {
+          setManagedTeams(prev => [...prev, savedTeam]);
+          toast.success('Team created successfully');
+        }
+        resetTeamForm();
+        setShowTeamForm(false);
+        setEditingTeam(null);
+      } else {
+        toast.error('Error saving team');
+      }
+    } catch (error) {
+      console.error('Error saving team:', error);
+      toast.error('Error saving team');
+    } finally {
+      setTeamsLoading(false);
+    }
+  };
+
+  const handleEditTeam = (team) => {
+    setTeamForm({
+      name: team.name,
+      ageGroup: team.ageGroup,
+      level: team.level,
+      status: team.status,
+      coach: team.coach,
+      assistantCoach: team.assistantCoach || "",
+      maxPlayers: team.maxPlayers,
+      currentPlayers: team.currentPlayers,
+      practiceDays: team.practiceDays,
+      practiceTime: team.practiceTime,
+      gameDay: team.gameDay,
+      gameTime: team.gameTime,
+      location: team.location,
+      fees: team.fees,
+      season: team.season,
+      description: team.description || "",
+      visible: team.visible !== undefined ? team.visible : true
+    });
+    setEditingTeam(team);
+    setShowTeamForm(true);
+  };
+
+  const handleDeleteTeam = async (teamId) => {
+    if (!window.confirm('Are you sure you want to delete this team?')) return;
+
+    try {
+      setTeamsLoading(true);
+      const token = localStorage.getItem("token");
+      const response = await fetch(`http://localhost:5000/api/teams/${teamId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        setManagedTeams(prev => prev.filter(team => team._id !== teamId));
+        toast.success('Team deleted successfully');
+      } else {
+        toast.error('Error deleting team');
+      }
+    } catch (error) {
+      console.error('Error deleting team:', error);
+      toast.error('Error deleting team');
+    } finally {
+      setTeamsLoading(false);
+    }
+  };
+
+  const resetTeamForm = () => {
+    setTeamForm({
+      name: "",
+      ageGroup: "",
+      level: "",
+      status: "Forming",
+      coach: "",
+      assistantCoach: "",
+      maxPlayers: 16,
+      currentPlayers: 0,
+      practiceDays: "",
+      practiceTime: "",
+      gameDay: "",
+      gameTime: "",
+      location: "",
+      fees: 0,
+      season: "",
+      description: "",
+      visible: true
+    });
+  };
+
+  const teamStats = {
+    total: managedTeams.length,
+    active: managedTeams.filter(t => t.status === 'Active').length,
+    forming: managedTeams.filter(t => t.status === 'Forming').length,
+    full: managedTeams.filter(t => t.status === 'Full').length,
+    byAgeGroup: AGE_GROUPS.map(age => ({
+      name: age,
+      count: managedTeams.filter(t => t.ageGroup === age).length
+    })).filter(g => g.count > 0),
+    byLevel: TEAM_LEVELS.map(level => ({
+      name: level,
+      count: managedTeams.filter(t => t.level === level).length
+    })).filter(l => l.count > 0)
+  };
+
+  // Fetch teams when section changes to teams
+  useEffect(() => {
+    if (activeSection === 'teams') {
+      loadTeams();
+    }
+  }, [activeSection]);
+
+  // Matches Functions
+  const loadMatches = async () => {
+    try {
+      setMatchesLoading(true);
+      const token = localStorage.getItem("token");
+      const response = await fetch('http://localhost:5000/api/matches', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setMatches(data);
+      }
+    } catch (error) {
+      console.error('Error loading matches:', error);
+    } finally {
+      setMatchesLoading(false);
+    }
+  };
+
+  const handleMatchSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setMatchesLoading(true);
+      const token = localStorage.getItem("token");
+      const url = editingMatch ? `http://localhost:5000/api/matches/${editingMatch._id}` : 'http://localhost:5000/api/matches';
+      const method = editingMatch ? 'PUT' : 'POST';
+      const response = await fetch(url, {
+        method,
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(matchForm)
+      });
+      if (response.ok) {
+        const savedMatch = await response.json();
+        if (editingMatch) {
+          setMatches(prev => prev.map(m => m._id === savedMatch._id ? savedMatch : m));
+          toast.success('Match updated successfully');
+        } else {
+          setMatches(prev => [...prev, savedMatch]);
+          toast.success('Match created successfully');
+        }
+        setShowMatchForm(false);
+        setEditingMatch(null);
+        setMatchForm({ homeTeam: "", awayTeam: "", date: "", time: "", location: "", type: "League", status: "Scheduled", homeScore: 0, awayScore: 0, notes: "" });
+      } else {
+        toast.error('Error saving match');
+      }
+    } catch (error) {
+      toast.error('Error saving match');
+    } finally {
+      setMatchesLoading(false);
+    }
+  };
+
+  const handleDeleteMatch = async (id) => {
+    if (!window.confirm('Delete this match?')) return;
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`http://localhost:5000/api/matches/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        setMatches(prev => prev.filter(m => m._id !== id));
+        toast.success('Match deleted');
+      }
+    } catch (error) {
+      toast.error('Error deleting match');
+    }
+  };
+
+  useEffect(() => {
+    if (activeSection === 'matches') loadMatches();
+  }, [activeSection]);
+
+  // Training Functions
+  const loadTrainings = async () => {
+    try {
+      setTrainingsLoading(true);
+      const token = localStorage.getItem("token");
+      const response = await fetch('http://localhost:5000/api/trainings', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setTrainings(data);
+      }
+    } catch (error) {
+      console.error('Error loading trainings:', error);
+    } finally {
+      setTrainingsLoading(false);
+    }
+  };
+
+  const handleTrainingSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setTrainingsLoading(true);
+      const token = localStorage.getItem("token");
+      const url = editingTraining ? `http://localhost:5000/api/trainings/${editingTraining._id}` : 'http://localhost:5000/api/trainings';
+      const method = editingTraining ? 'PUT' : 'POST';
+      const response = await fetch(url, {
+        method,
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(trainingForm)
+      });
+      if (response.ok) {
+        const saved = await response.json();
+        if (editingTraining) {
+          setTrainings(prev => prev.map(t => t._id === saved._id ? saved : t));
+          toast.success('Training updated');
+        } else {
+          setTrainings(prev => [...prev, saved]);
+          toast.success('Training created');
+        }
+        setShowTrainingForm(false);
+        setEditingTraining(null);
+        setTrainingForm({ title: "", description: "", team: "", coach: "", date: "", startTime: "", endTime: "", location: "", type: "Technical", capacity: 20, enrolled: 0 });
+      } else {
+        toast.error('Error saving training');
+      }
+    } catch (error) {
+      toast.error('Error saving training');
+    } finally {
+      setTrainingsLoading(false);
+    }
+  };
+
+  const handleDeleteTraining = async (id) => {
+    if (!window.confirm('Delete this training?')) return;
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`http://localhost:5000/api/trainings/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        setTrainings(prev => prev.filter(t => t._id !== id));
+        toast.success('Training deleted');
+      }
+    } catch (error) {
+      toast.error('Error deleting training');
+    }
+  };
+
+  useEffect(() => {
+    if (activeSection === 'training') loadTrainings();
+  }, [activeSection]);
+
+  // Events Functions
+  const loadEvents = async () => {
+    try {
+      setEventsLoading(true);
+      const token = localStorage.getItem("token");
+      const response = await fetch('http://localhost:5000/api/events', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setEvents(data);
+      }
+    } catch (error) {
+      console.error('Error loading events:', error);
+    } finally {
+      setEventsLoading(false);
+    }
+  };
+
+  const handleEventSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setEventsLoading(true);
+      const token = localStorage.getItem("token");
+      const url = editingEvent ? `http://localhost:5000/api/events/${editingEvent._id}` : 'http://localhost:5000/api/events';
+      const method = editingEvent ? 'PUT' : 'POST';
+      const response = await fetch(url, {
+        method,
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(eventForm)
+      });
+      if (response.ok) {
+        const saved = await response.json();
+        if (editingEvent) {
+          setEvents(prev => prev.map(e => e._id === saved._id ? saved : e));
+          toast.success('Event updated');
+        } else {
+          setEvents(prev => [...prev, saved]);
+          toast.success('Event created');
+        }
+        setShowEventForm(false);
+        setEditingEvent(null);
+        setEventForm({ title: "", description: "", date: "", startTime: "", endTime: "", location: "", type: "Tournament", status: "Upcoming", capacity: 100, registered: 0, price: 0 });
+      } else {
+        toast.error('Error saving event');
+      }
+    } catch (error) {
+      toast.error('Error saving event');
+    } finally {
+      setEventsLoading(false);
+    }
+  };
+
+  const handleDeleteEvent = async (id) => {
+    if (!window.confirm('Delete this event?')) return;
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`http://localhost:5000/api/events/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        setEvents(prev => prev.filter(e => e._id !== id));
+        toast.success('Event deleted');
+      }
+    } catch (error) {
+      toast.error('Error deleting event');
+    }
+  };
+
+  useEffect(() => {
+    if (activeSection === 'events') loadEvents();
+  }, [activeSection]);
+
+  // Scheduling Functions
+  const loadSchedules = async () => {
+    try {
+      setSchedulesLoading(true);
+      const token = localStorage.getItem("token");
+      const response = await fetch('http://localhost:5000/api/schedules', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        // Backend returns paginated data with { schedules: [], pagination: {} }
+        setSchedules(data.schedules || data);
+      }
+    } catch (error) {
+      console.error('Error loading schedules:', error);
+      toast.error('Failed to load schedules');
+    } finally {
+      setSchedulesLoading(false);
+    }
+  };
+
+  const handleScheduleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setSchedulesLoading(true);
+      const token = localStorage.getItem("token");
+      const url = editingSchedule ? `http://localhost:5000/api/schedules/${editingSchedule._id}` : 'http://localhost:5000/api/schedules';
+      const method = editingSchedule ? 'PUT' : 'POST';
+      const response = await fetch(url, {
+        method,
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(scheduleForm)
+      });
+      if (response.ok) {
+        const saved = await response.json();
+        if (editingSchedule) {
+          setSchedules(prev => prev.map(s => s._id === saved._id ? saved : s));
+          toast.success('Schedule updated');
+        } else {
+          setSchedules(prev => [...prev, saved]);
+          toast.success('Schedule created');
+        }
+        setShowScheduleForm(false);
+        setEditingSchedule(null);
+        setScheduleForm({ 
+          title: "", 
+          description: "", 
+          team: "", 
+          eventType: "Practice", 
+          startDate: "", 
+          startTime: "", 
+          endTime: "", 
+          location: "", 
+          isPublic: true,
+          status: "scheduled",
+          notes: ""
+        });
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.error || 'Error saving schedule');
+      }
+    } catch (error) {
+      console.error('Error saving schedule:', error);
+      toast.error('Error saving schedule');
+    } finally {
+      setSchedulesLoading(false);
+    }
+  };
+
+  const handleDeleteSchedule = async (id) => {
+    if (!window.confirm('Delete this schedule?')) return;
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`http://localhost:5000/api/schedules/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        setSchedules(prev => prev.filter(s => s._id !== id));
+        toast.success('Schedule deleted');
+      }
+    } catch (error) {
+      toast.error('Error deleting schedule');
+    }
+  };
+
+  useEffect(() => {
+    if (activeSection === 'scheduling') loadSchedules();
+  }, [activeSection]);
+
+  // Standings Functions
+  const loadStandings = async () => {
+    try {
+      setStandingsLoading(true);
+      const token = localStorage.getItem("token");
+      const response = await fetch('http://localhost:5000/api/standings', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setStandings(data);
+      }
+    } catch (error) {
+      console.error('Error loading standings:', error);
+      toast.error('Failed to load standings');
+    } finally {
+      setStandingsLoading(false);
+    }
+  };
+
+  const handleStandingSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setStandingsLoading(true);
+      const token = localStorage.getItem("token");
+      const url = editingStanding ? `http://localhost:5000/api/standings/${editingStanding._id}` : 'http://localhost:5000/api/standings';
+      const method = editingStanding ? 'PUT' : 'POST';
+      const response = await fetch(url, {
+        method,
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(standingForm)
+      });
+      if (response.ok) {
+        const saved = await response.json();
+        if (editingStanding) {
+          setStandings(prev => prev.map(s => s._id === saved._id ? saved : s));
+          toast.success('Standing updated');
+        } else {
+          setStandings(prev => [...prev, saved]);
+          toast.success('Standing created');
+        }
+        setShowStandingForm(false);
+        setEditingStanding(null);
+        setStandingForm({
+          season: "",
+          league: "",
+          division: "",
+          team: "",
+          played: 0,
+          won: 0,
+          drawn: 0,
+          lost: 0,
+          goalsFor: 0,
+          goalsAgainst: 0,
+          goalDifference: 0,
+          points: 0,
+          form: "",
+          isPublic: true,
+          notes: ""
+        });
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.error || 'Error saving standing');
+      }
+    } catch (error) {
+      console.error('Error saving standing:', error);
+      toast.error('Error saving standing');
+    } finally {
+      setStandingsLoading(false);
+    }
+  };
+
+  const handleDeleteStanding = async (id) => {
+    if (!window.confirm('Delete this standing?')) return;
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`http://localhost:5000/api/standings/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        setStandings(prev => prev.filter(s => s._id !== id));
+        toast.success('Standing deleted');
+      } else {
+        toast.error('Error deleting standing');
+      }
+    } catch (error) {
+      console.error('Error deleting standing:', error);
+      toast.error('Error deleting standing');
+    }
+  };
+
+  useEffect(() => {
+    if (activeSection === 'standings') loadStandings();
+  }, [activeSection]);
+
+  // Media Library Functions
+  const loadMediaItems = async (tab = 'all') => {
+    try {
+      setMediaLoading(true);
+      const token = localStorage.getItem("token");
+      let url = 'http://localhost:5000/api/gallery/admin/all';
+      
+      if (tab === 'pending') {
+        url = 'http://localhost:5000/api/gallery/admin/pending';
+      } else if (tab === 'flagged') {
+        url = 'http://localhost:5000/api/gallery/admin/flagged';
+      }
+      
+      const response = await fetch(url, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        // Ensure data is always an array
+        setMediaItems(Array.isArray(data) ? data : []);
+      } else {
+        console.error('Failed to load media:', response.status);
+        setMediaItems([]);
+      }
+    } catch (error) {
+      console.error('Error loading media:', error);
+      toast.error('Failed to load media');
+      setMediaItems([]);
+    } finally {
+      setMediaLoading(false);
+    }
+  };
+
+  const handleMediaUpload = async (e) => {
+    e.preventDefault();
+    if (!mediaForm.file) {
+      toast.error('Please select a file');
+      return;
+    }
+
+    try {
+      setUploadingMedia(true);
+      const token = localStorage.getItem("token");
+      const formData = new FormData();
+      formData.append('image', mediaForm.file);
+      formData.append('title', mediaForm.title);
+      formData.append('description', mediaForm.description);
+      formData.append('category', mediaForm.category);
+
+      const response = await fetch('http://localhost:5000/api/gallery/upload', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formData
+      });
+
+      if (response.ok) {
+        const newItem = await response.json();
+        setMediaItems(prev => [newItem, ...prev]);
+        toast.success('Media uploaded successfully');
+        setShowUploadForm(false);
+        setMediaForm({ title: "", description: "", category: "Match Photos", file: null });
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.message || 'Failed to upload media');
+      }
+    } catch (error) {
+      console.error('Error uploading media:', error);
+      toast.error('Failed to upload media');
+    } finally {
+      setUploadingMedia(false);
+    }
+  };
+
+  const handleApproveMedia = async (id) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`http://localhost:5000/api/gallery/admin/${id}/approve`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        setMediaItems(prev => prev.filter(item => item._id !== id));
+        toast.success('Media approved');
+        loadMediaItems(mediaTab);
+      } else {
+        toast.error('Failed to approve media');
+      }
+    } catch (error) {
+      console.error('Error approving media:', error);
+      toast.error('Failed to approve media');
+    }
+  };
+
+  const handleRejectMedia = async (id) => {
+    if (!window.confirm('Are you sure you want to reject this media?')) return;
+    
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`http://localhost:5000/api/gallery/admin/${id}/reject`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        setMediaItems(prev => prev.filter(item => item._id !== id));
+        toast.success('Media rejected');
+      } else {
+        toast.error('Failed to reject media');
+      }
+    } catch (error) {
+      console.error('Error rejecting media:', error);
+      toast.error('Failed to reject media');
+    }
+  };
+
+  const handleDeleteMedia = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this media? This cannot be undone.')) return;
+    
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`http://localhost:5000/api/gallery/admin/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        setMediaItems(prev => prev.filter(item => item._id !== id));
+        toast.success('Media deleted');
+      } else {
+        toast.error('Failed to delete media');
+      }
+    } catch (error) {
+      console.error('Error deleting media:', error);
+      toast.error('Failed to delete media');
+    }
+  };
+
+  useEffect(() => {
+    if (activeSection === 'media') {
+      loadMediaItems(mediaTab);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeSection, mediaTab]);
+
+  // Load sponsors when section changes
+  useEffect(() => {
+    if (activeSection === 'sponsors') {
+      loadSponsors();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeSection]);
+
+  // Load memberships when section changes
+  useEffect(() => {
+    if (activeSection === 'membership') {
+      loadMembershipData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeSection, membershipTab]);
+
+  // Load finance data when section changes
+  useEffect(() => {
+    if (activeSection === 'finance') {
+      loadFinanceData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeSection, financeTab]);
+
+  // Load marketplace data when section changes
+  useEffect(() => {
+    if (activeSection === 'marketplace') {
+      loadMarketplaceStats();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeSection]);
+
+  // Finance functions
+  const loadFinanceData = async () => {
+    try {
+      setFinanceLoading(true);
+      const token = localStorage.getItem("token");
+      
+      // Load summary statistics
+      const summaryResponse = await fetch('http://localhost:5000/api/financial-transactions/stats/summary', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (summaryResponse.ok) {
+        const summary = await summaryResponse.json();
+        setFinanceSummary(summary);
+      }
+      
+      // Load all transactions
+      const transactionsResponse = await fetch('http://localhost:5000/api/financial-transactions', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (transactionsResponse.ok) {
+        const data = await transactionsResponse.json();
+        setTransactions(data.transactions || data);
+      }
+    } catch (error) {
+      console.error('Error loading finance data:', error);
+      toast.error('Failed to load finance data');
+    } finally {
+      setFinanceLoading(false);
+    }
+  };
+
+  // Marketplace functions
+  const loadMarketplaceStats = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      
+      // Load marketplace items - use admin endpoint to get ALL items including pending
+      const itemsResponse = await fetch('http://localhost:5000/api/marketplace/admin/all?limit=1000', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      if (itemsResponse.ok) {
+        const data = await itemsResponse.json();
+        const items = data.items || data; // Handle both paginated and non-paginated responses
+        
+        console.log('Loaded marketplace items:', items);
+        console.log('Items by status:', items.reduce((acc, item) => {
+          acc[item.status] = (acc[item.status] || 0) + 1;
+          return acc;
+        }, {}));
+        
+        // Calculate stats
+        const activeListings = items.filter(item => item.status === 'approved').length;
+        // Items needing review: both pending initial approval and flagged for review
+        const pendingReview = items.filter(item => 
+          item.status === 'pending' || item.status === 'flagged_for_review'
+        ).length;
+        // Flagged items: items flagged for review or removed by flags
+        const flaggedItems = items.filter(item => 
+          item.status === 'flagged_for_review' || item.status === 'removed_by_flags'
+        ).length;
+        const soldItems = items.filter(item => item.status === 'sold').length;
+        
+        // Get unique sellers
+        const uniqueSellers = [...new Set(items.map(item => item.sellerId || item.seller?._id).filter(Boolean))];
+        const activeSellers = uniqueSellers.length;
+        
+        // Calculate expiring items (within 7 days)
+        const sevenDaysFromNow = new Date();
+        sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+        const expiringItems = items.filter(item => {
+          if (item.expiresAt) {
+            const expiryDate = new Date(item.expiresAt);
+            return expiryDate <= sevenDaysFromNow && expiryDate > new Date() && item.status === 'active';
+          }
+          return false;
+        }).length;
+        
+        // Calculate total revenue (if available)
+        const totalRevenue = items
+          .filter(item => item.status === 'sold')
+          .reduce((sum, item) => sum + (item.price || 0), 0);
+        
+        setMarketplaceStats({
+          activeListings,
+          activeSellers,
+          totalRevenue,
+          expiringItems,
+          pendingReview,
+          flaggedItems,
+          soldItems
+        });
+      }
+    } catch (error) {
+      console.error('Error loading marketplace stats:', error);
+      // Don't show error toast for stats, just log it
+    }
+  };
+
+  const resetTransactionForm = () => {
+    setTransactionForm({
+      type: "income",
+      category: "",
+      description: "",
+      amount: 0,
+      date: new Date().toISOString().split('T')[0],
+      paymentMethod: "cash",
+      status: "completed",
+      referenceNumber: "",
+      payer: "",
+      payee: "",
+      notes: ""
+    });
+    setEditingTransaction(null);
+    setShowTransactionForm(false);
+  };
+
+  const handleTransactionSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem("token");
+      const url = editingTransaction 
+        ? `http://localhost:5000/api/financial-transactions/${editingTransaction._id}` 
+        : 'http://localhost:5000/api/financial-transactions';
+      
+      const response = await fetch(url, {
+        method: editingTransaction ? 'PUT' : 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(transactionForm)
+      });
+      
+      if (response.ok) {
+        toast.success(`Transaction ${editingTransaction ? 'updated' : 'created'} successfully`);
+        resetTransactionForm();
+        loadFinanceData();
+      } else {
+        const error = await response.json();
+        toast.error(error.error || 'Failed to save transaction');
+      }
+    } catch (error) {
+      console.error('Error saving transaction:', error);
+      toast.error('Failed to save transaction');
+    }
+  };
+
+  const handleEditTransaction = (transaction) => {
+    setTransactionForm({
+      type: transaction.type || "income",
+      category: transaction.category || "",
+      description: transaction.description || "",
+      amount: transaction.amount || 0,
+      date: transaction.date ? transaction.date.split('T')[0] : new Date().toISOString().split('T')[0],
+      paymentMethod: transaction.paymentMethod || "cash",
+      status: transaction.status || "completed",
+      referenceNumber: transaction.referenceNumber || "",
+      payer: transaction.payer || "",
+      payee: transaction.payee || "",
+      notes: transaction.notes || ""
+    });
+    setEditingTransaction(transaction);
+    setShowTransactionForm(true);
+  };
+
+  const handleDeleteTransaction = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this transaction?')) return;
+    
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`http://localhost:5000/api/financial-transactions/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      if (response.ok) {
+        toast.success('Transaction deleted successfully');
+        loadFinanceData();
+      } else {
+        toast.error('Failed to delete transaction');
+      }
+    } catch (error) {
+      console.error('Error deleting transaction:', error);
+      toast.error('Failed to delete transaction');
+    }
+  };
+
+  // Membership functions
+  const loadMembershipData = async () => {
+    try {
+      setMembershipsLoading(true);
+      const token = localStorage.getItem("token");
+      
+      // Load membership stats
+      const statsResponse = await fetch('http://localhost:5000/api/memberships/admin/stats', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (statsResponse.ok) {
+        const stats = await statsResponse.json();
+        setMembershipStats(stats);
+      }
+      
+      // Load tiers
+      const tiersResponse = await fetch('http://localhost:5000/api/memberships/tiers', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (tiersResponse.ok) {
+        const tiers = await tiersResponse.json();
+        setMembershipTiers(tiers);
+      }
+      
+      // Load all memberships
+      const membershipsResponse = await fetch('http://localhost:5000/api/memberships/admin/all', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (membershipsResponse.ok) {
+        const data = await membershipsResponse.json();
+        setMemberships(data.memberships || data);
+      }
+    } catch (error) {
+      console.error('Error loading membership data:', error);
+      toast.error('Failed to load membership data');
+    } finally {
+      setMembershipsLoading(false);
+    }
+  };
+
+  const resetTierForm = () => {
+    setTierForm({
+      name: "",
+      description: "",
+      price: 0,
+      duration: 12,
+      features: [],
+      discountPercentage: 0,
+      isActive: true,
+      color: "#3B82F6"
+    });
+    setEditingTier(null);
+    setShowTierForm(false);
+  };
+
+  const handleTierSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem("token");
+      const url = editingTier 
+        ? `http://localhost:5000/api/memberships/tiers/${editingTier._id}` 
+        : 'http://localhost:5000/api/memberships/tiers';
+      
+      const response = await fetch(url, {
+        method: editingTier ? 'PUT' : 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(tierForm)
+      });
+      
+      if (response.ok) {
+        toast.success(`Tier ${editingTier ? 'updated' : 'created'} successfully`);
+        resetTierForm();
+        loadMembershipData();
+      } else {
+        const error = await response.json();
+        toast.error(error.error || 'Failed to save tier');
+      }
+    } catch (error) {
+      console.error('Error saving tier:', error);
+      toast.error('Failed to save tier');
+    }
+  };
+
+  const handleEditTier = (tier) => {
+    setTierForm({
+      name: tier.name || "",
+      description: tier.description || "",
+      price: tier.price || 0,
+      duration: tier.duration || 12,
+      features: tier.features || [],
+      discountPercentage: tier.discountPercentage || 0,
+      isActive: tier.isActive !== undefined ? tier.isActive : true,
+      color: tier.color || "#3B82F6"
+    });
+    setEditingTier(tier);
+    setShowTierForm(true);
+  };
+
+  const handleDeleteTier = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this tier?')) return;
+    
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`http://localhost:5000/api/memberships/tiers/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      if (response.ok) {
+        toast.success('Tier deleted successfully');
+        loadMembershipData();
+      } else {
+        const error = await response.json();
+        toast.error(error.error || 'Failed to delete tier');
+      }
+    } catch (error) {
+      console.error('Error deleting tier:', error);
+      toast.error('Failed to delete tier');
+    }
+  };
+
+  const resetMembershipForm = () => {
+    setMembershipForm({
+      userId: "",
+      tierId: "",
+      startDate: "",
+      endDate: "",
+      amount: 0,
+      paymentMethod: "credit_card",
+      notes: ""
+    });
+    setEditingMembership(null);
+    setShowMembershipForm(false);
+  };
+
+  const handleMembershipSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem("token");
+      const url = editingMembership 
+        ? `http://localhost:5000/api/memberships/${editingMembership._id}` 
+        : 'http://localhost:5000/api/memberships';
+      
+      const response = await fetch(url, {
+        method: editingMembership ? 'PUT' : 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(membershipForm)
+      });
+      
+      if (response.ok) {
+        toast.success(`Membership ${editingMembership ? 'updated' : 'created'} successfully`);
+        resetMembershipForm();
+        loadMembershipData();
+      } else {
+        const error = await response.json();
+        toast.error(error.error || 'Failed to save membership');
+      }
+    } catch (error) {
+      console.error('Error saving membership:', error);
+      toast.error('Failed to save membership');
+    }
+  };
+
+  const handleEditMembership = (membership) => {
+    setMembershipForm({
+      userId: membership.user?._id || "",
+      tierId: membership.tier?._id || "",
+      startDate: membership.startDate ? membership.startDate.split('T')[0] : "",
+      endDate: membership.endDate ? membership.endDate.split('T')[0] : "",
+      amount: membership.amount || 0,
+      paymentMethod: membership.paymentMethod || "credit_card",
+      notes: membership.notes || ""
+    });
+    setEditingMembership(membership);
+    setShowMembershipForm(true);
+  };
+
+  const handleMembershipStatusChange = async (id, status) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`http://localhost:5000/api/memberships/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ status })
+      });
+      
+      if (response.ok) {
+        toast.success(`Membership ${status} successfully`);
+        loadMembershipData();
+      } else {
+        toast.error('Failed to update membership status');
+      }
+    } catch (error) {
+      console.error('Error updating membership status:', error);
+      toast.error('Failed to update membership status');
+    }
+  };
+
+  // Sponsors functions
+  const loadSponsors = async () => {
+    try {
+      setSponsorsLoading(true);
+      const token = localStorage.getItem("token");
+      const response = await fetch('http://localhost:5000/api/sponsors', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setSponsors(data);
+      } else {
+        console.error('Failed to load sponsors:', response.status);
+        setSponsors([]);
+      }
+    } catch (error) {
+      console.error('Error loading sponsors:', error);
+      toast.error('Failed to load sponsors');
+      setSponsors([]);
+    } finally {
+      setSponsorsLoading(false);
+    }
+  };
+
+  const resetSponsorForm = () => {
+    setSponsorForm({
+      companyName: "",
+      contactPerson: "",
+      email: "",
+      phone: "",
+      website: "",
+      tier: "Bronze",
+      amount: 0,
+      paymentFrequency: "Annual",
+      contractStart: "",
+      contractEnd: "",
+      status: "Pending",
+      address: "",
+      benefits: "",
+      notes: "",
+      isVisible: true
+    });
+    setEditingSponsor(null);
+    setShowSponsorForm(false);
+  };
+
+  const handleSponsorSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem("token");
+      const url = editingSponsor 
+        ? `http://localhost:5000/api/sponsors/${editingSponsor._id}` 
+        : 'http://localhost:5000/api/sponsors';
+      
+      const response = await fetch(url, {
+        method: editingSponsor ? 'PUT' : 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(sponsorForm)
+      });
+      
+      if (response.ok) {
+        toast.success(`Sponsor ${editingSponsor ? 'updated' : 'created'} successfully`);
+        resetSponsorForm();
+        loadSponsors();
+      } else {
+        const error = await response.json();
+        toast.error(error.error || 'Failed to save sponsor');
+      }
+    } catch (error) {
+      console.error('Error saving sponsor:', error);
+      toast.error('Failed to save sponsor');
+    }
+  };
+
+  const handleEditSponsor = (sponsor) => {
+    setSponsorForm({
+      companyName: sponsor.companyName || "",
+      contactPerson: sponsor.contactPerson || "",
+      email: sponsor.email || "",
+      phone: sponsor.phone || "",
+      website: sponsor.website || "",
+      tier: sponsor.tier || "Bronze",
+      amount: sponsor.amount || 0,
+      paymentFrequency: sponsor.paymentFrequency || "Annual",
+      contractStart: sponsor.contractStart ? sponsor.contractStart.split('T')[0] : "",
+      contractEnd: sponsor.contractEnd ? sponsor.contractEnd.split('T')[0] : "",
+      status: sponsor.status || "Pending",
+      address: sponsor.address || "",
+      benefits: sponsor.benefits || "",
+      notes: sponsor.notes || "",
+      isVisible: sponsor.isVisible !== undefined ? sponsor.isVisible : true
+    });
+    setEditingSponsor(sponsor);
+    setShowSponsorForm(true);
+  };
+
+  const handleDeleteSponsor = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this sponsor?')) return;
+    
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`http://localhost:5000/api/sponsors/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      if (response.ok) {
+        toast.success('Sponsor deleted successfully');
+        loadSponsors();
+      } else {
+        toast.error('Failed to delete sponsor');
+      }
+    } catch (error) {
+      console.error('Error deleting sponsor:', error);
+      toast.error('Failed to delete sponsor');
+    }
+  };
+
+  const sponsorStats = () => {
+    const active = sponsors.filter(s => s.status === 'Active').length;
+    const pending = sponsors.filter(s => s.status === 'Pending').length;
+    const totalRevenue = sponsors
+      .filter(s => s.status === 'Active')
+      .reduce((sum, s) => sum + (s.amount || 0), 0);
+    
+    return { total: sponsors.length, active, pending, totalRevenue };
+  };
+
+  // Generic Management UI Renderer
+  const renderManagementUI = (config) => {
+    const { title, items, loading, showForm, formFields, onSubmit, onEdit, onDelete, onCancel, createButtonText } = config;
+    
+    if (loading) {
+      return (
+        <div className="text-center py-5">
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      );
+    }
+
+    if (showForm) {
+      return (
+        <form onSubmit={onSubmit}>
+          <div className="d-flex justify-content-between mb-3">
+            <h5>{formFields.isEditing ? 'Edit' : 'Create'} {title}</h5>
+            <button type="button" className="btn btn-secondary" onClick={onCancel}>Cancel</button>
+          </div>
+          <div className="row g-3">{formFields.fields}</div>
+          <div className="mt-3">
+            <button type="submit" className="btn btn-success w-100" disabled={loading}>
+              {loading ? 'Saving...' : (formFields.isEditing ? 'Update' : 'Create')}
+            </button>
+          </div>
+        </form>
+      );
+    }
+
+    return (
+      <>
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <h5>{title}</h5>
+          <button className="btn btn-primary" onClick={formFields.onCreate}>
+            <i className="bi bi-plus-circle me-1"></i> {createButtonText}
+          </button>
+        </div>
+        <div className="table-responsive">
+          <table className="table table-hover">
+            <thead className="table-light">
+              <tr>{formFields.headers}</tr>
+            </thead>
+            <tbody>
+              {items.length === 0 ? (
+                <tr>
+                  <td colSpan={formFields.colSpan} className="text-center py-5">
+                    <p className="text-muted">No {title.toLowerCase()} found</p>
+                    <button className="btn btn-primary btn-sm" onClick={formFields.onCreate}>Create First {title}</button>
+                  </td>
+                </tr>
+              ) : (
+                items.map((item, index) => (
+                  <tr key={item._id || index}>
+                    {formFields.renderRow(item)}
+                    <td>
+                      <div className="btn-group btn-group-sm">
+                        <button className="btn btn-outline-primary" onClick={() => onEdit(item)} title="Edit">
+                          <i className="bi bi-pencil"></i>
+                        </button>
+                        <button className="btn btn-outline-danger" onClick={() => onDelete(item._id)} title="Delete">
+                          <i className="bi bi-trash"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </>
+    );
+  };
+
   // Settings functions
   const updateSetting = (key, value) => {
     setSiteSettings(prev => ({ ...prev, [key]: value }));
@@ -932,12 +3298,6 @@ export default function AdminDashboard() {
                     Invoicing
               </button>
               <button
-                className={`nav-link text-white text-start border-0 ${activeSection === 'equipment' ? 'bg-white bg-opacity-25' : ''}`}
-                onClick={() => handleSectionChange('equipment')}
-              >
-                    Equipment
-              </button>
-              <button
                 className={`nav-link text-white text-start border-0 ${activeSection === 'inventory' ? 'bg-white bg-opacity-25' : ''}`}
                 onClick={() => handleSectionChange('inventory')}
               >
@@ -1137,7 +3497,8 @@ export default function AdminDashboard() {
 
         {/* Main Content */}
         <div className="main-content" style={{maxWidth: 'calc(100vw - 230px)', overflowX: 'hidden', width: '100%', padding: 0, margin: 0}}>
-            <h2 className="mb-4">
+            {activeSection !== 'payments' && activeSection !== 'marketplace' && (
+              <h2 className="mb-4">
               {activeSection === 'overview' && 'Overview Dashboard'}
               {activeSection === 'settings' && 'Settings'}
               {activeSection === 'content' && 'Content Management'}
@@ -1150,29 +3511,34 @@ export default function AdminDashboard() {
               {activeSection === 'fans-gallery' && 'Fans & Gallery Management'}
               {activeSection === 'communications' && 'Communications Center'}
               {activeSection === 'reports' && 'Reports & Analytics'}
-              {activeSection === 'finance' && 'Financial Management'}
               {activeSection === 'marketplace' && 'Marketplace Management'}
               {activeSection === 'applications' && 'Application Management'}
               {activeSection === 'backup' && 'Backup & Restore'}
               {activeSection === 'logs' && 'System Logs'}
               {activeSection === 'scheduling' && 'Scheduling & Calendar'}
+              {activeSection === 'standings' && 'League Standings'}
+              {activeSection === 'statistics' && 'Statistics & Analytics'}
               {activeSection === 'players' && 'Player Management'}
               {activeSection === 'coaches' && 'Coach Management'}
               {activeSection === 'parents' && 'Parent Management'}
               {activeSection === 'matches' && 'Match Management'}
               {activeSection === 'training' && 'Training Programs'}
               {activeSection === 'facilities' && 'Facility Management'}
-              {activeSection === 'equipment' && 'Equipment Management'}
               {activeSection === 'volunteers' && 'Volunteer Management'}
               {activeSection === 'sponsors' && 'Sponsor Management'}
               {activeSection === 'membership' && 'Membership Management'}
+              {activeSection === 'finance' && 'Finance Management'}
+              {activeSection === 'payments' && 'Payment Management'}
+              {activeSection === 'invoicing' && 'Invoicing System'}
+              {activeSection === 'inventory' && 'Inventory Management'}
               {activeSection === 'waivers' && 'Waiver Management'}
               {activeSection === 'insurance' && 'Insurance Management'}
               {activeSection === 'compliance' && 'Compliance Center'}
               {activeSection === 'api' && 'API Management'}
               {activeSection === 'integrations' && 'Integrations Center'}
               {activeSection === 'help' && 'Help & Support'}
-            </h2>
+              </h2>
+            )}
 
             {activeSection === 'overview' && (
               <div style={{padding: '0 20px'}}>
@@ -2536,57 +4902,54 @@ export default function AdminDashboard() {
                 {/* Content Management Tab */}
                 {activeSubSection === 'content' && (
                   <div className="row">
-                    {/* Content Management Quick Links */}
+                    {/* Content Management Overview - No Redirects */}
                     <div className="col-12 mb-4">
                       <div className="card">
                         <div className="card-header bg-gradient-dark text-white">
-                          <h5 className="mb-0"><i className="bi bi-grid me-2"></i>Content Management Sections</h5>
+                          <h5 className="mb-0"><i className="bi bi-file-text me-2"></i>Content Management - All in One Place</h5>
                         </div>
                         <div className="card-body">
+                          <div className="alert alert-info">
+                            <i className="bi bi-info-circle me-2"></i>
+                            <strong>Manage all your content right here!</strong> No need to navigate to separate pages. All content management features are available below in organized sections.
+                          </div>
+                          
                           <div className="row g-3">
                             <div className="col-lg-3 col-md-4 col-sm-6">
-                              <Link to="/admin/about" className="text-decoration-none">
-                                <div className="card border-primary hover-shadow" style={{transition: 'all 0.3s', cursor: 'pointer'}}>
-                                  <div className="card-body text-center">
-                                    <i className="bi bi-info-circle-fill text-primary" style={{fontSize: '2.5rem'}}></i>
-                                    <h5 className="mt-3 mb-2 text-primary">About Page</h5>
-                                    <p className="text-muted small mb-0">Manage About page content & gallery</p>
-                                  </div>
+                              <div className="card border-primary">
+                                <div className="card-body text-center">
+                                  <i className="bi bi-info-circle-fill text-primary" style={{fontSize: '2.5rem'}}></i>
+                                  <h5 className="mt-3 mb-2 text-primary">About Page</h5>
+                                  <p className="text-muted small mb-0">Scroll down to edit About page content</p>
                                 </div>
-                              </Link>
+                              </div>
                             </div>
                             <div className="col-lg-3 col-md-4 col-sm-6">
-                              <Link to="/admin/content" className="text-decoration-none">
-                                <div className="card border-success hover-shadow" style={{transition: 'all 0.3s', cursor: 'pointer'}}>
-                                  <div className="card-body text-center">
-                                    <i className="bi bi-house-fill text-success" style={{fontSize: '2.5rem'}}></i>
-                                    <h5 className="mt-3 mb-2 text-success">Homepage Content</h5>
-                                    <p className="text-muted small mb-0">Edit homepage sections & content</p>
-                                  </div>
+                              <div className="card border-success">
+                                <div className="card-body text-center">
+                                  <i className="bi bi-house-fill text-success" style={{fontSize: '2.5rem'}}></i>
+                                  <h5 className="mt-3 mb-2 text-success">Homepage Content</h5>
+                                  <p className="text-muted small mb-0">Edit homepage sections below</p>
                                 </div>
-                              </Link>
+                              </div>
                             </div>
                             <div className="col-lg-3 col-md-4 col-sm-6">
-                              <Link to="/admin/news" className="text-decoration-none">
-                                <div className="card border-info hover-shadow" style={{transition: 'all 0.3s', cursor: 'pointer'}}>
-                                  <div className="card-body text-center">
-                                    <i className="bi bi-newspaper text-info" style={{fontSize: '2.5rem'}}></i>
-                                    <h5 className="mt-3 mb-2 text-info">News & Updates</h5>
-                                    <p className="text-muted small mb-0">Manage news articles & updates</p>
-                                  </div>
+                              <div className="card border-info">
+                                <div className="card-body text-center">
+                                  <i className="bi bi-newspaper text-info" style={{fontSize: '2.5rem'}}></i>
+                                  <h5 className="mt-3 mb-2 text-info">News & Updates</h5>
+                                  <p className="text-muted small mb-0">Manage news articles below</p>
                                 </div>
-                              </Link>
+                              </div>
                             </div>
                             <div className="col-lg-3 col-md-4 col-sm-6">
-                              <Link to="/admin/gallery" className="text-decoration-none">
-                                <div className="card border-warning hover-shadow" style={{transition: 'all 0.3s', cursor: 'pointer'}}>
-                                  <div className="card-body text-center">
-                                    <i className="bi bi-images text-warning" style={{fontSize: '2.5rem'}}></i>
-                                    <h5 className="mt-3 mb-2 text-warning">Gallery</h5>
-                                    <p className="text-muted small mb-0">Manage community gallery images</p>
-                                  </div>
+                              <div className="card border-warning">
+                                <div className="card-body text-center">
+                                  <i className="bi bi-images text-warning" style={{fontSize: '2.5rem'}}></i>
+                                  <h5 className="mt-3 mb-2 text-warning">Gallery</h5>
+                                  <p className="text-muted small mb-0">Manage gallery images below</p>
                                 </div>
-                              </Link>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -3091,33 +5454,151 @@ export default function AdminDashboard() {
 
             {activeSection === 'content' && (
               <div>
+                {/* Content Management Stats */}
+                <div className="row mb-4">
+                  <div className="col-md-3 mb-3">
+                    <div className="card bg-primary text-white">
+                      <div className="card-body">
+                        <h6>Total Pages</h6>
+                        <h4 className="mb-0">12</h4>
+                        <small>Active content pages</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-3 mb-3">
+                    <div className="card bg-success text-white">
+                      <div className="card-body">
+                        <h6>News Articles</h6>
+                        <h4 className="mb-0">45</h4>
+                        <small>Published articles</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-3 mb-3">
+                    <div className="card bg-warning text-white">
+                      <div className="card-body">
+                        <h6>Gallery Images</h6>
+                        <h4 className="mb-0">234</h4>
+                        <small>Total media items</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-3 mb-3">
+                    <div className="card bg-info text-white">
+                      <div className="card-body">
+                        <h6>Last Updated</h6>
+                        <h4 className="mb-0">Today</h4>
+                        <small>Content freshness</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Quick Content Actions */}
+                <div className="row mb-4">
+                  <div className="col-12">
+                    <div className="card">
+                      <div className="card-header">
+                        <h5 className="mb-0">Content Management Overview</h5>
+                      </div>
+                      <div className="card-body">
+                        <div className="alert alert-info">
+                          <i className="bi bi-info-circle me-2"></i>
+                          <strong>All content in one place!</strong> Manage your website content right here without navigating to separate pages.
+                        </div>
+                        
+                        <div className="row">
+                          <div className="col-md-4 mb-3">
+                            <div className="card border-primary h-100">
+                              <div className="card-body text-center">
+                                <i className="bi bi-house-fill text-primary" style={{fontSize: '2rem'}}></i>
+                                <h5 className="mt-3 mb-2">Homepage Content</h5>
+                                <p className="text-muted small">Welcome section, hero content, featured sections</p>
+                                <button className="btn btn-primary btn-sm">Edit Homepage</button>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="col-md-4 mb-3">
+                            <div className="card border-success h-100">
+                              <div className="card-body text-center">
+                                <i className="bi bi-info-circle-fill text-success" style={{fontSize: '2rem'}}></i>
+                                <h5 className="mt-3 mb-2">About Page</h5>
+                                <p className="text-muted small">Club information, history, mission statement</p>
+                                <button className="btn btn-success btn-sm">Edit About</button>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="col-md-4 mb-3">
+                            <div className="card border-warning h-100">
+                              <div className="card-body text-center">
+                                <i className="bi bi-newspaper text-warning" style={{fontSize: '2rem'}}></i>
+                                <h5 className="mt-3 mb-2">News & Articles</h5>
+                                <p className="text-muted small">Latest updates, announcements, blog posts</p>
+                                <button className="btn btn-warning btn-sm">Manage News</button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Recent Content Updates */}
                 <div className="row">
                   <div className="col-12">
                     <div className="card">
                       <div className="card-header">
-                        <h5 className="mb-0">Content Management System</h5>
+                        <h5 className="mb-0">Recent Content Updates</h5>
                       </div>
-                      <div className="card-body">
-                        <div className="alert alert-success">
-                          <i className="bi bi-check-circle me-2"></i>
-                          <strong>Content Management is now available!</strong> Access the comprehensive content management system with features including:
-                          <ul className="mt-2 mb-3">
-                            <li>Homepage content editing (Welcome, Programs, Events, Teams, Statistics, CTA)</li>
-                            <li>About page management with gallery</li>
-                            <li>Event management and scheduling</li>
-                            <li>Team information management</li>
-                            <li>Statistics and highlights</li>
-                            <li>Call-to-action sections</li>
-                          </ul>
-                          <Link to="/admin/content" className="btn btn-success">
-                            <i className="bi bi-arrow-right me-2"></i>
-                            Go to Content Management
-                          </Link>
-                        </div>
-                        <div className="text-center py-4">
-                          <i className="bi bi-file-text display-1 text-success"></i>
-                          <h4 className="mt-3 text-success">Content Management Ready</h4>
-                          <p className="text-muted">Click the button above to access the comprehensive content management system.</p>
+                      <div className="card-body p-0">
+                        <div className="table-responsive">
+                          <table className="table table-hover mb-0">
+                            <thead>
+                              <tr>
+                                <th>Content</th>
+                                <th>Type</th>
+                                <th>Last Modified</th>
+                                <th>Modified By</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td>Homepage Hero Section</td>
+                                <td><span className="badge bg-primary">Homepage</span></td>
+                                <td>2 hours ago</td>
+                                <td>Admin User</td>
+                                <td><span className="badge bg-success">Published</span></td>
+                                <td><button className="btn btn-sm btn-outline-primary">Edit</button></td>
+                              </tr>
+                              <tr>
+                                <td>About Us - Club History</td>
+                                <td><span className="badge bg-info">About</span></td>
+                                <td>1 day ago</td>
+                                <td>Content Manager</td>
+                                <td><span className="badge bg-success">Published</span></td>
+                                <td><button className="btn btn-sm btn-outline-primary">Edit</button></td>
+                              </tr>
+                              <tr>
+                                <td>Weekly Training Update</td>
+                                <td><span className="badge bg-warning">News</span></td>
+                                <td>3 days ago</td>
+                                <td>Coach Admin</td>
+                                <td><span className="badge bg-success">Published</span></td>
+                                <td><button className="btn btn-sm btn-outline-primary">Edit</button></td>
+                              </tr>
+                              <tr>
+                                <td>Gallery - Championship Photos</td>
+                                <td><span className="badge bg-secondary">Gallery</span></td>
+                                <td>1 week ago</td>
+                                <td>Media Manager</td>
+                                <td><span className="badge bg-success">Published</span></td>
+                                <td><button className="btn btn-sm btn-outline-primary">Edit</button></td>
+                              </tr>
+                            </tbody>
+                          </table>
                         </div>
                       </div>
                     </div>
@@ -3131,32 +5612,513 @@ export default function AdminDashboard() {
                 <div className="row">
                   <div className="col-12">
                     <div className="card">
-                      <div className="card-header">
+                      <div className="card-header d-flex justify-content-between align-items-center">
                         <h5 className="mb-0">Club Information Management</h5>
+                        <button
+                          onClick={saveClubInfo}
+                          disabled={clubInfoLoading}
+                          className="btn btn-success"
+                        >
+                          <i className="bi bi-check me-1"></i>
+                          {clubInfoLoading ? 'Saving...' : 'Save Changes'}
+                        </button>
                       </div>
                       <div className="card-body">
-                        <div className="alert alert-success">
-                          <i className="bi bi-check-circle me-2"></i>
-                          <strong>Club Information Management is now available!</strong> Access the comprehensive club information system with features including:
-                          <ul className="mt-2 mb-3">
-                            <li>Basic club information (name, founded, location)</li>
-                            <li>Contact details and addresses</li>
-                            <li>Branding and color management</li>
-                            <li>Facilities and venues</li>
-                            <li>Legal and registration information</li>
-                            <li>Social media links</li>
-                            <li>Achievements and awards tracking</li>
-                          </ul>
-                          <Link to="/admin/club-info" className="btn btn-success">
-                            <i className="bi bi-arrow-right me-2"></i>
-                            Go to Club Information Management
-                          </Link>
-                        </div>
-                        <div className="text-center py-4">
-                          <i className="bi bi-building display-1 text-success"></i>
-                          <h4 className="mt-3 text-success">Club Information Ready</h4>
-                          <p className="text-muted">Click the button above to access the comprehensive club information management system.</p>
-                        </div>
+                        {clubInfoLoading ? (
+                          <div className="text-center py-5">
+                            <div className="spinner-border text-primary" role="status">
+                              <span className="visually-hidden">Loading...</span>
+                            </div>
+                            <p className="text-muted mt-2">Loading club information...</p>
+                          </div>
+                        ) : (
+                          <>
+                            {/* Tabs */}
+                            <ul className="nav nav-tabs mb-4">
+                              <li className="nav-item">
+                                <button
+                                  className={`nav-link ${clubInfoActiveTab === 'basic' ? 'active' : ''}`}
+                                  onClick={() => setClubInfoActiveTab('basic')}
+                                >
+                                  🏢 Basic Information
+                                </button>
+                              </li>
+                              <li className="nav-item">
+                                <button
+                                  className={`nav-link ${clubInfoActiveTab === 'contact' ? 'active' : ''}`}
+                                  onClick={() => setClubInfoActiveTab('contact')}
+                                >
+                                  📞 Contact Details
+                                </button>
+                              </li>
+                              <li className="nav-item">
+                                <button
+                                  className={`nav-link ${clubInfoActiveTab === 'branding' ? 'active' : ''}`}
+                                  onClick={() => setClubInfoActiveTab('branding')}
+                                >
+                                  🎨 Branding & Colors
+                                </button>
+                              </li>
+                              <li className="nav-item">
+                                <button
+                                  className={`nav-link ${clubInfoActiveTab === 'facilities' ? 'active' : ''}`}
+                                  onClick={() => setClubInfoActiveTab('facilities')}
+                                >
+                                  🏟️ Facilities
+                                </button>
+                              </li>
+                              <li className="nav-item">
+                                <button
+                                  className={`nav-link ${clubInfoActiveTab === 'legal' ? 'active' : ''}`}
+                                  onClick={() => setClubInfoActiveTab('legal')}
+                                >
+                                  📋 Legal & Registration
+                                </button>
+                              </li>
+                              <li className="nav-item">
+                                <button
+                                  className={`nav-link ${clubInfoActiveTab === 'social' ? 'active' : ''}`}
+                                  onClick={() => setClubInfoActiveTab('social')}
+                                >
+                                  📱 Social Media
+                                </button>
+                              </li>
+                              <li className="nav-item">
+                                <button
+                                  className={`nav-link ${clubInfoActiveTab === 'achievements' ? 'active' : ''}`}
+                                  onClick={() => setClubInfoActiveTab('achievements')}
+                                >
+                                  🏆 Achievements
+                                </button>
+                              </li>
+                            </ul>
+
+                            {/* Basic Information Tab */}
+                            {clubInfoActiveTab === 'basic' && (
+                              <div className="row g-3">
+                                <div className="col-md-6">
+                                  <label className="form-label">Club Name</label>
+                                  <input
+                                    type="text"
+                                    className="form-control"
+                                    value={clubInfo.name}
+                                    onChange={(e) => handleClubInfoChange('name', e.target.value)}
+                                    placeholder="Seattle Leopards FC"
+                                  />
+                                </div>
+                                <div className="col-md-6">
+                                  <label className="form-label">Short Name</label>
+                                  <input
+                                    type="text"
+                                    className="form-control"
+                                    value={clubInfo.shortName}
+                                    onChange={(e) => handleClubInfoChange('shortName', e.target.value)}
+                                    placeholder="SLFC"
+                                  />
+                                </div>
+                                <div className="col-md-6">
+                                  <label className="form-label">Founded</label>
+                                  <input
+                                    type="text"
+                                    className="form-control"
+                                    value={clubInfo.founded}
+                                    onChange={(e) => handleClubInfoChange('founded', e.target.value)}
+                                    placeholder="2020"
+                                  />
+                                </div>
+                                <div className="col-md-6">
+                                  <label className="form-label">Location</label>
+                                  <input
+                                    type="text"
+                                    className="form-control"
+                                    value={clubInfo.location}
+                                    onChange={(e) => handleClubInfoChange('location', e.target.value)}
+                                    placeholder="Seattle, WA"
+                                  />
+                                </div>
+                                <div className="col-12">
+                                  <label className="form-label">Description</label>
+                                  <textarea
+                                    className="form-control"
+                                    rows="3"
+                                    value={clubInfo.description}
+                                    onChange={(e) => handleClubInfoChange('description', e.target.value)}
+                                    placeholder="Brief description of the club..."
+                                  />
+                                </div>
+                                <div className="col-md-6">
+                                  <label className="form-label">Mission</label>
+                                  <textarea
+                                    className="form-control"
+                                    rows="3"
+                                    value={clubInfo.mission}
+                                    onChange={(e) => handleClubInfoChange('mission', e.target.value)}
+                                    placeholder="Club mission statement..."
+                                  />
+                                </div>
+                                <div className="col-md-6">
+                                  <label className="form-label">Vision</label>
+                                  <textarea
+                                    className="form-control"
+                                    rows="3"
+                                    value={clubInfo.vision}
+                                    onChange={(e) => handleClubInfoChange('vision', e.target.value)}
+                                    placeholder="Club vision statement..."
+                                  />
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Contact Details Tab */}
+                            {clubInfoActiveTab === 'contact' && (
+                              <div className="row g-3">
+                                <div className="col-md-6">
+                                  <label className="form-label">Phone</label>
+                                  <input
+                                    type="tel"
+                                    className="form-control"
+                                    value={clubInfo.phone}
+                                    onChange={(e) => handleClubInfoChange('phone', e.target.value)}
+                                    placeholder="(206) 555-0123"
+                                  />
+                                </div>
+                                <div className="col-md-6">
+                                  <label className="form-label">Email</label>
+                                  <input
+                                    type="email"
+                                    className="form-control"
+                                    value={clubInfo.email}
+                                    onChange={(e) => handleClubInfoChange('email', e.target.value)}
+                                    placeholder="info@seattleleopards.com"
+                                  />
+                                </div>
+                                <div className="col-md-6">
+                                  <label className="form-label">Website</label>
+                                  <input
+                                    type="url"
+                                    className="form-control"
+                                    value={clubInfo.website}
+                                    onChange={(e) => handleClubInfoChange('website', e.target.value)}
+                                    placeholder="https://seattleleopards.com"
+                                  />
+                                </div>
+                                <div className="col-md-6">
+                                  <label className="form-label">Address</label>
+                                  <input
+                                    type="text"
+                                    className="form-control"
+                                    value={clubInfo.address}
+                                    onChange={(e) => handleClubInfoChange('address', e.target.value)}
+                                    placeholder="123 Main Street"
+                                  />
+                                </div>
+                                <div className="col-md-4">
+                                  <label className="form-label">City</label>
+                                  <input
+                                    type="text"
+                                    className="form-control"
+                                    value={clubInfo.city}
+                                    onChange={(e) => handleClubInfoChange('city', e.target.value)}
+                                    placeholder="Seattle"
+                                  />
+                                </div>
+                                <div className="col-md-4">
+                                  <label className="form-label">State</label>
+                                  <input
+                                    type="text"
+                                    className="form-control"
+                                    value={clubInfo.state}
+                                    onChange={(e) => handleClubInfoChange('state', e.target.value)}
+                                    placeholder="WA"
+                                  />
+                                </div>
+                                <div className="col-md-4">
+                                  <label className="form-label">ZIP Code</label>
+                                  <input
+                                    type="text"
+                                    className="form-control"
+                                    value={clubInfo.zipCode}
+                                    onChange={(e) => handleClubInfoChange('zipCode', e.target.value)}
+                                    placeholder="98101"
+                                  />
+                                </div>
+                                <div className="col-12">
+                                  <label className="form-label">Country</label>
+                                  <input
+                                    type="text"
+                                    className="form-control"
+                                    value={clubInfo.country}
+                                    onChange={(e) => handleClubInfoChange('country', e.target.value)}
+                                    placeholder="United States"
+                                  />
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Branding & Colors Tab */}
+                            {clubInfoActiveTab === 'branding' && (
+                              <div className="row g-3">
+                                <div className="col-md-6">
+                                  <label className="form-label">Primary Color</label>
+                                  <div className="d-flex gap-2">
+                                    <input
+                                      type="color"
+                                      className="form-control form-control-color"
+                                      value={clubInfo.primaryColor}
+                                      onChange={(e) => handleClubInfoChange('primaryColor', e.target.value)}
+                                    />
+                                    <input
+                                      type="text"
+                                      className="form-control"
+                                      value={clubInfo.primaryColor}
+                                      onChange={(e) => handleClubInfoChange('primaryColor', e.target.value)}
+                                      placeholder="#1e40af"
+                                    />
+                                  </div>
+                                </div>
+                                <div className="col-md-6">
+                                  <label className="form-label">Secondary Color</label>
+                                  <div className="d-flex gap-2">
+                                    <input
+                                      type="color"
+                                      className="form-control form-control-color"
+                                      value={clubInfo.secondaryColor}
+                                      onChange={(e) => handleClubInfoChange('secondaryColor', e.target.value)}
+                                    />
+                                    <input
+                                      type="text"
+                                      className="form-control"
+                                      value={clubInfo.secondaryColor}
+                                      onChange={(e) => handleClubInfoChange('secondaryColor', e.target.value)}
+                                      placeholder="#f59e0b"
+                                    />
+                                  </div>
+                                </div>
+                                <div className="col-md-6">
+                                  <label className="form-label">Motto</label>
+                                  <input
+                                    type="text"
+                                    className="form-control"
+                                    value={clubInfo.motto}
+                                    onChange={(e) => handleClubInfoChange('motto', e.target.value)}
+                                    placeholder="Excellence Through Unity"
+                                  />
+                                </div>
+                                <div className="col-md-6">
+                                  <label className="form-label">Logo URL</label>
+                                  <input
+                                    type="url"
+                                    className="form-control"
+                                    value={clubInfo.logo}
+                                    onChange={(e) => handleClubInfoChange('logo', e.target.value)}
+                                    placeholder="https://example.com/logo.png"
+                                  />
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Facilities Tab */}
+                            {clubInfoActiveTab === 'facilities' && (
+                              <div className="row g-3">
+                                <div className="col-md-6">
+                                  <label className="form-label">Home Field</label>
+                                  <input
+                                    type="text"
+                                    className="form-control"
+                                    value={clubInfo.homeField}
+                                    onChange={(e) => handleClubInfoChange('homeField', e.target.value)}
+                                    placeholder="Seattle Sports Complex"
+                                  />
+                                </div>
+                                <div className="col-md-6">
+                                  <label className="form-label">Office Location</label>
+                                  <input
+                                    type="text"
+                                    className="form-control"
+                                    value={clubInfo.officeLocation}
+                                    onChange={(e) => handleClubInfoChange('officeLocation', e.target.value)}
+                                    placeholder="123 Club Street, Seattle, WA"
+                                  />
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Legal & Registration Tab */}
+                            {clubInfoActiveTab === 'legal' && (
+                              <div className="row g-3">
+                                <div className="col-md-6">
+                                  <label className="form-label">Registration Number</label>
+                                  <input
+                                    type="text"
+                                    className="form-control"
+                                    value={clubInfo.registrationNumber}
+                                    onChange={(e) => handleClubInfoChange('registrationNumber', e.target.value)}
+                                    placeholder="REG-2024-001"
+                                  />
+                                </div>
+                                <div className="col-md-6">
+                                  <label className="form-label">Tax ID</label>
+                                  <input
+                                    type="text"
+                                    className="form-control"
+                                    value={clubInfo.taxId}
+                                    onChange={(e) => handleClubInfoChange('taxId', e.target.value)}
+                                    placeholder="12-3456789"
+                                  />
+                                </div>
+                                <div className="col-md-6">
+                                  <label className="form-label">Insurance Provider</label>
+                                  <input
+                                    type="text"
+                                    className="form-control"
+                                    value={clubInfo.insuranceProvider}
+                                    onChange={(e) => handleClubInfoChange('insuranceProvider', e.target.value)}
+                                    placeholder="Sports Insurance Co."
+                                  />
+                                </div>
+                                <div className="col-md-6">
+                                  <label className="form-label">Insurance Number</label>
+                                  <input
+                                    type="text"
+                                    className="form-control"
+                                    value={clubInfo.insuranceNumber}
+                                    onChange={(e) => handleClubInfoChange('insuranceNumber', e.target.value)}
+                                    placeholder="INS-2024-001"
+                                  />
+                                </div>
+                                <div className="col-12">
+                                  <div className="form-check">
+                                    <input
+                                      type="checkbox"
+                                      className="form-check-input"
+                                      checked={clubInfo.nonProfit}
+                                      onChange={(e) => handleClubInfoChange('nonProfit', e.target.checked)}
+                                    />
+                                    <label className="form-check-label">Non-Profit Organization</label>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Social Media Tab */}
+                            {clubInfoActiveTab === 'social' && (
+                              <div className="row g-3">
+                                <div className="col-md-6">
+                                  <label className="form-label">Facebook</label>
+                                  <input
+                                    type="url"
+                                    className="form-control"
+                                    value={clubInfo.facebook}
+                                    onChange={(e) => handleClubInfoChange('facebook', e.target.value)}
+                                    placeholder="https://facebook.com/seattleleopards"
+                                  />
+                                </div>
+                                <div className="col-md-6">
+                                  <label className="form-label">Twitter</label>
+                                  <input
+                                    type="url"
+                                    className="form-control"
+                                    value={clubInfo.twitter}
+                                    onChange={(e) => handleClubInfoChange('twitter', e.target.value)}
+                                    placeholder="https://twitter.com/seattleleopards"
+                                  />
+                                </div>
+                                <div className="col-md-6">
+                                  <label className="form-label">Instagram</label>
+                                  <input
+                                    type="url"
+                                    className="form-control"
+                                    value={clubInfo.instagram}
+                                    onChange={(e) => handleClubInfoChange('instagram', e.target.value)}
+                                    placeholder="https://instagram.com/seattleleopards"
+                                  />
+                                </div>
+                                <div className="col-md-6">
+                                  <label className="form-label">LinkedIn</label>
+                                  <input
+                                    type="url"
+                                    className="form-control"
+                                    value={clubInfo.linkedin}
+                                    onChange={(e) => handleClubInfoChange('linkedin', e.target.value)}
+                                    placeholder="https://linkedin.com/company/seattleleopards"
+                                  />
+                                </div>
+                                <div className="col-md-6">
+                                  <label className="form-label">YouTube</label>
+                                  <input
+                                    type="url"
+                                    className="form-control"
+                                    value={clubInfo.youtube}
+                                    onChange={(e) => handleClubInfoChange('youtube', e.target.value)}
+                                    placeholder="https://youtube.com/seattleleopards"
+                                  />
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Achievements Tab */}
+                            {clubInfoActiveTab === 'achievements' && (
+                              <div className="row g-3">
+                                <div className="col-md-6">
+                                  <label className="form-label">Awards</label>
+                                  <div className="mb-2">
+                                    {clubInfo.awards.map((award, index) => (
+                                      <div key={index} className="input-group mb-2">
+                                        <input
+                                          type="text"
+                                          className="form-control"
+                                          value={award}
+                                          onChange={(e) => handleClubInfoArrayChange('awards', index, e.target.value)}
+                                          placeholder="Award name"
+                                        />
+                                        <button
+                                          className="btn btn-outline-danger"
+                                          onClick={() => removeClubInfoArrayItem('awards', index)}
+                                        >
+                                          <i className="bi bi-trash"></i>
+                                        </button>
+                                      </div>
+                                    ))}
+                                  </div>
+                                  <button
+                                    className="btn btn-sm btn-outline-primary"
+                                    onClick={() => addClubInfoArrayItem('awards', '')}
+                                  >
+                                    + Add Award
+                                  </button>
+                                </div>
+                                <div className="col-md-6">
+                                  <label className="form-label">Championships</label>
+                                  <div className="mb-2">
+                                    {clubInfo.championships.map((championship, index) => (
+                                      <div key={index} className="input-group mb-2">
+                                        <input
+                                          type="text"
+                                          className="form-control"
+                                          value={championship}
+                                          onChange={(e) => handleClubInfoArrayChange('championships', index, e.target.value)}
+                                          placeholder="Championship name"
+                                        />
+                                        <button
+                                          className="btn btn-outline-danger"
+                                          onClick={() => removeClubInfoArrayItem('championships', index)}
+                                        >
+                                          <i className="bi bi-trash"></i>
+                                        </button>
+                                      </div>
+                                    ))}
+                                  </div>
+                                  <button
+                                    className="btn btn-sm btn-outline-primary"
+                                    onClick={() => addClubInfoArrayItem('championships', '')}
+                                  >
+                                    + Add Championship
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -3169,32 +6131,439 @@ export default function AdminDashboard() {
                 <div className="row">
                   <div className="col-12">
                     <div className="card">
-                      <div className="card-header">
+                      <div className="card-header d-flex justify-content-between align-items-center">
                         <h5 className="mb-0">Policies Management</h5>
+                        <button
+                          onClick={savePolicies}
+                          disabled={policiesLoading}
+                          className="btn btn-success"
+                        >
+                          <i className="bi bi-check me-1"></i>
+                          {policiesLoading ? 'Saving...' : 'Save All Policies'}
+                        </button>
                       </div>
                       <div className="card-body">
-                        <div className="alert alert-success">
-                          <i className="bi bi-check-circle me-2"></i>
-                          <strong>Policies Management is now available!</strong> Access the comprehensive policies management system with features including:
-                          <ul className="mt-2 mb-3">
-                            <li>General club policies and terms</li>
-                            <li>Safety and health protocols</li>
-                            <li>Disciplinary procedures and consequences</li>
-                            <li>Financial policies and payment terms</li>
-                            <li>Technology and data protection policies</li>
-                            <li>Volunteer guidelines and expectations</li>
-                            <li>Version control and audit trails</li>
-                          </ul>
-                          <Link to="/admin/policies" className="btn btn-success">
-                            <i className="bi bi-arrow-right me-2"></i>
-                            Go to Policies Management
-                          </Link>
-                        </div>
-                        <div className="text-center py-4">
-                          <i className="bi bi-shield-check display-1 text-success"></i>
-                          <h4 className="mt-3 text-success">Policies Management Ready</h4>
-                          <p className="text-muted">Click the button above to access the comprehensive policies management system.</p>
-                        </div>
+                        {policiesLoading ? (
+                          <div className="text-center py-5">
+                            <div className="spinner-border text-primary" role="status">
+                              <span className="visually-hidden">Loading...</span>
+                            </div>
+                            <p className="text-muted mt-2">Loading policies...</p>
+                          </div>
+                        ) : (
+                          <>
+                            {/* Tabs */}
+                            <ul className="nav nav-tabs mb-4">
+                              <li className="nav-item">
+                                <button
+                                  className={`nav-link ${policiesActiveTab === 'general' ? 'active' : ''}`}
+                                  onClick={() => setPoliciesActiveTab('general')}
+                                >
+                                  📋 General Policies
+                                </button>
+                              </li>
+                              <li className="nav-item">
+                                <button
+                                  className={`nav-link ${policiesActiveTab === 'safety' ? 'active' : ''}`}
+                                  onClick={() => setPoliciesActiveTab('safety')}
+                                >
+                                  🛡️ Safety & Health
+                                </button>
+                              </li>
+                              <li className="nav-item">
+                                <button
+                                  className={`nav-link ${policiesActiveTab === 'disciplinary' ? 'active' : ''}`}
+                                  onClick={() => setPoliciesActiveTab('disciplinary')}
+                                >
+                                  ⚖️ Disciplinary
+                                </button>
+                              </li>
+                              <li className="nav-item">
+                                <button
+                                  className={`nav-link ${policiesActiveTab === 'financial' ? 'active' : ''}`}
+                                  onClick={() => setPoliciesActiveTab('financial')}
+                                >
+                                  💰 Financial
+                                </button>
+                              </li>
+                              <li className="nav-item">
+                                <button
+                                  className={`nav-link ${policiesActiveTab === 'technology' ? 'active' : ''}`}
+                                  onClick={() => setPoliciesActiveTab('technology')}
+                                >
+                                  💻 Technology
+                                </button>
+                              </li>
+                              <li className="nav-item">
+                                <button
+                                  className={`nav-link ${policiesActiveTab === 'volunteer' ? 'active' : ''}`}
+                                  onClick={() => setPoliciesActiveTab('volunteer')}
+                                >
+                                  🤝 Volunteer
+                                </button>
+                              </li>
+                            </ul>
+
+                            {/* General Policies Tab */}
+                            {policiesActiveTab === 'general' && (
+                              <div>
+                                <h4 className="mb-3">General Policies</h4>
+                                <p className="text-muted mb-4">Core club policies and terms of membership</p>
+                                <div className="row g-3">
+                                  <div className="col-12">
+                                    <label className="form-label">Club Name</label>
+                                    <input
+                                      type="text"
+                                      className="form-control"
+                                      value={policies.general.clubName}
+                                      onChange={(e) => updatePolicy('general', 'clubName', e.target.value)}
+                                    />
+                                  </div>
+                                  <div className="col-12">
+                                    <label className="form-label">Code of Conduct</label>
+                                    <textarea
+                                      rows={6}
+                                      className="form-control"
+                                      value={policies.general.codeOfConduct}
+                                      onChange={(e) => updatePolicy('general', 'codeOfConduct', e.target.value)}
+                                      placeholder="Enter the club's code of conduct..."
+                                    />
+                                  </div>
+                                  <div className="col-12">
+                                    <label className="form-label">Membership Terms & Conditions</label>
+                                    <textarea
+                                      rows={6}
+                                      className="form-control"
+                                      value={policies.general.membershipTerms}
+                                      onChange={(e) => updatePolicy('general', 'membershipTerms', e.target.value)}
+                                      placeholder="Enter membership terms and conditions..."
+                                    />
+                                  </div>
+                                  <div className="col-12">
+                                    <label className="form-label">Privacy Policy</label>
+                                    <textarea
+                                      rows={6}
+                                      className="form-control"
+                                      value={policies.general.privacyPolicy}
+                                      onChange={(e) => updatePolicy('general', 'privacyPolicy', e.target.value)}
+                                      placeholder="Enter privacy policy details..."
+                                    />
+                                  </div>
+                                  <div className="col-12">
+                                    <label className="form-label">Refund Policy</label>
+                                    <textarea
+                                      rows={4}
+                                      className="form-control"
+                                      value={policies.general.refundPolicy}
+                                      onChange={(e) => updatePolicy('general', 'refundPolicy', e.target.value)}
+                                      placeholder="Enter refund policy details..."
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Safety & Health Tab */}
+                            {policiesActiveTab === 'safety' && (
+                              <div>
+                                <h4 className="mb-3">Safety & Health Policies</h4>
+                                <p className="text-muted mb-4">Safety guidelines and health protocols</p>
+                                <div className="row g-3">
+                                  <div className="col-12">
+                                    <label className="form-label">Safety Guidelines</label>
+                                    <textarea
+                                      rows={6}
+                                      className="form-control"
+                                      value={policies.safety.safetyGuidelines}
+                                      onChange={(e) => updatePolicy('safety', 'safetyGuidelines', e.target.value)}
+                                      placeholder="Enter general safety guidelines..."
+                                    />
+                                  </div>
+                                  <div className="col-12">
+                                    <label className="form-label">Emergency Procedures</label>
+                                    <textarea
+                                      rows={6}
+                                      className="form-control"
+                                      value={policies.safety.emergencyProcedures}
+                                      onChange={(e) => updatePolicy('safety', 'emergencyProcedures', e.target.value)}
+                                      placeholder="Enter emergency procedures..."
+                                    />
+                                  </div>
+                                  <div className="col-12">
+                                    <label className="form-label">Injury Reporting Procedures</label>
+                                    <textarea
+                                      rows={4}
+                                      className="form-control"
+                                      value={policies.safety.injuryReporting}
+                                      onChange={(e) => updatePolicy('safety', 'injuryReporting', e.target.value)}
+                                      placeholder="Enter injury reporting procedures..."
+                                    />
+                                  </div>
+                                  <div className="col-12">
+                                    <label className="form-label">Equipment Safety</label>
+                                    <textarea
+                                      rows={4}
+                                      className="form-control"
+                                      value={policies.safety.equipmentSafety}
+                                      onChange={(e) => updatePolicy('safety', 'equipmentSafety', e.target.value)}
+                                      placeholder="Enter equipment safety guidelines..."
+                                    />
+                                  </div>
+                                  <div className="col-12">
+                                    <label className="form-label">Weather Policy</label>
+                                    <textarea
+                                      rows={4}
+                                      className="form-control"
+                                      value={policies.safety.weatherPolicy}
+                                      onChange={(e) => updatePolicy('safety', 'weatherPolicy', e.target.value)}
+                                      placeholder="Enter weather-related safety policies..."
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Disciplinary Tab */}
+                            {policiesActiveTab === 'disciplinary' && (
+                              <div>
+                                <h4 className="mb-3">Disciplinary Policies</h4>
+                                <p className="text-muted mb-4">Disciplinary procedures and consequences</p>
+                                <div className="row g-3">
+                                  <div className="col-12">
+                                    <label className="form-label">Disciplinary Code</label>
+                                    <textarea
+                                      rows={6}
+                                      className="form-control"
+                                      value={policies.disciplinary.disciplinaryCode}
+                                      onChange={(e) => updatePolicy('disciplinary', 'disciplinaryCode', e.target.value)}
+                                      placeholder="Enter disciplinary code and rules..."
+                                    />
+                                  </div>
+                                  <div className="col-12">
+                                    <label className="form-label">Suspension Policy</label>
+                                    <textarea
+                                      rows={4}
+                                      className="form-control"
+                                      value={policies.disciplinary.suspensionPolicy}
+                                      onChange={(e) => updatePolicy('disciplinary', 'suspensionPolicy', e.target.value)}
+                                      placeholder="Enter suspension policy details..."
+                                    />
+                                  </div>
+                                  <div className="col-12">
+                                    <label className="form-label">Appeal Process</label>
+                                    <textarea
+                                      rows={4}
+                                      className="form-control"
+                                      value={policies.disciplinary.appealProcess}
+                                      onChange={(e) => updatePolicy('disciplinary', 'appealProcess', e.target.value)}
+                                      placeholder="Enter appeal process details..."
+                                    />
+                                  </div>
+                                  <div className="col-12">
+                                    <label className="form-label">Zero Tolerance Policy</label>
+                                    <textarea
+                                      rows={4}
+                                      className="form-control"
+                                      value={policies.disciplinary.zeroTolerance}
+                                      onChange={(e) => updatePolicy('disciplinary', 'zeroTolerance', e.target.value)}
+                                      placeholder="Enter zero tolerance policy..."
+                                    />
+                                  </div>
+                                  <div className="col-12">
+                                    <label className="form-label">Reporting Procedures</label>
+                                    <textarea
+                                      rows={4}
+                                      className="form-control"
+                                      value={policies.disciplinary.reportingProcedures}
+                                      onChange={(e) => updatePolicy('disciplinary', 'reportingProcedures', e.target.value)}
+                                      placeholder="Enter reporting procedures..."
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Financial Tab */}
+                            {policiesActiveTab === 'financial' && (
+                              <div>
+                                <h4 className="mb-3">Financial Policies</h4>
+                                <p className="text-muted mb-4">Payment terms and financial procedures</p>
+                                <div className="row g-3">
+                                  <div className="col-12">
+                                    <label className="form-label">Payment Terms</label>
+                                    <textarea
+                                      rows={4}
+                                      className="form-control"
+                                      value={policies.financial.paymentTerms}
+                                      onChange={(e) => updatePolicy('financial', 'paymentTerms', e.target.value)}
+                                      placeholder="Enter payment terms and conditions..."
+                                    />
+                                  </div>
+                                  <div className="col-12">
+                                    <label className="form-label">Fee Structure</label>
+                                    <textarea
+                                      rows={6}
+                                      className="form-control"
+                                      value={policies.financial.feeStructure}
+                                      onChange={(e) => updatePolicy('financial', 'feeStructure', e.target.value)}
+                                      placeholder="Enter fee structure details..."
+                                    />
+                                  </div>
+                                  <div className="col-12">
+                                    <label className="form-label">Refund Policy</label>
+                                    <textarea
+                                      rows={4}
+                                      className="form-control"
+                                      value={policies.financial.refundPolicy}
+                                      onChange={(e) => updatePolicy('financial', 'refundPolicy', e.target.value)}
+                                      placeholder="Enter refund policy details..."
+                                    />
+                                  </div>
+                                  <div className="col-12">
+                                    <label className="form-label">Late Payment Policy</label>
+                                    <textarea
+                                      rows={4}
+                                      className="form-control"
+                                      value={policies.financial.latePaymentPolicy}
+                                      onChange={(e) => updatePolicy('financial', 'latePaymentPolicy', e.target.value)}
+                                      placeholder="Enter late payment policy..."
+                                    />
+                                  </div>
+                                  <div className="col-12">
+                                    <label className="form-label">Financial Aid Policy</label>
+                                    <textarea
+                                      rows={4}
+                                      className="form-control"
+                                      value={policies.financial.financialAid}
+                                      onChange={(e) => updatePolicy('financial', 'financialAid', e.target.value)}
+                                      placeholder="Enter financial aid policy..."
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Technology Tab */}
+                            {policiesActiveTab === 'technology' && (
+                              <div>
+                                <h4 className="mb-3">Technology Policies</h4>
+                                <p className="text-muted mb-4">Digital policies and online safety</p>
+                                <div className="row g-3">
+                                  <div className="col-12">
+                                    <label className="form-label">Data Protection Policy</label>
+                                    <textarea
+                                      rows={6}
+                                      className="form-control"
+                                      value={policies.technology.dataProtection}
+                                      onChange={(e) => updatePolicy('technology', 'dataProtection', e.target.value)}
+                                      placeholder="Enter data protection policy..."
+                                    />
+                                  </div>
+                                  <div className="col-12">
+                                    <label className="form-label">Social Media Policy</label>
+                                    <textarea
+                                      rows={6}
+                                      className="form-control"
+                                      value={policies.technology.socialMediaPolicy}
+                                      onChange={(e) => updatePolicy('technology', 'socialMediaPolicy', e.target.value)}
+                                      placeholder="Enter social media policy..."
+                                    />
+                                  </div>
+                                  <div className="col-12">
+                                    <label className="form-label">Photo & Video Policy</label>
+                                    <textarea
+                                      rows={4}
+                                      className="form-control"
+                                      value={policies.technology.photoVideoPolicy}
+                                      onChange={(e) => updatePolicy('technology', 'photoVideoPolicy', e.target.value)}
+                                      placeholder="Enter photo and video policy..."
+                                    />
+                                  </div>
+                                  <div className="col-12">
+                                    <label className="form-label">Communication Policy</label>
+                                    <textarea
+                                      rows={4}
+                                      className="form-control"
+                                      value={policies.technology.communicationPolicy}
+                                      onChange={(e) => updatePolicy('technology', 'communicationPolicy', e.target.value)}
+                                      placeholder="Enter communication policy..."
+                                    />
+                                  </div>
+                                  <div className="col-12">
+                                    <label className="form-label">Online Safety Policy</label>
+                                    <textarea
+                                      rows={4}
+                                      className="form-control"
+                                      value={policies.technology.onlineSafety}
+                                      onChange={(e) => updatePolicy('technology', 'onlineSafety', e.target.value)}
+                                      placeholder="Enter online safety policy..."
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Volunteer Tab */}
+                            {policiesActiveTab === 'volunteer' && (
+                              <div>
+                                <h4 className="mb-3">Volunteer Policies</h4>
+                                <p className="text-muted mb-4">Volunteer guidelines and expectations</p>
+                                <div className="row g-3">
+                                  <div className="col-12">
+                                    <label className="form-label">Volunteer Code of Conduct</label>
+                                    <textarea
+                                      rows={6}
+                                      className="form-control"
+                                      value={policies.volunteer.volunteerCode}
+                                      onChange={(e) => updatePolicy('volunteer', 'volunteerCode', e.target.value)}
+                                      placeholder="Enter volunteer code of conduct..."
+                                    />
+                                  </div>
+                                  <div className="col-12">
+                                    <label className="form-label">Background Check Policy</label>
+                                    <textarea
+                                      rows={4}
+                                      className="form-control"
+                                      value={policies.volunteer.backgroundChecks}
+                                      onChange={(e) => updatePolicy('volunteer', 'backgroundChecks', e.target.value)}
+                                      placeholder="Enter background check requirements..."
+                                    />
+                                  </div>
+                                  <div className="col-12">
+                                    <label className="form-label">Training Requirements</label>
+                                    <textarea
+                                      rows={4}
+                                      className="form-control"
+                                      value={policies.volunteer.trainingRequirements}
+                                      onChange={(e) => updatePolicy('volunteer', 'trainingRequirements', e.target.value)}
+                                      placeholder="Enter training requirements..."
+                                    />
+                                  </div>
+                                  <div className="col-12">
+                                    <label className="form-label">Volunteer Rights</label>
+                                    <textarea
+                                      rows={4}
+                                      className="form-control"
+                                      value={policies.volunteer.volunteerRights}
+                                      onChange={(e) => updatePolicy('volunteer', 'volunteerRights', e.target.value)}
+                                      placeholder="Enter volunteer rights..."
+                                    />
+                                  </div>
+                                  <div className="col-12">
+                                    <label className="form-label">Volunteer Responsibilities</label>
+                                    <textarea
+                                      rows={4}
+                                      className="form-control"
+                                      value={policies.volunteer.volunteerResponsibilities}
+                                      onChange={(e) => updatePolicy('volunteer', 'volunteerResponsibilities', e.target.value)}
+                                      placeholder="Enter volunteer responsibilities..."
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -3211,28 +6580,354 @@ export default function AdminDashboard() {
                         <h5 className="mb-0">Documentation Management</h5>
                       </div>
                       <div className="card-body">
-                        <div className="alert alert-success">
-                          <i className="bi bi-check-circle me-2"></i>
-                          <strong>Documentation Management is now available!</strong> Access the comprehensive documentation system with features including:
-                          <ul className="mt-2 mb-3">
-                            <li>Centralized document repository</li>
-                            <li>Multiple document categories (policies, forms, handbooks, training materials)</li>
-                            <li>Upload and manage files (PDF, DOC, XLS, PPT, images)</li>
-                            <li>Version control and tracking</li>
-                            <li>Document status management (draft, published, archived)</li>
-                            <li>Search and filter capabilities</li>
-                            <li>Document categorization and tagging</li>
-                          </ul>
-                          <Link to="/admin/documents" className="btn btn-success">
-                            <i className="bi bi-arrow-right me-2"></i>
-                            Go to Documentation Management
-                          </Link>
-                        </div>
-                        <div className="text-center py-4">
-                          <i className="bi bi-file-earmark-text display-1 text-success"></i>
-                          <h4 className="mt-3 text-success">Documentation Management Ready</h4>
-                          <p className="text-muted">Click the button above to access the comprehensive documentation management system.</p>
-                        </div>
+                        {documentsLoading ? (
+                          <div className="text-center py-5">
+                            <div className="spinner-border text-primary" role="status">
+                              <span className="visually-hidden">Loading...</span>
+                            </div>
+                            <p className="text-muted mt-2">Loading documents...</p>
+                          </div>
+                        ) : (
+                          <>
+                            {/* Tabs */}
+                            <ul className="nav nav-tabs mb-4">
+                              <li className="nav-item">
+                                <button
+                                  className={`nav-link ${documentsActiveTab === 'overview' ? 'active' : ''}`}
+                                  onClick={() => setDocumentsActiveTab('overview')}
+                                >
+                                  📊 Overview
+                                </button>
+                              </li>
+                              <li className="nav-item">
+                                <button
+                                  className={`nav-link ${documentsActiveTab === 'all' ? 'active' : ''}`}
+                                  onClick={() => setDocumentsActiveTab('all')}
+                                >
+                                  📁 All Documents
+                                </button>
+                              </li>
+                              <li className="nav-item">
+                                <button
+                                  className={`nav-link ${documentsActiveTab === 'upload' ? 'active' : ''}`}
+                                  onClick={() => setDocumentsActiveTab('upload')}
+                                >
+                                  ⬆️ Upload Document
+                                </button>
+                              </li>
+                            </ul>
+
+                            {/* Overview Tab */}
+                            {documentsActiveTab === 'overview' && (
+                              <div>
+                                {/* Statistics Cards */}
+                                <div className="row g-3 mb-4">
+                                  <div className="col-md-3">
+                                    <div className="card bg-primary bg-opacity-10 border-primary">
+                                      <div className="card-body text-center">
+                                        <h2 className="display-6 fw-bold text-primary">{documentStats.total}</h2>
+                                        <p className="text-muted mb-0">Total Documents</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="col-md-3">
+                                    <div className="card bg-success bg-opacity-10 border-success">
+                                      <div className="card-body text-center">
+                                        <h2 className="display-6 fw-bold text-success">{documentStats.published}</h2>
+                                        <p className="text-muted mb-0">Published</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="col-md-3">
+                                    <div className="card bg-warning bg-opacity-10 border-warning">
+                                      <div className="card-body text-center">
+                                        <h2 className="display-6 fw-bold text-warning">{documentStats.draft}</h2>
+                                        <p className="text-muted mb-0">Drafts</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="col-md-3">
+                                    <div className="card bg-secondary bg-opacity-10 border-secondary">
+                                      <div className="card-body text-center">
+                                        <h2 className="display-6 fw-bold text-secondary">{documentStats.archived}</h2>
+                                        <p className="text-muted mb-0">Archived</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Categories Grid */}
+                                <h5 className="mb-3">Document Categories</h5>
+                                <div className="row g-3">
+                                  {documentStats.byCategory.map((cat) => (
+                                    <div key={cat.id} className="col-md-3">
+                                      <div className="card h-100">
+                                        <div className="card-body">
+                                          <div className="d-flex justify-content-between align-items-start mb-2">
+                                            <span style={{fontSize: '2rem'}}>{cat.icon}</span>
+                                            <h3 className="mb-0">{cat.count}</h3>
+                                          </div>
+                                          <h6 className="card-title">{cat.name}</h6>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* All Documents Tab */}
+                            {documentsActiveTab === 'all' && (
+                              <div>
+                                {/* Filters */}
+                                <div className="row g-3 mb-4">
+                                  <div className="col-md-5">
+                                    <input
+                                      type="text"
+                                      className="form-control"
+                                      placeholder="Search documents..."
+                                      value={documentFilter.search}
+                                      onChange={(e) => setDocumentFilter(f => ({ ...f, search: e.target.value }))}
+                                    />
+                                  </div>
+                                  <div className="col-md-3">
+                                    <select
+                                      className="form-select"
+                                      value={documentFilter.category}
+                                      onChange={(e) => setDocumentFilter(f => ({ ...f, category: e.target.value }))}
+                                    >
+                                      <option value="all">All Categories</option>
+                                      {documentCategories.map(cat => (
+                                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                      ))}
+                                    </select>
+                                  </div>
+                                  <div className="col-md-2">
+                                    <select
+                                      className="form-select"
+                                      value={documentFilter.status}
+                                      onChange={(e) => setDocumentFilter(f => ({ ...f, status: e.target.value }))}
+                                    >
+                                      <option value="all">All Status</option>
+                                      <option value="draft">Draft</option>
+                                      <option value="published">Published</option>
+                                      <option value="archived">Archived</option>
+                                    </select>
+                                  </div>
+                                  <div className="col-md-2">
+                                    <button
+                                      className="btn btn-primary w-100"
+                                      onClick={() => setDocumentsActiveTab('upload')}
+                                    >
+                                      <i className="bi bi-upload me-1"></i> Upload
+                                    </button>
+                                  </div>
+                                </div>
+
+                                {/* Documents Table */}
+                                <div className="table-responsive">
+                                  <table className="table table-hover">
+                                    <thead className="table-light">
+                                      <tr>
+                                        <th>Document</th>
+                                        <th>Category</th>
+                                        <th>Version</th>
+                                        <th>Status</th>
+                                        <th>Updated</th>
+                                        <th>Actions</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {filteredDocuments.length === 0 ? (
+                                        <tr>
+                                          <td colSpan="6" className="text-center py-5">
+                                            <div className="text-muted">
+                                              <i className="bi bi-file-earmark-text" style={{fontSize: '3rem'}}></i>
+                                              <p className="mt-2">No documents found</p>
+                                              <button
+                                                className="btn btn-primary btn-sm"
+                                                onClick={() => setDocumentsActiveTab('upload')}
+                                              >
+                                                Upload Document
+                                              </button>
+                                            </div>
+                                          </td>
+                                        </tr>
+                                      ) : (
+                                        filteredDocuments.map((doc) => (
+                                          <tr key={doc._id}>
+                                            <td>
+                                              <div>
+                                                <strong>{doc.title}</strong>
+                                                {doc.description && (
+                                                  <div className="text-muted small">{doc.description}</div>
+                                                )}
+                                              </div>
+                                            </td>
+                                            <td>
+                                              <span className="badge bg-secondary">
+                                                {documentCategories.find(c => c.id === doc.category)?.name || doc.category}
+                                              </span>
+                                            </td>
+                                            <td className="text-muted small">v{doc.version || '1.0'}</td>
+                                            <td>
+                                              <span className={`badge bg-${getDocStatusColor(doc.status)}`}>
+                                                {doc.status}
+                                              </span>
+                                            </td>
+                                            <td className="text-muted small">
+                                              {doc.updatedAt ? new Date(doc.updatedAt).toLocaleDateString() : 'N/A'}
+                                            </td>
+                                            <td>
+                                              <div className="btn-group btn-group-sm">
+                                                {doc.url && (
+                                                  <button
+                                                    className="btn btn-outline-primary"
+                                                    onClick={() => window.open(doc.url, '_blank')}
+                                                    title="View"
+                                                  >
+                                                    <i className="bi bi-eye"></i>
+                                                  </button>
+                                                )}
+                                                <button
+                                                  className="btn btn-outline-danger"
+                                                  onClick={() => deleteDocument(doc._id)}
+                                                  title="Delete"
+                                                >
+                                                  <i className="bi bi-trash"></i>
+                                                </button>
+                                              </div>
+                                            </td>
+                                          </tr>
+                                        ))
+                                      )}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Upload Tab */}
+                            {documentsActiveTab === 'upload' && (
+                              <div>
+                                <h4 className="mb-4">Upload New Document</h4>
+                                <div className="row g-3">
+                                  <div className="col-12">
+                                    <label className="form-label">Document Title *</label>
+                                    <input
+                                      type="text"
+                                      className="form-control"
+                                      value={newDocument.title}
+                                      onChange={(e) => setNewDocument(prev => ({ ...prev, title: e.target.value }))}
+                                      placeholder="Enter document title..."
+                                      required
+                                    />
+                                  </div>
+                                  <div className="col-12">
+                                    <label className="form-label">Description</label>
+                                    <textarea
+                                      className="form-control"
+                                      rows="3"
+                                      value={newDocument.description}
+                                      onChange={(e) => setNewDocument(prev => ({ ...prev, description: e.target.value }))}
+                                      placeholder="Enter document description..."
+                                    />
+                                  </div>
+                                  <div className="col-md-6">
+                                    <label className="form-label">Category *</label>
+                                    <select
+                                      className="form-select"
+                                      value={newDocument.category}
+                                      onChange={(e) => setNewDocument(prev => ({ ...prev, category: e.target.value }))}
+                                    >
+                                      {documentCategories.map(cat => (
+                                        <option key={cat.id} value={cat.id}>
+                                          {cat.icon} {cat.name}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  </div>
+                                  <div className="col-md-3">
+                                    <label className="form-label">Version</label>
+                                    <input
+                                      type="text"
+                                      className="form-control"
+                                      value={newDocument.version}
+                                      onChange={(e) => setNewDocument(prev => ({ ...prev, version: e.target.value }))}
+                                      placeholder="1.0"
+                                    />
+                                  </div>
+                                  <div className="col-md-3">
+                                    <label className="form-label">Status</label>
+                                    <select
+                                      className="form-select"
+                                      value={newDocument.status}
+                                      onChange={(e) => setNewDocument(prev => ({ ...prev, status: e.target.value }))}
+                                    >
+                                      <option value="draft">Draft</option>
+                                      <option value="published">Published</option>
+                                      <option value="archived">Archived</option>
+                                    </select>
+                                  </div>
+                                  <div className="col-12">
+                                    <label className="form-label">Upload File *</label>
+                                    <div className="border border-2 border-dashed rounded p-4 text-center">
+                                      <i className="bi bi-cloud-upload display-4 text-muted"></i>
+                                      <div className="mt-3">
+                                        <label htmlFor="file-upload" className="btn btn-primary">
+                                          <i className="bi bi-upload me-2"></i>Choose File
+                                          <input
+                                            id="file-upload"
+                                            type="file"
+                                            className="d-none"
+                                            onChange={handleFileUpload}
+                                            accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png"
+                                          />
+                                        </label>
+                                      </div>
+                                      <p className="text-muted small mt-2">
+                                        PDF, DOC, XLS, PPT, Images up to 10MB
+                                      </p>
+                                      {newDocument.file && (
+                                        <div className="alert alert-success mt-3 mb-0">
+                                          <i className="bi bi-check-circle me-2"></i>
+                                          {newDocument.file.name}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <div className="col-12">
+                                    <div className="d-flex gap-2 justify-content-end">
+                                      <button
+                                        className="btn btn-secondary"
+                                        onClick={() => {
+                                          setNewDocument({
+                                            title: '',
+                                            description: '',
+                                            category: 'policies',
+                                            version: '1.0',
+                                            file: null,
+                                            status: 'draft'
+                                          });
+                                          setDocumentsActiveTab('overview');
+                                        }}
+                                      >
+                                        Cancel
+                                      </button>
+                                      <button
+                                        className="btn btn-primary"
+                                        onClick={uploadDocument}
+                                        disabled={documentsLoading || !newDocument.title || !newDocument.file}
+                                      >
+                                        {documentsLoading ? 'Uploading...' : 'Upload Document'}
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -3242,28 +6937,156 @@ export default function AdminDashboard() {
 
             {activeSection === 'analytics' && (
               <div>
+                {/* Key Metrics */}
+                <div className="row mb-4">
+                  <div className="col-lg-3 col-md-6 mb-3">
+                    <div className="card bg-primary text-white">
+                      <div className="card-body">
+                        <h6>Total Visits</h6>
+                        <h4 className="mb-0">24,567</h4>
+                        <small><i className="bi bi-arrow-up"></i> 12.5% vs last month</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-lg-3 col-md-6 mb-3">
+                    <div className="card bg-success text-white">
+                      <div className="card-body">
+                        <h6>Active Users</h6>
+                        <h4 className="mb-0">1,234</h4>
+                        <small><i className="bi bi-arrow-up"></i> 8.3% vs last month</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-lg-3 col-md-6 mb-3">
+                    <div className="card bg-warning text-white">
+                      <div className="card-body">
+                        <h6>Page Views</h6>
+                        <h4 className="mb-0">89,234</h4>
+                        <small><i className="bi bi-arrow-up"></i> 15.2% vs last month</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-lg-3 col-md-6 mb-3">
+                    <div className="card bg-info text-white">
+                      <div className="card-body">
+                        <h6>Avg. Session</h6>
+                        <h4 className="mb-0">4m 32s</h4>
+                        <small><i className="bi bi-arrow-up"></i> 3.1% vs last month</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Traffic Sources & Popular Pages */}
+                <div className="row mb-4">
+                  <div className="col-md-6 mb-4">
+                    <div className="card">
+                      <div className="card-header">
+                        <h5 className="mb-0">Traffic Sources</h5>
+                      </div>
+                      <div className="card-body">
+                        <div className="mb-3">
+                          <div className="d-flex justify-between-between align-items-center mb-2">
+                            <span>Direct</span>
+                            <span className="badge bg-primary">45%</span>
+                          </div>
+                          <div className="progress">
+                            <div className="progress-bar bg-primary" style={{width: '45%'}}></div>
+                          </div>
+                        </div>
+                        <div className="mb-3">
+                          <div className="d-flex justify-content-between align-items-center mb-2">
+                            <span>Search Engines</span>
+                            <span className="badge bg-success">30%</span>
+                          </div>
+                          <div className="progress">
+                            <div className="progress-bar bg-success" style={{width: '30%'}}></div>
+                          </div>
+                        </div>
+                        <div className="mb-3">
+                          <div className="d-flex justify-content-between align-items-center mb-2">
+                            <span>Social Media</span>
+                            <span className="badge bg-info">15%</span>
+                          </div>
+                          <div className="progress">
+                            <div className="progress-bar bg-info" style={{width: '15%'}}></div>
+                          </div>
+                        </div>
+                        <div className="mb-3">
+                          <div className="d-flex justify-content-between align-items-center mb-2">
+                            <span>Referral</span>
+                            <span className="badge bg-warning">10%</span>
+                          </div>
+                          <div className="progress">
+                            <div className="progress-bar bg-warning" style={{width: '10%'}}></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="col-md-6 mb-4">
+                    <div className="card">
+                      <div className="card-header">
+                        <h5 className="mb-0">Popular Pages</h5>
+                      </div>
+                      <div className="card-body">
+                        <div className="list-group list-group-flush">
+                          <div className="list-group-item d-flex justify-content-between align-items-center">
+                            <span>/teams</span>
+                            <span className="badge bg-primary">12,456 views</span>
+                          </div>
+                          <div className="list-group-item d-flex justify-content-between align-items-center">
+                            <span>/marketplace</span>
+                            <span className="badge bg-success">8,234 views</span>
+                          </div>
+                          <div className="list-group-item d-flex justify-content-between align-items-center">
+                            <span>/schedules</span>
+                            <span className="badge bg-info">6,789 views</span>
+                          </div>
+                          <div className="list-group-item d-flex justify-content-between align-items-center">
+                            <span>/programs</span>
+                            <span className="badge bg-warning">5,432 views</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* User Engagement */}
                 <div className="row">
                   <div className="col-12">
                     <div className="card">
                       <div className="card-header">
-                        <h5 className="mb-0">Analytics Dashboard</h5>
+                        <h5 className="mb-0">User Engagement Metrics</h5>
                       </div>
                       <div className="card-body">
-                        <div className="alert alert-info">
-                          <i className="bi bi-info-circle me-2"></i>
-                          Analytics features will be implemented here. This will include:
-                          <ul className="mt-2 mb-0">
-                            <li>User activity tracking</li>
-                            <li>Content performance metrics</li>
-                            <li>Site traffic analysis</li>
-                            <li>Engagement statistics</li>
-                            <li>Custom reports</li>
-                          </ul>
-                        </div>
-                        <div className="text-center py-5">
-                          <i className="bi bi-graph-up display-1 text-muted"></i>
-                          <h4 className="mt-3 text-muted">Analytics Dashboard</h4>
-                          <p className="text-muted">Coming soon...</p>
+                        <div className="row">
+                          <div className="col-md-3 text-center mb-3">
+                            <div className="border rounded p-3">
+                              <h4 className="text-primary">67%</h4>
+                              <p className="mb-0">Bounce Rate</p>
+                            </div>
+                          </div>
+                          <div className="col-md-3 text-center mb-3">
+                            <div className="border rounded p-3">
+                              <h4 className="text-success">3.4</h4>
+                              <p className="mb-0">Pages/Session</p>
+                            </div>
+                          </div>
+                          <div className="col-md-3 text-center mb-3">
+                            <div className="border rounded p-3">
+                              <h4 className="text-warning">2,145</h4>
+                              <p className="mb-0">New Users</p>
+                            </div>
+                          </div>
+                          <div className="col-md-3 text-center mb-3">
+                            <div className="border rounded p-3">
+                              <h4 className="text-info">58%</h4>
+                              <p className="mb-0">Returning Users</p>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -3607,28 +7430,195 @@ export default function AdminDashboard() {
 
             {activeSection === 'security' && (
               <div>
+                {/* Security Status */}
+                <div className="row mb-4">
+                  <div className="col-md-3 mb-3">
+                    <div className="card bg-success text-white">
+                      <div className="card-body">
+                        <h6>Security Score</h6>
+                        <h4 className="mb-0">98/100</h4>
+                        <small>Excellent</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-3 mb-3">
+                    <div className="card bg-warning text-white">
+                      <div className="card-body">
+                        <h6>Failed Logins</h6>
+                        <h4 className="mb-0">12</h4>
+                        <small>Last 24 hours</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-3 mb-3">
+                    <div className="card bg-info text-white">
+                      <div className="card-body">
+                        <h6>Active Sessions</h6>
+                        <h4 className="mb-0">45</h4>
+                        <small>Currently logged in</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-3 mb-3">
+                    <div className="card bg-primary text-white">
+                      <div className="card-body">
+                        <h6>2FA Enabled</h6>
+                        <h4 className="mb-0">87%</h4>
+                        <small>User adoption</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Security Settings */}
+                <div className="row mb-4">
+                  <div className="col-md-6 mb-4">
+                    <div className="card">
+                      <div className="card-header">
+                        <h5 className="mb-0">Security Settings</h5>
+                      </div>
+                      <div className="card-body">
+                        <div className="mb-3">
+                          <div className="form-check form-switch">
+                            <input className="form-check-input" type="checkbox" id="require2FA" defaultChecked />
+                            <label className="form-check-label" htmlFor="require2FA">
+                              Require Two-Factor Authentication
+                            </label>
+                          </div>
+                        </div>
+                        <div className="mb-3">
+                          <div className="form-check form-switch">
+                            <input className="form-check-input" type="checkbox" id="sessionTimeout" defaultChecked />
+                            <label className="form-check-label" htmlFor="sessionTimeout">
+                              Auto Session Timeout (30 minutes)
+                            </label>
+                          </div>
+                        </div>
+                        <div className="mb-3">
+                          <div className="form-check form-switch">
+                            <input className="form-check-input" type="checkbox" id="strongPassword" defaultChecked />
+                            <label className="form-check-label" htmlFor="strongPassword">
+                              Enforce Strong Password Policy
+                            </label>
+                          </div>
+                        </div>
+                        <div className="mb-3">
+                          <div className="form-check form-switch">
+                            <input className="form-check-input" type="checkbox" id="loginNotifications" defaultChecked />
+                            <label className="form-check-label" htmlFor="loginNotifications">
+                              Email Login Notifications
+                            </label>
+                          </div>
+                        </div>
+                        <div className="mb-3">
+                          <div className="form-check form-switch">
+                            <input className="form-check-input" type="checkbox" id="ipWhitelist" />
+                            <label className="form-check-label" htmlFor="ipWhitelist">
+                              IP Whitelist Protection
+                            </label>
+                          </div>
+                        </div>
+                        <button className="btn btn-primary">Save Settings</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="col-md-6 mb-4">
+                    <div className="card">
+                      <div className="card-header">
+                        <h5 className="mb-0">Recent Security Events</h5>
+                      </div>
+                      <div className="card-body p-0">
+                        <div className="list-group list-group-flush">
+                          <div className="list-group-item">
+                            <div className="d-flex align-items-center">
+                              <i className="bi bi-shield-check text-success fs-4 me-3"></i>
+                              <div className="flex-grow-1">
+                                <h6 className="mb-1">Successful Admin Login</h6>
+                                <small className="text-muted">admin@club.com • 5 minutes ago</small>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="list-group-item">
+                            <div className="d-flex align-items-center">
+                              <i className="bi bi-shield-x text-danger fs-4 me-3"></i>
+                              <div className="flex-grow-1">
+                                <h6 className="mb-1">Failed Login Attempt</h6>
+                                <small className="text-muted">unknown@test.com • 15 minutes ago</small>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="list-group-item">
+                            <div className="d-flex align-items-center">
+                              <i className="bi bi-key text-warning fs-4 me-3"></i>
+                              <div className="flex-grow-1">
+                                <h6 className="mb-1">Password Changed</h6>
+                                <small className="text-muted">user@club.com • 1 hour ago</small>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="list-group-item">
+                            <div className="d-flex align-items-center">
+                              <i className="bi bi-shield-check text-success fs-4 me-3"></i>
+                              <div className="flex-grow-1">
+                                <h6 className="mb-1">2FA Enabled</h6>
+                                <small className="text-muted">member@club.com • 2 hours ago</small>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Access Control */}
                 <div className="row">
                   <div className="col-12">
                     <div className="card">
                       <div className="card-header">
-                        <h5 className="mb-0">Security Center</h5>
+                        <h5 className="mb-0">Active User Sessions</h5>
                       </div>
-                      <div className="card-body">
-                        <div className="alert alert-info">
-                          <i className="bi bi-info-circle me-2"></i>
-                          Security features will be implemented here. This will include:
-                          <ul className="mt-2 mb-0">
-                            <li>Security logs</li>
-                            <li>Access control</li>
-                            <li>Password policies</li>
-                            <li>Two-factor authentication</li>
-                            <li>Security monitoring</li>
-                          </ul>
-                        </div>
-                        <div className="text-center py-5">
-                          <i className="bi bi-shield-check display-1 text-muted"></i>
-                          <h4 className="mt-3 text-muted">Security Center</h4>
-                          <p className="text-muted">Coming soon...</p>
+                      <div className="card-body p-0">
+                        <div className="table-responsive">
+                          <table className="table table-hover mb-0">
+                            <thead>
+                              <tr>
+                                <th>User</th>
+                                <th>IP Address</th>
+                                <th>Device</th>
+                                <th>Login Time</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td>admin@club.com</td>
+                                <td>192.168.1.1</td>
+                                <td>Chrome on Windows</td>
+                                <td>2 hours ago</td>
+                                <td><span className="badge bg-success">Active</span></td>
+                                <td><button className="btn btn-sm btn-danger">Revoke</button></td>
+                              </tr>
+                              <tr>
+                                <td>coach@club.com</td>
+                                <td>192.168.1.45</td>
+                                <td>Safari on iPhone</td>
+                                <td>1 hour ago</td>
+                                <td><span className="badge bg-success">Active</span></td>
+                                <td><button className="btn btn-sm btn-danger">Revoke</button></td>
+                              </tr>
+                              <tr>
+                                <td>member@club.com</td>
+                                <td>192.168.1.89</td>
+                                <td>Firefox on MacOS</td>
+                                <td>30 minutes ago</td>
+                                <td><span className="badge bg-success">Active</span></td>
+                                <td><button className="btn btn-sm btn-danger">Revoke</button></td>
+                              </tr>
+                            </tbody>
+                          </table>
                         </div>
                       </div>
                     </div>
@@ -3642,71 +7632,426 @@ export default function AdminDashboard() {
                 <div className="row">
                   <div className="col-12">
                     <div className="card">
-                      <div className="card-header">
+                      <div className="card-header d-flex justify-content-between align-items-center">
                         <h5 className="mb-0">Team Management</h5>
+                        {!showTeamForm && (
+                          <button 
+                            className="btn btn-primary"
+                            onClick={() => {
+                              resetTeamForm();
+                              setShowTeamForm(true);
+                              setEditingTeam(null);
+                            }}
+                          >
+                            <i className="bi bi-plus-circle me-1"></i> Create New Team
+                          </button>
+                        )}
                       </div>
                       <div className="card-body">
-                        <div className="alert alert-success">
-                          <i className="bi bi-check-circle me-2"></i>
-                          <strong>⚽ Comprehensive Team Management System Available!</strong> Manage all aspects of your teams with powerful features:
-                          
-                          <div className="row mt-3 mb-3">
-                            <div className="col-md-6">
-                              <h6 className="text-success"><i className="bi bi-people-fill me-2"></i>Team Management</h6>
-                              <ul className="small">
-                                <li>Create and manage teams by age group</li>
-                                <li>Multiple team levels (Recreational, Competitive, Elite)</li>
-                                <li>Team roster management</li>
-                                <li>Coach and assistant coach assignments</li>
-                                <li>Team status tracking (Active, Forming, Full, Tryouts)</li>
-                          </ul>
-                        </div>
-                            <div className="col-md-6">
-                              <h6 className="text-success"><i className="bi bi-calendar-check me-2"></i>Scheduling & Organization</h6>
-                              <ul className="small">
-                                <li>Practice schedules and times</li>
-                                <li>Game day coordination</li>
-                                <li>Location and facility assignment</li>
-                                <li>Season management</li>
-                                <li>Player capacity tracking</li>
-                              </ul>
-                        </div>
-                      </div>
-                          
-                          <div className="bg-white p-3 rounded mb-3">
-                            <h6 className="text-dark mb-2"><i className="bi bi-gear me-2"></i>Advanced Features</h6>
-                            <div className="row small">
-                              <div className="col-md-4">• Team roster management</div>
-                              <div className="col-md-4">• Player assignments</div>
-                              <div className="col-md-4">• Coach assignments</div>
-                              <div className="col-md-4">• Fee tracking</div>
-                              <div className="col-md-4">• Team visibility control</div>
-                              <div className="col-md-4">• Advanced filtering</div>
-                    </div>
-                  </div>
-                          
-                          <div className="bg-light p-3 rounded mb-3">
-                            <h6 className="text-dark mb-2"><i className="bi bi-trophy me-2"></i>Age Groups & Levels</h6>
-                            <div className="row small">
+                        {teamsLoading ? (
+                          <div className="text-center py-5">
+                            <div className="spinner-border text-primary" role="status">
+                              <span className="visually-hidden">Loading...</span>
+                            </div>
+                            <p className="text-muted mt-2">Loading teams...</p>
+                          </div>
+                        ) : showTeamForm ? (
+                          <form onSubmit={handleTeamSubmit}>
+                            <div className="d-flex justify-content-between align-items-center mb-3">
+                              <h5>{editingTeam ? 'Edit Team' : 'Create New Team'}</h5>
+                              <button 
+                                type="button" 
+                                className="btn btn-secondary"
+                                onClick={() => {
+                                  setShowTeamForm(false);
+                                  setEditingTeam(null);
+                                  resetTeamForm();
+                                }}
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                            <div className="row g-3">
                               <div className="col-md-6">
-                                <strong>Age Groups:</strong> Under 6, 8, 10, 12, 14, 16, 18, Adult, Women's, Coed
+                                <label className="form-label">Team Name *</label>
+                                <input
+                                  type="text"
+                                  name="name"
+                                  className="form-control"
+                                  value={teamForm.name}
+                                  onChange={handleTeamFormChange}
+                                  required
+                                />
+                              </div>
+                              <div className="col-md-3">
+                                <label className="form-label">Age Group *</label>
+                                <select
+                                  name="ageGroup"
+                                  className="form-select"
+                                  value={teamForm.ageGroup}
+                                  onChange={handleTeamFormChange}
+                                  required
+                                >
+                                  <option value="">Select Age Group</option>
+                                  {AGE_GROUPS.map(age => (
+                                    <option key={age} value={age}>{age}</option>
+                                  ))}
+                                </select>
+                              </div>
+                              <div className="col-md-3">
+                                <label className="form-label">Level *</label>
+                                <select
+                                  name="level"
+                                  className="form-select"
+                                  value={teamForm.level}
+                                  onChange={handleTeamFormChange}
+                                  required
+                                >
+                                  <option value="">Select Level</option>
+                                  {TEAM_LEVELS.map(level => (
+                                    <option key={level} value={level}>{level}</option>
+                                  ))}
+                                </select>
+                              </div>
+                              <div className="col-md-4">
+                                <label className="form-label">Status *</label>
+                                <select
+                                  name="status"
+                                  className="form-select"
+                                  value={teamForm.status}
+                                  onChange={handleTeamFormChange}
+                                >
+                                  {TEAM_STATUSES.map(status => (
+                                    <option key={status} value={status}>{status}</option>
+                                  ))}
+                                </select>
+                              </div>
+                              <div className="col-md-4">
+                                <label className="form-label">Coach *</label>
+                                <input
+                                  type="text"
+                                  name="coach"
+                                  className="form-control"
+                                  value={teamForm.coach}
+                                  onChange={handleTeamFormChange}
+                                  required
+                                />
+                              </div>
+                              <div className="col-md-4">
+                                <label className="form-label">Assistant Coach</label>
+                                <input
+                                  type="text"
+                                  name="assistantCoach"
+                                  className="form-control"
+                                  value={teamForm.assistantCoach}
+                                  onChange={handleTeamFormChange}
+                                />
+                              </div>
+                              <div className="col-md-3">
+                                <label className="form-label">Max Players</label>
+                                <input
+                                  type="number"
+                                  name="maxPlayers"
+                                  className="form-control"
+                                  value={teamForm.maxPlayers}
+                                  onChange={handleTeamFormChange}
+                                />
+                              </div>
+                              <div className="col-md-3">
+                                <label className="form-label">Current Players</label>
+                                <input
+                                  type="number"
+                                  name="currentPlayers"
+                                  className="form-control"
+                                  value={teamForm.currentPlayers}
+                                  onChange={handleTeamFormChange}
+                                />
+                              </div>
+                              <div className="col-md-3">
+                                <label className="form-label">Fees ($)</label>
+                                <input
+                                  type="number"
+                                  name="fees"
+                                  className="form-control"
+                                  value={teamForm.fees}
+                                  onChange={handleTeamFormChange}
+                                />
+                              </div>
+                              <div className="col-md-3">
+                                <label className="form-label">Season</label>
+                                <input
+                                  type="text"
+                                  name="season"
+                                  className="form-control"
+                                  value={teamForm.season}
+                                  onChange={handleTeamFormChange}
+                                  placeholder="e.g. Spring 2025"
+                                />
+                              </div>
+                              <div className="col-md-4">
+                                <label className="form-label">Practice Days</label>
+                                <input
+                                  type="text"
+                                  name="practiceDays"
+                                  className="form-control"
+                                  value={teamForm.practiceDays}
+                                  onChange={handleTeamFormChange}
+                                  placeholder="e.g. Monday, Wednesday"
+                                />
+                              </div>
+                              <div className="col-md-4">
+                                <label className="form-label">Practice Time</label>
+                                <input
+                                  type="text"
+                                  name="practiceTime"
+                                  className="form-control"
+                                  value={teamForm.practiceTime}
+                                  onChange={handleTeamFormChange}
+                                  placeholder="e.g. 6:00 PM - 7:30 PM"
+                                />
+                              </div>
+                              <div className="col-md-4">
+                                <label className="form-label">Location</label>
+                                <input
+                                  type="text"
+                                  name="location"
+                                  className="form-control"
+                                  value={teamForm.location}
+                                  onChange={handleTeamFormChange}
+                                />
                               </div>
                               <div className="col-md-6">
-                                <strong>Levels:</strong> Recreational, Competitive, Elite, Development, All-Star
+                                <label className="form-label">Game Day</label>
+                                <input
+                                  type="text"
+                                  name="gameDay"
+                                  className="form-control"
+                                  value={teamForm.gameDay}
+                                  onChange={handleTeamFormChange}
+                                />
+                              </div>
+                              <div className="col-md-6">
+                                <label className="form-label">Game Time</label>
+                                <input
+                                  type="text"
+                                  name="gameTime"
+                                  className="form-control"
+                                  value={teamForm.gameTime}
+                                  onChange={handleTeamFormChange}
+                                />
+                              </div>
+                              <div className="col-12">
+                                <label className="form-label">Description</label>
+                                <textarea
+                                  name="description"
+                                  className="form-control"
+                                  rows="3"
+                                  value={teamForm.description}
+                                  onChange={handleTeamFormChange}
+                                />
+                              </div>
+                              <div className="col-12">
+                                <div className="form-check">
+                                  <input
+                                    type="checkbox"
+                                    name="visible"
+                                    className="form-check-input"
+                                    checked={teamForm.visible}
+                                    onChange={handleTeamFormChange}
+                                  />
+                                  <label className="form-check-label">
+                                    Visible to public
+                                  </label>
+                                </div>
+                              </div>
+                              <div className="col-12">
+                                <button type="submit" className="btn btn-success w-100" disabled={teamsLoading}>
+                                  {teamsLoading ? 'Saving...' : (editingTeam ? 'Update Team' : 'Create Team')}
+                                </button>
                               </div>
                             </div>
-                          </div>
-                          
-                          <Link to="/admin/teams" className="btn btn-success btn-lg">
-                            <i className="bi bi-arrow-right me-2"></i>
-                            Go to Team Management
-                          </Link>
-                        </div>
-                        <div className="text-center py-4">
-                          <i className="bi bi-people-fill display-1 text-success"></i>
-                          <h4 className="mt-3 text-success">Team Management Ready</h4>
-                          <p className="text-muted">Manage teams, rosters, schedules, and coaching assignments all in one place.</p>
-                        </div>
+                          </form>
+                        ) : (
+                          <>
+                            {/* Tabs */}
+                            <ul className="nav nav-tabs mb-4">
+                              <li className="nav-item">
+                                <button
+                                  className={`nav-link ${teamsActiveTab === 'overview' ? 'active' : ''}`}
+                                  onClick={() => setTeamsActiveTab('overview')}
+                                >
+                                  📊 Overview
+                                </button>
+                              </li>
+                              <li className="nav-item">
+                                <button
+                                  className={`nav-link ${teamsActiveTab === 'all' ? 'active' : ''}`}
+                                  onClick={() => setTeamsActiveTab('all')}
+                                >
+                                  📋 All Teams
+                                </button>
+                              </li>
+                            </ul>
+
+                            {/* Overview Tab */}
+                            {teamsActiveTab === 'overview' && (
+                              <div>
+                                {/* Statistics Cards */}
+                                <div className="row g-3 mb-4">
+                                  <div className="col-md-3">
+                                    <div className="card bg-primary bg-opacity-10 border-primary">
+                                      <div className="card-body text-center">
+                                        <h2 className="display-6 fw-bold text-primary">{teamStats.total}</h2>
+                                        <p className="text-muted mb-0">Total Teams</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="col-md-3">
+                                    <div className="card bg-success bg-opacity-10 border-success">
+                                      <div className="card-body text-center">
+                                        <h2 className="display-6 fw-bold text-success">{teamStats.active}</h2>
+                                        <p className="text-muted mb-0">Active</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="col-md-3">
+                                    <div className="card bg-warning bg-opacity-10 border-warning">
+                                      <div className="card-body text-center">
+                                        <h2 className="display-6 fw-bold text-warning">{teamStats.forming}</h2>
+                                        <p className="text-muted mb-0">Forming</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="col-md-3">
+                                    <div className="card bg-info bg-opacity-10 border-info">
+                                      <div className="card-body text-center">
+                                        <h2 className="display-6 fw-bold text-info">{teamStats.full}</h2>
+                                        <p className="text-muted mb-0">Full</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Age Groups */}
+                                {teamStats.byAgeGroup.length > 0 && (
+                                  <div className="mb-4">
+                                    <h5 className="mb-3">Teams by Age Group</h5>
+                                    <div className="row g-3">
+                                      {teamStats.byAgeGroup.map((group) => (
+                                        <div key={group.name} className="col-md-2">
+                                          <div className="card h-100">
+                                            <div className="card-body text-center">
+                                              <h3 className="mb-0">{group.count}</h3>
+                                              <p className="text-muted small mb-0">{group.name}</p>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Levels */}
+                                {teamStats.byLevel.length > 0 && (
+                                  <div>
+                                    <h5 className="mb-3">Teams by Level</h5>
+                                    <div className="row g-3">
+                                      {teamStats.byLevel.map((level) => (
+                                        <div key={level.name} className="col-md-4">
+                                          <div className="card h-100">
+                                            <div className="card-body text-center">
+                                              <h3 className="mb-0">{level.count}</h3>
+                                              <p className="text-muted small mb-0">{level.name}</p>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+
+                            {/* All Teams Tab */}
+                            {teamsActiveTab === 'all' && (
+                              <div>
+                                <div className="table-responsive">
+                                  <table className="table table-hover">
+                                    <thead className="table-light">
+                                      <tr>
+                                        <th>Team Name</th>
+                                        <th>Age Group</th>
+                                        <th>Level</th>
+                                        <th>Status</th>
+                                        <th>Coach</th>
+                                        <th>Players</th>
+                                        <th>Actions</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {managedTeams.length === 0 ? (
+                                        <tr>
+                                          <td colSpan="7" className="text-center py-5">
+                                            <div className="text-muted">
+                                              <i className="bi bi-people-fill" style={{fontSize: '3rem'}}></i>
+                                              <p className="mt-2">No teams found</p>
+                                              <button
+                                                className="btn btn-primary btn-sm"
+                                                onClick={() => {
+                                                  resetTeamForm();
+                                                  setShowTeamForm(true);
+                                                }}
+                                              >
+                                                Create First Team
+                                              </button>
+                                            </div>
+                                          </td>
+                                        </tr>
+                                      ) : (
+                                        managedTeams.map((team) => (
+                                          <tr key={team._id}>
+                                            <td><strong>{team.name}</strong></td>
+                                            <td>{team.ageGroup}</td>
+                                            <td><span className="badge bg-secondary">{team.level}</span></td>
+                                            <td>
+                                              <span className={`badge bg-${
+                                                team.status === 'Active' ? 'success' : 
+                                                team.status === 'Forming' ? 'warning' :
+                                                team.status === 'Full' ? 'info' : 'secondary'
+                                              }`}>
+                                                {team.status}
+                                              </span>
+                                            </td>
+                                            <td>{team.coach}</td>
+                                            <td>{team.currentPlayers} / {team.maxPlayers}</td>
+                                            <td>
+                                              <div className="btn-group btn-group-sm">
+                                                <button
+                                                  className="btn btn-outline-primary"
+                                                  onClick={() => handleEditTeam(team)}
+                                                  title="Edit"
+                                                >
+                                                  <i className="bi bi-pencil"></i>
+                                                </button>
+                                                <button
+                                                  className="btn btn-outline-danger"
+                                                  onClick={() => handleDeleteTeam(team._id)}
+                                                  title="Delete"
+                                                >
+                                                  <i className="bi bi-trash"></i>
+                                                </button>
+                                              </div>
+                                            </td>
+                                          </tr>
+                                        ))
+                                      )}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                            )}
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -3719,84 +8064,57 @@ export default function AdminDashboard() {
                 <div className="row">
                   <div className="col-12">
                     <div className="card">
-                      <div className="card-header">
-                        <h5 className="mb-0">Event Management</h5>
-                      </div>
                       <div className="card-body">
-                        <div className="alert alert-success">
-                          <i className="bi bi-check-circle me-2"></i>
-                          <strong>🎉 Comprehensive Event Management System Available!</strong> Manage both public and internal events:
-                          
-                          <div className="row mt-3 mb-3">
-                            <div className="col-md-6">
-                              <h6 className="text-success"><i className="bi bi-globe me-2"></i>Public Events (Community-Facing)</h6>
-                              <ul className="small">
-                                <li>Tournaments and competitions</li>
-                                <li>Public tryouts and training camps</li>
-                                <li>Community outreach events</li>
-                                <li>Fundraising activities</li>
-                                <li>Skills clinics and workshops</li>
-                                <li>Awards ceremonies</li>
-                                <li>Online registration with payment</li>
-                          </ul>
-                        </div>
-                            <div className="col-md-6">
-                              <h6 className="text-success"><i className="bi bi-building me-2"></i>Internal Events (Club-Only)</h6>
-                              <ul className="small">
-                                <li>Board and committee meetings</li>
-                                <li>Parent-coach meetings</li>
-                                <li>Staff training workshops</li>
-                                <li>Volunteer coordination</li>
-                                <li>Team social events</li>
-                                <li>Strategic planning sessions</li>
-                                <li>Internal communications</li>
-                              </ul>
-                        </div>
-                      </div>
-                          
-                          <div className="bg-white p-3 rounded mb-3">
-                            <h6 className="text-dark mb-2"><i className="bi bi-gear me-2"></i>Event Management Features</h6>
-                            <div className="row small">
-                              <div className="col-md-4">• 12 event categories</div>
-                              <div className="col-md-4">• 4 visibility levels</div>
-                              <div className="col-md-4">• Registration & RSVP system</div>
-                              <div className="col-md-4">• Capacity management</div>
-                              <div className="col-md-4">• Waitlist functionality</div>
-                              <div className="col-md-4">• Fee collection</div>
-                              <div className="col-md-4">• Event agenda builder</div>
-                              <div className="col-md-4">• Attendee tracking</div>
-                              <div className="col-md-4">• Analytics dashboard</div>
-                    </div>
-                  </div>
-                          
-                          <div className="bg-light p-3 rounded mb-3">
-                            <h6 className="text-dark mb-2"><i className="bi bi-shield-check me-2"></i>Visibility Options</h6>
-                            <div className="row small">
-                              <div className="col-md-6">
-                                <strong>🌐 Public:</strong> Visible to everyone, open registration
-                              </div>
-                              <div className="col-md-6">
-                                <strong>🔐 Members Only:</strong> Only registered club members
-                              </div>
-                              <div className="col-md-6">
-                                <strong>🏢 Internal:</strong> Staff and volunteers only
-                              </div>
-                              <div className="col-md-6">
-                                <strong>🔒 Private:</strong> Invite-only events
-                              </div>
+                        {eventsLoading ? (
+                          <div className="text-center py-5"><div className="spinner-border text-primary"></div></div>
+                        ) : showEventForm ? (
+                          <form onSubmit={handleEventSubmit}>
+                            <div className="d-flex justify-content-between mb-3">
+                              <h5>{editingEvent ? 'Edit' : 'Create'} Event</h5>
+                              <button type="button" className="btn btn-secondary" onClick={() => { setShowEventForm(false); setEditingEvent(null); }}>Cancel</button>
                             </div>
-                          </div>
-                          
-                          <Link to="/admin/events" className="btn btn-success btn-lg">
-                            <i className="bi bi-arrow-right me-2"></i>
-                            Go to Event Management
-                          </Link>
-                        </div>
-                        <div className="text-center py-4">
-                          <i className="bi bi-calendar-event-fill display-1 text-success"></i>
-                          <h4 className="mt-3 text-success">Event Management System Ready</h4>
-                          <p className="text-muted">Create public tournaments and internal meetings with full registration, tracking, and analytics.</p>
-                        </div>
+                            <div className="row g-3">
+                              <div className="col-md-6"><label>Title *</label><input type="text" className="form-control" value={eventForm.title} onChange={(e) => setEventForm({...eventForm, title: e.target.value})} required /></div>
+                              <div className="col-md-6"><label>Category</label><select className="form-select" value={eventForm.category} onChange={(e) => setEventForm({...eventForm, category: e.target.value})}><option>Tournament</option><option>Meeting</option><option>Training</option><option>Social</option></select></div>
+                              <div className="col-md-6"><label>Date *</label><input type="date" className="form-control" value={eventForm.date} onChange={(e) => setEventForm({...eventForm, date: e.target.value})} required /></div>
+                              <div className="col-md-6"><label>Time</label><input type="time" className="form-control" value={eventForm.time} onChange={(e) => setEventForm({...eventForm, time: e.target.value})} /></div>
+                              <div className="col-md-6"><label>Location</label><input type="text" className="form-control" value={eventForm.location} onChange={(e) => setEventForm({...eventForm, location: e.target.value})} /></div>
+                              <div className="col-md-6"><label>Visibility</label><select className="form-select" value={eventForm.visibility} onChange={(e) => setEventForm({...eventForm, visibility: e.target.value})}><option>Public</option><option>Members Only</option><option>Internal</option><option>Private</option></select></div>
+                              <div className="col-md-6"><label>Capacity</label><input type="number" className="form-control" value={eventForm.capacity} onChange={(e) => setEventForm({...eventForm, capacity: parseInt(e.target.value) || 0})} /></div>
+                              <div className="col-md-6"><label>Fee ($)</label><input type="number" className="form-control" value={eventForm.fee} onChange={(e) => setEventForm({...eventForm, fee: parseFloat(e.target.value) || 0})} /></div>
+                              <div className="col-12"><label>Description</label><textarea className="form-control" rows="2" value={eventForm.description} onChange={(e) => setEventForm({...eventForm, description: e.target.value})}></textarea></div>
+                              <div className="col-12"><button type="submit" className="btn btn-success w-100">{eventsLoading ? 'Saving...' : (editingEvent ? 'Update' : 'Create')}</button></div>
+                            </div>
+                          </form>
+                        ) : (
+                          <>
+                            <button className="btn btn-primary mb-3" onClick={() => setShowEventForm(true)}><i className="bi bi-plus-circle me-1"></i> New Event</button>
+                            <table className="table table-hover">
+                              <thead className="table-light"><tr><th>Event</th><th>Date & Time</th><th>Category</th><th>Visibility</th><th>Capacity</th><th>Actions</th></tr></thead>
+                              <tbody>
+                                {events.length === 0 ? (
+                                  <tr><td colSpan="6" className="text-center py-5"><p className="text-muted mb-0">No events scheduled</p></td></tr>
+                                ) : (
+                                  events.map((event) => (
+                                    <tr key={event._id}>
+                                      <td><strong>{event.title}</strong><br/><small className="text-muted">{event.location}</small></td>
+                                      <td>{event.date ? new Date(event.date).toLocaleDateString() : 'N/A'}<br/><small>{event.time}</small></td>
+                                      <td><span className="badge bg-info">{event.category}</span></td>
+                                      <td><span className="badge bg-secondary">{event.visibility}</span></td>
+                                      <td>{event.registered || 0}/{event.capacity}</td>
+                                      <td>
+                                        <div className="btn-group btn-group-sm">
+                                          <button className="btn btn-outline-primary" onClick={() => { setEventForm(event); setEditingEvent(event); setShowEventForm(true); }}><i className="bi bi-pencil"></i></button>
+                                          <button className="btn btn-outline-danger" onClick={() => handleDeleteEvent(event._id)}><i className="bi bi-trash"></i></button>
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  ))
+                                )}
+                              </tbody>
+                            </table>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -3809,88 +8127,190 @@ export default function AdminDashboard() {
                 <div className="row">
                   <div className="col-12">
                     <div className="card">
-                      <div className="card-header">
-                        <h5 className="mb-0">Media Library Management</h5>
-                      </div>
                       <div className="card-body">
-                        <div className="alert alert-success">
-                          <i className="bi bi-check-circle me-2"></i>
-                          <strong>📸 Comprehensive Media Library System Available!</strong> Centralized digital asset management for photos, videos, and documents:
-                          
-                          <div className="row mt-3 mb-3">
-                            <div className="col-md-6">
-                              <h6 className="text-success"><i className="bi bi-globe me-2"></i>Public Media (Website)</h6>
-                              <ul className="small">
-                                <li>Photo galleries for website and fans</li>
-                                <li>Match action shots and highlights</li>
-                                <li>Event photos and videos</li>
-                                <li>Team and player photos</li>
-                                <li>Social media content</li>
-                                <li>Marketing materials and graphics</li>
-                                <li>Sponsor logos and assets</li>
-                                <li>Award and trophy photos</li>
-                          </ul>
+                        {/* Tabs */}
+                        <div className="btn-group mb-3 w-100" role="group">
+                          <button 
+                            type="button" 
+                            className={`btn ${mediaTab === 'all' ? 'btn-primary' : 'btn-outline-primary'}`} 
+                            onClick={() => setMediaTab('all')}
+                            style={{flex: 1}}
+                          >
+                            <i className="bi bi-images me-1"></i> All Media ({Array.isArray(mediaItems) ? mediaItems.length : 0})
+                          </button>
+                          <button 
+                            type="button" 
+                            className={`btn ${mediaTab === 'pending' ? 'btn-primary' : 'btn-outline-primary'}`} 
+                            onClick={() => setMediaTab('pending')}
+                            style={{flex: 1}}
+                          >
+                            <i className="bi bi-clock-history me-1"></i> Pending Approval
+                          </button>
+                          <button 
+                            type="button" 
+                            className={`btn ${mediaTab === 'flagged' ? 'btn-primary' : 'btn-outline-primary'}`} 
+                            onClick={() => setMediaTab('flagged')}
+                            style={{flex: 1}}
+                          >
+                            <i className="bi bi-flag-fill me-1"></i> Flagged
+                          </button>
                         </div>
-                            <div className="col-md-6">
-                              <h6 className="text-success"><i className="bi bi-lock me-2"></i>Internal Media (Private)</h6>
-                              <ul className="small">
-                                <li>Training video analysis</li>
-                                <li>Tactical diagrams and playbooks</li>
-                                <li>Internal documents and forms</li>
-                                <li>Staff resources and guides</li>
-                                <li>Confidential materials</li>
-                                <li>Coach development videos</li>
-                                <li>Administrative documents</li>
-                                <li>Meeting recordings</li>
-                              </ul>
-                        </div>
-                      </div>
-                          
-                          <div className="bg-white p-3 rounded mb-3">
-                            <h6 className="text-dark mb-2"><i className="bi bi-folder me-2"></i>Organization System</h6>
-                            <div className="row small">
-                              <div className="col-md-3">• <strong>12 Categories:</strong> Matches, Training, Events, Players, Teams, Facilities, etc.</div>
-                              <div className="col-md-3">• <strong>4 Visibility Levels:</strong> Public, Members, Internal, Private</div>
-                              <div className="col-md-3">• <strong>Tagging System:</strong> Add multiple tags for easy searching</div>
-                              <div className="col-md-3">• <strong>Advanced Search:</strong> Find files by name, category, tag, date</div>
+
+                        {/* Upload Button */}
+                        {!showUploadForm && (
+                          <button className="btn btn-primary mb-3" onClick={() => setShowUploadForm(true)}>
+                            <i className="bi bi-cloud-upload me-1"></i> Upload Media
+                          </button>
+                        )}
+
+                        {/* Upload Form */}
+                        {showUploadForm && (
+                          <div className="card mb-3 border-primary">
+                            <div className="card-header bg-primary text-white">
+                              <h6 className="mb-0"><i className="bi bi-cloud-upload me-2"></i>Upload New Media</h6>
+                            </div>
+                            <div className="card-body">
+                              <form onSubmit={handleMediaUpload}>
+                                <div className="row g-3">
+                                  <div className="col-md-6">
+                                    <label className="form-label">Title *</label>
+                                    <input 
+                                      type="text" 
+                                      className="form-control" 
+                                      value={mediaForm.title}
+                                      onChange={(e) => setMediaForm({...mediaForm, title: e.target.value})}
+                                      required
+                                      placeholder="Enter media title"
+                                    />
+                                  </div>
+                                  <div className="col-md-6">
+                                    <label className="form-label">Category *</label>
+                                    <select 
+                                      className="form-select"
+                                      value={mediaForm.category}
+                                      onChange={(e) => setMediaForm({...mediaForm, category: e.target.value})}
+                                    >
+                                      <option>Match Photos</option>
+                                      <option>Training</option>
+                                      <option>Events</option>
+                                      <option>Players</option>
+                                      <option>Teams</option>
+                                      <option>Facilities</option>
+                                      <option>Trophies</option>
+                                      <option>Action Shots</option>
+                                      <option>Fans</option>
+                                      <option>Other</option>
+                                    </select>
+                                  </div>
+                                  <div className="col-12">
+                                    <label className="form-label">Description</label>
+                                    <textarea 
+                                      className="form-control" 
+                                      rows="2"
+                                      value={mediaForm.description}
+                                      onChange={(e) => setMediaForm({...mediaForm, description: e.target.value})}
+                                      placeholder="Add a description..."
+                                    ></textarea>
+                                  </div>
+                                  <div className="col-12">
+                                    <label className="form-label">Image File *</label>
+                                    <input 
+                                      type="file" 
+                                      className="form-control"
+                                      accept="image/*"
+                                      onChange={(e) => setMediaForm({...mediaForm, file: e.target.files[0]})}
+                                      required
+                                    />
+                                    <small className="text-muted">Accepted formats: JPG, PNG, GIF (Max 10MB)</small>
+                                  </div>
+                                  <div className="col-12">
+                                    <button type="submit" className="btn btn-success me-2" disabled={uploadingMedia}>
+                                      {uploadingMedia ? <><span className="spinner-border spinner-border-sm me-1"></span> Uploading...</> : 'Upload'}
+                                    </button>
+                                    <button type="button" className="btn btn-secondary" onClick={() => {
+                                      setShowUploadForm(false);
+                                      setMediaForm({ title: "", description: "", category: "Match Photos", file: null });
+                                    }}>Cancel</button>
+                                  </div>
+                                </div>
+                              </form>
                             </div>
                           </div>
-                          
-                          <div className="bg-light p-3 rounded mb-3">
-                            <h6 className="text-dark mb-2"><i className="bi bi-gear me-2"></i>Features & Management</h6>
-                            <div className="row small">
-                              <div className="col-md-4">• Bulk upload (multiple files at once)</div>
-                              <div className="col-md-4">• Automatic image optimization</div>
-                              <div className="col-md-4">• Thumbnail generation</div>
-                              <div className="col-md-4">• Grid and list view modes</div>
-                              <div className="col-md-4">• File size tracking and limits</div>
-                              <div className="col-md-4">• Download permission control</div>
-                              <div className="col-md-4">• Photo credit/attribution</div>
-                              <div className="col-md-4">• Metadata management</div>
-                              <div className="col-md-4">• Preview and lightbox</div>
-                            </div>
+                        )}
+
+                        {/* Media Grid */}
+                        {mediaLoading ? (
+                          <div className="text-center py-5">
+                            <div className="spinner-border text-primary"></div>
+                            <p className="text-muted mt-2">Loading media...</p>
                           </div>
-                          
-                          <div className="bg-white p-3 rounded mb-3">
-                            <h6 className="text-dark mb-2"><i className="bi bi-file-earmark me-2"></i>Supported File Types</h6>
-                            <div className="row small">
-                              <div className="col-md-3">• <strong>Images:</strong> JPG, PNG, GIF, WebP</div>
-                              <div className="col-md-3">• <strong>Videos:</strong> MP4, MOV, AVI, WebM</div>
-                              <div className="col-md-3">• <strong>Audio:</strong> MP3, WAV, OGG</div>
-                              <div className="col-md-3">• <strong>Documents:</strong> PDF, DOC, DOCX, TXT</div>
-                            </div>
+                        ) : !mediaItems || mediaItems.length === 0 ? (
+                          <div className="text-center py-5">
+                            <i className="bi bi-images" style={{fontSize: '4rem', color: '#ccc'}}></i>
+                            <p className="text-muted mt-2 mb-0">No media items found</p>
                           </div>
-                          
-                          <Link to="/admin/media" className="btn btn-success btn-lg">
-                            <i className="bi bi-arrow-right me-2"></i>
-                            Go to Media Library
-                          </Link>
-                        </div>
-                        <div className="text-center py-4">
-                          <i className="bi bi-images display-1 text-success"></i>
-                          <h4 className="mt-3 text-success">Media Library System Ready</h4>
-                          <p className="text-muted">Professional digital asset management for photos, videos, and documents with organization and permissions.</p>
-                        </div>
+                        ) : (
+                          <div className="row g-3">
+                            {Array.isArray(mediaItems) && mediaItems.map(item => (
+                              <div key={item._id} className="col-md-4 col-lg-3">
+                                <div className="card h-100">
+                                  <img 
+                                    src={`http://localhost:5000${item.imageUrl}`} 
+                                    alt={item.title}
+                                    className="card-img-top"
+                                    style={{height: '200px', objectFit: 'cover'}}
+                                    onError={(e) => { e.target.src = 'https://via.placeholder.com/300x200?text=Image+Not+Found'; }}
+                                  />
+                                  <div className="card-body p-2">
+                                    <h6 className="card-title mb-1 text-truncate" title={item.title}>{item.title}</h6>
+                                    <p className="card-text small text-muted mb-2 text-truncate" title={item.description}>
+                                      {item.description || 'No description'}
+                                    </p>
+                                    <div className="d-flex justify-content-between align-items-center mb-2">
+                                      <span className="badge bg-info">{item.category}</span>
+                                      <span className={`badge bg-${item.status === 'approved' ? 'success' : item.status === 'rejected' ? 'danger' : 'warning'}`}>
+                                        {item.status}
+                                      </span>
+                                    </div>
+                                    <div className="small text-muted mb-2">
+                                      <i className="bi bi-eye me-1"></i>{item.viewCount || 0} views
+                                      <i className="bi bi-heart ms-2 me-1"></i>{item.likes?.length || 0} likes
+                                    </div>
+                                  </div>
+                                  <div className="card-footer p-2 bg-white border-top">
+                                    <div className="btn-group btn-group-sm w-100">
+                                      {item.status === 'pending' && (
+                                        <>
+                                          <button 
+                                            className="btn btn-outline-success" 
+                                            onClick={() => handleApproveMedia(item._id)}
+                                            title="Approve"
+                                          >
+                                            <i className="bi bi-check-lg"></i>
+                                          </button>
+                                          <button 
+                                            className="btn btn-outline-danger" 
+                                            onClick={() => handleRejectMedia(item._id)}
+                                            title="Reject"
+                                          >
+                                            <i className="bi bi-x-lg"></i>
+                                          </button>
+                                        </>
+                                      )}
+                                      <button 
+                                        className="btn btn-outline-danger" 
+                                        onClick={() => handleDeleteMedia(item._id)}
+                                        title="Delete"
+                                      >
+                                        <i className="bi bi-trash"></i>
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -3900,31 +8320,270 @@ export default function AdminDashboard() {
 
             {activeSection === 'fans-gallery' && (
               <div>
+                {/* Gallery Statistics */}
+                <div className="row mb-4">
+                  <div className="col-lg-3 col-md-6 mb-3">
+                    <div className="card bg-primary text-white">
+                      <div className="card-body">
+                        <div className="d-flex justify-content-between">
+                          <div>
+                            <h4 className="mb-0">1,456</h4>
+                            <p className="mb-0">Total Photos</p>
+                          </div>
+                          <div className="align-self-center">
+                            <i className="bi bi-image fs-1"></i>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-lg-3 col-md-6 mb-3">
+                    <div className="card bg-success text-white">
+                      <div className="card-body">
+                        <div className="d-flex justify-content-between">
+                          <div>
+                            <h4 className="mb-0">23</h4>
+                            <p className="mb-0">Pending Review</p>
+                          </div>
+                          <div className="align-self-center">
+                            <i className="bi bi-clock-history fs-1"></i>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-lg-3 col-md-6 mb-3">
+                    <div className="card bg-warning text-white">
+                      <div className="card-body">
+                        <div className="d-flex justify-content-between">
+                          <div>
+                            <h4 className="mb-0">12.5K</h4>
+                            <p className="mb-0">Total Likes</p>
+                          </div>
+                          <div className="align-self-center">
+                            <i className="bi bi-heart-fill fs-1"></i>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-lg-3 col-md-6 mb-3">
+                    <div className="card bg-info text-white">
+                      <div className="card-body">
+                        <div className="d-flex justify-content-between">
+                          <div>
+                            <h4 className="mb-0">45</h4>
+                            <p className="mb-0">Albums</p>
+                          </div>
+                          <div className="align-self-center">
+                            <i className="bi bi-collection fs-1"></i>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Pending Moderation */}
+                <div className="row mb-4">
+                  <div className="col-12">
+                    <div className="card">
+                      <div className="card-header d-flex justify-content-between align-items-center">
+                        <h5 className="mb-0">Pending Moderation</h5>
+                        <button className="btn btn-primary btn-sm">
+                          <i className="bi bi-upload me-2"></i>Upload Content
+                        </button>
+                      </div>
+                      <div className="card-body">
+                        <div className="table-responsive">
+                          <table className="table table-hover">
+                            <thead>
+                              <tr>
+                                <th>Preview</th>
+                                <th>Submitted By</th>
+                                <th>Type</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td><img src="https://via.placeholder.com/60" alt="Preview" className="img-thumbnail" /></td>
+                                <td>John Smith</td>
+                                <td><span className="badge bg-primary">Photo</span></td>
+                                <td>2 hours ago</td>
+                                <td>
+                                  <button className="btn btn-sm btn-success me-1">
+                                    <i className="bi bi-check"></i> Approve
+                                  </button>
+                                  <button className="btn btn-sm btn-danger">
+                                    <i className="bi bi-x"></i> Reject
+                                  </button>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td><img src="https://via.placeholder.com/60" alt="Preview" className="img-thumbnail" /></td>
+                                <td>Sarah Johnson</td>
+                                <td><span className="badge bg-info">Video</span></td>
+                                <td>4 hours ago</td>
+                                <td>
+                                  <button className="btn btn-sm btn-success me-1">
+                                    <i className="bi bi-check"></i> Approve
+                                  </button>
+                                  <button className="btn btn-sm btn-danger">
+                                    <i className="bi bi-x"></i> Reject
+                                  </button>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td><img src="https://via.placeholder.com/60" alt="Preview" className="img-thumbnail" /></td>
+                                <td>Mike Davis</td>
+                                <td><span className="badge bg-primary">Photo</span></td>
+                                <td>6 hours ago</td>
+                                <td>
+                                  <button className="btn btn-sm btn-success me-1">
+                                    <i className="bi bi-check"></i> Approve
+                                  </button>
+                                  <button className="btn btn-sm btn-danger">
+                                    <i className="bi bi-x"></i> Reject
+                                  </button>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Gallery Albums */}
+                <div className="row mb-4">
+                  <div className="col-md-6 mb-4">
+                    <div className="card">
+                      <div className="card-header">
+                        <h5 className="mb-0">Recent Albums</h5>
+                      </div>
+                      <div className="card-body">
+                        <div className="list-group">
+                          <div className="list-group-item d-flex justify-content-between align-items-center">
+                            <div className="d-flex align-items-center">
+                              <i className="bi bi-collection text-primary fs-4 me-3"></i>
+                              <div>
+                                <h6 className="mb-0">Championship Finals 2024</h6>
+                                <small className="text-muted">145 photos</small>
+                              </div>
+                            </div>
+                            <button className="btn btn-sm btn-outline-primary">Manage</button>
+                          </div>
+                          <div className="list-group-item d-flex justify-content-between align-items-center">
+                            <div className="d-flex align-items-center">
+                              <i className="bi bi-collection text-success fs-4 me-3"></i>
+                              <div>
+                                <h6 className="mb-0">Training Sessions</h6>
+                                <small className="text-muted">89 photos</small>
+                              </div>
+                            </div>
+                            <button className="btn btn-sm btn-outline-primary">Manage</button>
+                          </div>
+                          <div className="list-group-item d-flex justify-content-between align-items-center">
+                            <div className="d-flex align-items-center">
+                              <i className="bi bi-collection text-warning fs-4 me-3"></i>
+                              <div>
+                                <h6 className="mb-0">Fan Meetup Events</h6>
+                                <small className="text-muted">67 photos</small>
+                              </div>
+                            </div>
+                            <button className="btn btn-sm btn-outline-primary">Manage</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Featured Content */}
+                  <div className="col-md-6 mb-4">
+                    <div className="card">
+                      <div className="card-header">
+                        <h5 className="mb-0">Featured Content</h5>
+                      </div>
+                      <div className="card-body">
+                        <div className="list-group">
+                          <div className="list-group-item">
+                            <div className="d-flex align-items-center">
+                              <img src="https://via.placeholder.com/60" alt="Featured" className="img-thumbnail me-3" />
+                              <div className="flex-grow-1">
+                                <h6 className="mb-1">Winning Goal Celebration</h6>
+                                <small className="text-muted">1,247 likes • 89 comments</small>
+                              </div>
+                              <button className="btn btn-sm btn-outline-warning">
+                                <i className="bi bi-star-fill"></i>
+                              </button>
+                            </div>
+                          </div>
+                          <div className="list-group-item">
+                            <div className="d-flex align-items-center">
+                              <img src="https://via.placeholder.com/60" alt="Featured" className="img-thumbnail me-3" />
+                              <div className="flex-grow-1">
+                                <h6 className="mb-1">Team Spirit Photo</h6>
+                                <small className="text-muted">945 likes • 56 comments</small>
+                              </div>
+                              <button className="btn btn-sm btn-outline-warning">
+                                <i className="bi bi-star-fill"></i>
+                              </button>
+                            </div>
+                          </div>
+                          <div className="list-group-item">
+                            <div className="d-flex align-items-center">
+                              <img src="https://via.placeholder.com/60" alt="Featured" className="img-thumbnail me-3" />
+                              <div className="flex-grow-1">
+                                <h6 className="mb-1">Amazing Save Moment</h6>
+                                <small className="text-muted">823 likes • 42 comments</small>
+                              </div>
+                              <button className="btn btn-sm btn-outline-warning">
+                                <i className="bi bi-star-fill"></i>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Content Analytics */}
                 <div className="row">
                   <div className="col-12">
                     <div className="card">
                       <div className="card-header">
-                        <h5 className="mb-0">Fans & Gallery Management</h5>
+                        <h5 className="mb-0">Gallery Analytics</h5>
                       </div>
                       <div className="card-body">
-                        <div className="alert alert-info">
-                          <i className="bi bi-info-circle me-2"></i>
-                          Fans & Gallery management features will be implemented here. This will include:
-                          <ul className="mt-2 mb-0">
-                            <li>Fan-submitted photo and video management</li>
-                            <li>Gallery organization and categorization</li>
-                            <li>Content moderation and approval workflow</li>
-                            <li>Fan engagement and interaction tracking</li>
-                            <li>Featured content and spotlight management</li>
-                            <li>Social media integration and sharing</li>
-                            <li>Fan contests and photo competitions</li>
-                            <li>Gallery analytics and popular content tracking</li>
-                          </ul>
-                        </div>
-                        <div className="text-center py-5">
-                          <i className="bi bi-camera display-1 text-muted"></i>
-                          <h4 className="mt-3 text-muted">Fans & Gallery Management</h4>
-                          <p className="text-muted">Coming soon...</p>
+                        <div className="row">
+                          <div className="col-md-3 text-center mb-3">
+                            <div className="border rounded p-3">
+                              <h4 className="text-primary">45K</h4>
+                              <p className="mb-0">Total Views</p>
+                            </div>
+                          </div>
+                          <div className="col-md-3 text-center mb-3">
+                            <div className="border rounded p-3">
+                              <h4 className="text-success">12.5K</h4>
+                              <p className="mb-0">Total Likes</p>
+                            </div>
+                          </div>
+                          <div className="col-md-3 text-center mb-3">
+                            <div className="border rounded p-3">
+                              <h4 className="text-warning">3.2K</h4>
+                              <p className="mb-0">Shares</p>
+                            </div>
+                          </div>
+                          <div className="col-md-3 text-center mb-3">
+                            <div className="border rounded p-3">
+                              <h4 className="text-info">890</h4>
+                              <p className="mb-0">Comments</p>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -3978,41 +8637,203 @@ export default function AdminDashboard() {
                 {/* Communications Content */}
                 {activeSubSection === 'overview' && (
                   <div className="row">
+                    {/* Key Metrics */}
+                    <div className="col-12 mb-4">
+                      <div className="row">
+                        <div className="col-lg-3 col-md-6 mb-3">
+                          <div className="card bg-primary text-white">
+                            <div className="card-body">
+                              <div className="d-flex justify-content-between">
+                                <div>
+                                  <h4 className="mb-0">1,247</h4>
+                                  <p className="mb-0">Total Notifications</p>
+                                </div>
+                                <div className="align-self-center">
+                                  <i className="bi bi-bell fs-1"></i>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="col-lg-3 col-md-6 mb-3">
+                          <div className="card bg-success text-white">
+                            <div className="card-body">
+                              <div className="d-flex justify-content-between">
+                                <div>
+                                  <h4 className="mb-0">89%</h4>
+                                  <p className="mb-0">Delivery Rate</p>
+                                </div>
+                                <div className="align-self-center">
+                                  <i className="bi bi-check-circle fs-1"></i>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="col-lg-3 col-md-6 mb-3">
+                          <div className="card bg-warning text-white">
+                            <div className="card-body">
+                              <div className="d-flex justify-content-between">
+                                <div>
+                                  <h4 className="mb-0">23</h4>
+                                  <p className="mb-0">Active Broadcasts</p>
+                                </div>
+                                <div className="align-self-center">
+                                  <i className="bi bi-megaphone fs-1"></i>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="col-lg-3 col-md-6 mb-3">
+                          <div className="card bg-info text-white">
+                            <div className="card-body">
+                              <div className="d-flex justify-content-between">
+                                <div>
+                                  <h4 className="mb-0">156</h4>
+                                  <p className="mb-0">Unread Messages</p>
+                                </div>
+                                <div className="align-self-center">
+                                  <i className="bi bi-envelope fs-1"></i>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Quick Actions */}
+                    <div className="col-lg-8 mb-4">
+                      <div className="card">
+                        <div className="card-header">
+                          <h5 className="mb-0">Quick Actions</h5>
+                        </div>
+                        <div className="card-body">
+                          <div className="row">
+                            <div className="col-md-4 mb-3">
+                              <button className="btn btn-outline-primary w-100 h-100 py-4" onClick={() => setActiveSubSection('notifications')}>
+                                <i className="bi bi-bell fs-2 d-block mb-2"></i>
+                                <strong>Send Notification</strong>
+                                <br /><small>Create and send notifications</small>
+                              </button>
+                            </div>
+                            <div className="col-md-4 mb-3">
+                              <button className="btn btn-outline-success w-100 h-100 py-4" onClick={() => setActiveSubSection('broadcasts')}>
+                                <i className="bi bi-megaphone fs-2 d-block mb-2"></i>
+                                <strong>Create Broadcast</strong>
+                                <br /><small>Send mass communications</small>
+                              </button>
+                            </div>
+                            <div className="col-md-4 mb-3">
+                              <button className="btn btn-outline-warning w-100 h-100 py-4" onClick={() => setActiveSubSection('messages')}>
+                                <i className="bi bi-envelope fs-2 d-block mb-2"></i>
+                                <strong>Send Message</strong>
+                                <br /><small>Direct messaging</small>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Recent Activity */}
+                    <div className="col-lg-4 mb-4">
+                      <div className="card">
+                        <div className="card-header">
+                          <h5 className="mb-0">Recent Activity</h5>
+                        </div>
+                        <div className="card-body p-0">
+                          <div className="list-group list-group-flush">
+                            <div className="list-group-item">
+                              <div className="d-flex align-items-center">
+                                <i className="bi bi-bell text-primary me-3"></i>
+                                <div className="flex-grow-1">
+                                  <h6 className="mb-1">Match Reminder Sent</h6>
+                                  <small className="text-muted">2 minutes ago</small>
+                                </div>
+                                <span className="badge bg-success">Sent</span>
+                              </div>
+                            </div>
+                            <div className="list-group-item">
+                              <div className="d-flex align-items-center">
+                                <i className="bi bi-megaphone text-success me-3"></i>
+                                <div className="flex-grow-1">
+                                  <h6 className="mb-1">Training Schedule Broadcast</h6>
+                                  <small className="text-muted">1 hour ago</small>
+                                </div>
+                                <span className="badge bg-warning">Pending</span>
+                              </div>
+                            </div>
+                            <div className="list-group-item">
+                              <div className="d-flex align-items-center">
+                                <i className="bi bi-envelope text-warning me-3"></i>
+                                <div className="flex-grow-1">
+                                  <h6 className="mb-1">New Message from Coach</h6>
+                                  <small className="text-muted">3 hours ago</small>
+                                </div>
+                                <span className="badge bg-info">Unread</span>
+                              </div>
+                            </div>
+                            <div className="list-group-item">
+                              <div className="d-flex align-items-center">
+                                <i className="bi bi-bell text-primary me-3"></i>
+                                <div className="flex-grow-1">
+                                  <h6 className="mb-1">Payment Reminder</h6>
+                                  <small className="text-muted">5 hours ago</small>
+                                </div>
+                                <span className="badge bg-success">Delivered</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Communication Channels */}
                     <div className="col-12">
                       <div className="card">
                         <div className="card-header">
-                          <h5 className="mb-0">Communications Overview</h5>
+                          <h5 className="mb-0">Communication Channels</h5>
                         </div>
                         <div className="card-body">
-                          <div className="alert alert-info">
-                            <i className="bi bi-info-circle me-2"></i>
-                            Communications Center Overview - Manage all communication channels from one place.
-                          </div>
                           <div className="row">
                             <div className="col-md-4">
-                              <div className="card text-center">
+                              <div className="card text-center border-primary">
                                 <div className="card-body">
                                   <i className="bi bi-bell display-4 text-primary"></i>
                                   <h5 className="mt-3">Notifications</h5>
-                                  <p className="text-muted">System and user notifications</p>
+                                  <p className="text-muted">System alerts, reminders, and updates</p>
+                                  <div className="mt-3">
+                                    <span className="badge bg-primary me-2">Active: 1,247</span>
+                                    <span className="badge bg-success">Rate: 89%</span>
+                                  </div>
                                 </div>
                               </div>
                             </div>
                             <div className="col-md-4">
-                              <div className="card text-center">
+                              <div className="card text-center border-success">
                                 <div className="card-body">
                                   <i className="bi bi-megaphone display-4 text-success"></i>
                                   <h5 className="mt-3">Broadcasts</h5>
-                                  <p className="text-muted">Mass communication to users</p>
+                                  <p className="text-muted">Mass communication to user groups</p>
+                                  <div className="mt-3">
+                                    <span className="badge bg-success me-2">Active: 23</span>
+                                    <span className="badge bg-info">Reach: 2.1K</span>
+                                  </div>
                                 </div>
                               </div>
                             </div>
                             <div className="col-md-4">
-                              <div className="card text-center">
+                              <div className="card text-center border-warning">
                                 <div className="card-body">
                                   <i className="bi bi-envelope display-4 text-warning"></i>
                                   <h5 className="mt-3">Messages</h5>
-                                  <p className="text-muted">Direct messaging system</p>
+                                  <p className="text-muted">Direct messaging and conversations</p>
+                                  <div className="mt-3">
+                                    <span className="badge bg-warning me-2">Unread: 156</span>
+                                    <span className="badge bg-primary">Total: 3.2K</span>
+                                  </div>
                                 </div>
                               </div>
                             </div>
@@ -4025,28 +8846,212 @@ export default function AdminDashboard() {
 
                 {activeSubSection === 'notifications' && (
                   <div className="row">
+                    {/* Create Notification */}
+                    <div className="col-lg-4 mb-4">
+                      <div className="card">
+                        <div className="card-header">
+                          <h5 className="mb-0">Create Notification</h5>
+                        </div>
+                        <div className="card-body">
+                          <form>
+                            <div className="mb-3">
+                              <label className="form-label">Title</label>
+                              <input type="text" className="form-control" placeholder="Notification title" />
+                            </div>
+                            <div className="mb-3">
+                              <label className="form-label">Message</label>
+                              <textarea className="form-control" rows="3" placeholder="Notification message"></textarea>
+                            </div>
+                            <div className="mb-3">
+                              <label className="form-label">Type</label>
+                              <select className="form-select">
+                                <option>System Alert</option>
+                                <option>Event Reminder</option>
+                                <option>Payment Notice</option>
+                                <option>General Announcement</option>
+                              </select>
+                            </div>
+                            <div className="mb-3">
+                              <label className="form-label">Target Audience</label>
+                              <select className="form-select">
+                                <option>All Users</option>
+                                <option>Players Only</option>
+                                <option>Coaches Only</option>
+                                <option>Parents Only</option>
+                                <option>Specific Team</option>
+                              </select>
+                            </div>
+                            <div className="mb-3">
+                              <label className="form-label">Priority</label>
+                              <select className="form-select">
+                                <option>Low</option>
+                                <option>Normal</option>
+                                <option>High</option>
+                                <option>Urgent</option>
+                              </select>
+                            </div>
+                            <div className="mb-3">
+                              <div className="form-check">
+                                <input className="form-check-input" type="checkbox" id="emailNotification" />
+                                <label className="form-check-label" htmlFor="emailNotification">
+                                  Send Email
+                                </label>
+                              </div>
+                              <div className="form-check">
+                                <input className="form-check-input" type="checkbox" id="pushNotification" />
+                                <label className="form-check-label" htmlFor="pushNotification">
+                                  Send Push Notification
+                                </label>
+                              </div>
+                              <div className="form-check">
+                                <input className="form-check-input" type="checkbox" id="smsNotification" />
+                                <label className="form-check-label" htmlFor="smsNotification">
+                                  Send SMS
+                                </label>
+                              </div>
+                            </div>
+                            <div className="d-grid gap-2">
+                              <button className="btn btn-primary">Send Notification</button>
+                              <button className="btn btn-outline-secondary">Save as Draft</button>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Notification Templates */}
+                    <div className="col-lg-4 mb-4">
+                      <div className="card">
+                        <div className="card-header">
+                          <h5 className="mb-0">Quick Templates</h5>
+                        </div>
+                        <div className="card-body">
+                          <div className="list-group list-group-flush">
+                            <button className="list-group-item list-group-item-action">
+                              <div className="d-flex w-100 justify-content-between">
+                                <h6 className="mb-1">Match Reminder</h6>
+                                <small>Event</small>
+                              </div>
+                              <p className="mb-1">Reminder about upcoming match</p>
+                            </button>
+                            <button className="list-group-item list-group-item-action">
+                              <div className="d-flex w-100 justify-content-between">
+                                <h6 className="mb-1">Training Schedule</h6>
+                                <small>Event</small>
+                              </div>
+                              <p className="mb-1">Weekly training schedule update</p>
+                            </button>
+                            <button className="list-group-item list-group-item-action">
+                              <div className="d-flex w-100 justify-content-between">
+                                <h6 className="mb-1">Payment Due</h6>
+                                <small>Payment</small>
+                              </div>
+                              <p className="mb-1">Monthly fee payment reminder</p>
+                            </button>
+                            <button className="list-group-item list-group-item-action">
+                              <div className="d-flex w-100 justify-content-between">
+                                <h6 className="mb-1">Weather Alert</h6>
+                                <small>System</small>
+                              </div>
+                              <p className="mb-1">Weather-related training updates</p>
+                            </button>
+                            <button className="list-group-item list-group-item-action">
+                              <div className="d-flex w-100 justify-content-between">
+                                <h6 className="mb-1">Equipment Return</h6>
+                                <small>General</small>
+                              </div>
+                              <p className="mb-1">Equipment return reminder</p>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Recent Notifications */}
+                    <div className="col-lg-4 mb-4">
+                      <div className="card">
+                        <div className="card-header">
+                          <h5 className="mb-0">Recent Notifications</h5>
+                        </div>
+                        <div className="card-body p-0">
+                          <div className="list-group list-group-flush">
+                            <div className="list-group-item">
+                              <div className="d-flex align-items-center">
+                                <i className="bi bi-bell text-primary me-3"></i>
+                                <div className="flex-grow-1">
+                                  <h6 className="mb-1">Match Tomorrow</h6>
+                                  <small className="text-muted">Sent to 45 players</small>
+                                </div>
+                                <span className="badge bg-success">Sent</span>
+                              </div>
+                            </div>
+                            <div className="list-group-item">
+                              <div className="d-flex align-items-center">
+                                <i className="bi bi-exclamation-triangle text-warning me-3"></i>
+                                <div className="flex-grow-1">
+                                  <h6 className="mb-1">Payment Overdue</h6>
+                                  <small className="text-muted">Sent to 12 parents</small>
+                                </div>
+                                <span className="badge bg-warning">Pending</span>
+                              </div>
+                            </div>
+                            <div className="list-group-item">
+                              <div className="d-flex align-items-center">
+                                <i className="bi bi-cloud-rain text-info me-3"></i>
+                                <div className="flex-grow-1">
+                                  <h6 className="mb-1">Weather Alert</h6>
+                                  <small className="text-muted">Sent to all users</small>
+                                </div>
+                                <span className="badge bg-success">Delivered</span>
+                              </div>
+                            </div>
+                            <div className="list-group-item">
+                              <div className="d-flex align-items-center">
+                                <i className="bi bi-calendar-event text-success me-3"></i>
+                                <div className="flex-grow-1">
+                                  <h6 className="mb-1">Training Update</h6>
+                                  <small className="text-muted">Sent to U16 team</small>
+                                </div>
+                                <span className="badge bg-success">Sent</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Notification Analytics */}
                     <div className="col-12">
                       <div className="card">
                         <div className="card-header">
-                          <h5 className="mb-0">Notifications Management</h5>
+                          <h5 className="mb-0">Notification Analytics</h5>
                         </div>
                         <div className="card-body">
-                          <div className="alert alert-info">
-                            <i className="bi bi-info-circle me-2"></i>
-                            Notification management features will be implemented here. This will include:
-                            <ul className="mt-2 mb-0">
-                              <li>System notifications and alerts</li>
-                              <li>User notification preferences</li>
-                              <li>Email notifications</li>
-                              <li>Push notifications</li>
-                              <li>Notification templates</li>
-                              <li>Notification delivery tracking</li>
-                            </ul>
-                          </div>
-                          <div className="text-center py-5">
-                            <i className="bi bi-bell display-1 text-muted"></i>
-                            <h4 className="mt-3 text-muted">Notifications Management</h4>
-                            <p className="text-muted">Coming soon...</p>
+                          <div className="row">
+                            <div className="col-md-3 text-center">
+                              <div className="border rounded p-3">
+                                <h4 className="text-primary">1,247</h4>
+                                <p className="mb-0">Total Sent</p>
+                              </div>
+                            </div>
+                            <div className="col-md-3 text-center">
+                              <div className="border rounded p-3">
+                                <h4 className="text-success">89%</h4>
+                                <p className="mb-0">Delivery Rate</p>
+                              </div>
+                            </div>
+                            <div className="col-md-3 text-center">
+                              <div className="border rounded p-3">
+                                <h4 className="text-info">76%</h4>
+                                <p className="mb-0">Open Rate</p>
+                              </div>
+                            </div>
+                            <div className="col-md-3 text-center">
+                              <div className="border rounded p-3">
+                                <h4 className="text-warning">2.3s</h4>
+                                <p className="mb-0">Avg. Response</p>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -4056,28 +9061,251 @@ export default function AdminDashboard() {
 
                 {activeSubSection === 'broadcasts' && (
                   <div className="row">
-                    <div className="col-12">
+                    {/* Create Broadcast */}
+                    <div className="col-lg-6 mb-4">
                       <div className="card">
                         <div className="card-header">
-                          <h5 className="mb-0">Broadcast Management</h5>
+                          <h5 className="mb-0">Create Broadcast</h5>
                         </div>
                         <div className="card-body">
-                          <div className="alert alert-info">
-                            <i className="bi bi-info-circle me-2"></i>
-                            Broadcast management features will be implemented here. This will include:
-                            <ul className="mt-2 mb-0">
-                              <li>Create and send broadcasts</li>
-                              <li>Target specific user groups</li>
-                              <li>Schedule broadcast delivery</li>
-                              <li>Broadcast templates and history</li>
-                              <li>Delivery tracking and analytics</li>
-                              <li>Broadcast performance metrics</li>
-                            </ul>
+                          <form>
+                            <div className="mb-3">
+                              <label className="form-label">Broadcast Title</label>
+                              <input type="text" className="form-control" placeholder="Enter broadcast title" />
+                            </div>
+                            <div className="mb-3">
+                              <label className="form-label">Message</label>
+                              <textarea className="form-control" rows="4" placeholder="Enter your broadcast message"></textarea>
+                            </div>
+                            <div className="row">
+                              <div className="col-md-6 mb-3">
+                                <label className="form-label">Target Audience</label>
+                                <select className="form-select">
+                                  <option>All Users (2,100)</option>
+                                  <option>Players Only (1,200)</option>
+                                  <option>Coaches Only (45)</option>
+                                  <option>Parents Only (850)</option>
+                                  <option>U16 Team (25)</option>
+                                  <option>U18 Team (30)</option>
+                                  <option>Senior Team (35)</option>
+                                </select>
+                              </div>
+                              <div className="col-md-6 mb-3">
+                                <label className="form-label">Priority</label>
+                                <select className="form-select">
+                                  <option>Normal</option>
+                                  <option>High</option>
+                                  <option>Urgent</option>
+                                </select>
+                              </div>
+                            </div>
+                            <div className="mb-3">
+                              <label className="form-label">Delivery Method</label>
+                              <div className="row">
+                                <div className="col-md-4">
+                                  <div className="form-check">
+                                    <input className="form-check-input" type="checkbox" id="broadcastEmail" defaultChecked />
+                                    <label className="form-check-label" htmlFor="broadcastEmail">
+                                      Email
+                                    </label>
+                                  </div>
+                                </div>
+                                <div className="col-md-4">
+                                  <div className="form-check">
+                                    <input className="form-check-input" type="checkbox" id="broadcastPush" defaultChecked />
+                                    <label className="form-check-label" htmlFor="broadcastPush">
+                                      Push Notification
+                                    </label>
+                                  </div>
+                                </div>
+                                <div className="col-md-4">
+                                  <div className="form-check">
+                                    <input className="form-check-input" type="checkbox" id="broadcastSMS" />
+                                    <label className="form-check-label" htmlFor="broadcastSMS">
+                                      SMS
+                                    </label>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="mb-3">
+                              <label className="form-label">Schedule</label>
+                              <select className="form-select">
+                                <option>Send Now</option>
+                                <option>Schedule for Later</option>
+                                <option>Recurring</option>
+                              </select>
+                            </div>
+                            <div className="d-grid gap-2">
+                              <button className="btn btn-success">Send Broadcast</button>
+                              <button className="btn btn-outline-secondary">Save as Draft</button>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Broadcast Templates */}
+                    <div className="col-lg-6 mb-4">
+                      <div className="card">
+                        <div className="card-header">
+                          <h5 className="mb-0">Broadcast Templates</h5>
+                        </div>
+                        <div className="card-body">
+                          <div className="list-group">
+                            <button className="list-group-item list-group-item-action">
+                              <div className="d-flex w-100 justify-content-between">
+                                <h6 className="mb-1">Match Announcement</h6>
+                                <small>Event</small>
+                              </div>
+                              <p className="mb-1">Template for match announcements and updates</p>
+                            </button>
+                            <button className="list-group-item list-group-item-action">
+                              <div className="d-flex w-100 justify-content-between">
+                                <h6 className="mb-1">Training Schedule</h6>
+                                <small>Schedule</small>
+                              </div>
+                              <p className="mb-1">Weekly training schedule updates</p>
+                            </button>
+                            <button className="list-group-item list-group-item-action">
+                              <div className="d-flex w-100 justify-content-between">
+                                <h6 className="mb-1">Payment Reminder</h6>
+                                <small>Payment</small>
+                              </div>
+                              <p className="mb-1">Monthly fee payment reminders</p>
+                            </button>
+                            <button className="list-group-item list-group-item-action">
+                              <div className="d-flex w-100 justify-content-between">
+                                <h6 className="mb-1">Weather Alert</h6>
+                                <small>Alert</small>
+                              </div>
+                              <p className="mb-1">Weather-related training updates</p>
+                            </button>
+                            <button className="list-group-item list-group-item-action">
+                              <div className="d-flex w-100 justify-content-between">
+                                <h6 className="mb-1">Equipment Notice</h6>
+                                <small>General</small>
+                              </div>
+                              <p className="mb-1">Equipment collection and return notices</p>
+                            </button>
                           </div>
-                          <div className="text-center py-5">
-                            <i className="bi bi-megaphone display-1 text-muted"></i>
-                            <h4 className="mt-3 text-muted">Broadcast Management</h4>
-                            <p className="text-muted">Coming soon...</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Active Broadcasts */}
+                    <div className="col-lg-8 mb-4">
+                      <div className="card">
+                        <div className="card-header">
+                          <h5 className="mb-0">Active Broadcasts</h5>
+                        </div>
+                        <div className="card-body p-0">
+                          <div className="table-responsive">
+                            <table className="table table-hover mb-0">
+                              <thead>
+                                <tr>
+                                  <th>Title</th>
+                                  <th>Audience</th>
+                                  <th>Status</th>
+                                  <th>Sent</th>
+                                  <th>Actions</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr>
+                                  <td>
+                                    <div>
+                                      <strong>Championship Match Tomorrow</strong>
+                                      <br /><small className="text-muted">Reminder about tomorrow's championship match</small>
+                                    </div>
+                                  </td>
+                                  <td>All Players (1,200)</td>
+                                  <td><span className="badge bg-success">Delivered</span></td>
+                                  <td>2 hours ago</td>
+                                  <td>
+                                    <button className="btn btn-sm btn-outline-primary">View</button>
+                                    <button className="btn btn-sm btn-outline-secondary">Edit</button>
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td>
+                                    <div>
+                                      <strong>Training Schedule Update</strong>
+                                      <br /><small className="text-muted">Updated training times for this week</small>
+                                    </div>
+                                  </td>
+                                  <td>U16 Team (25)</td>
+                                  <td><span className="badge bg-warning">Sending</span></td>
+                                  <td>In progress</td>
+                                  <td>
+                                    <button className="btn btn-sm btn-outline-primary">View</button>
+                                    <button className="btn btn-sm btn-outline-danger">Cancel</button>
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td>
+                                    <div>
+                                      <strong>Payment Due Reminder</strong>
+                                      <br /><small className="text-muted">Monthly fees due this week</small>
+                                    </div>
+                                  </td>
+                                  <td>Parents (850)</td>
+                                  <td><span className="badge bg-info">Scheduled</span></td>
+                                  <td>Tomorrow 9:00 AM</td>
+                                  <td>
+                                    <button className="btn btn-sm btn-outline-primary">View</button>
+                                    <button className="btn btn-sm btn-outline-secondary">Edit</button>
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td>
+                                    <div>
+                                      <strong>Weather Alert</strong>
+                                      <br /><small className="text-muted">Training cancelled due to weather</small>
+                                    </div>
+                                  </td>
+                                  <td>All Users (2,100)</td>
+                                  <td><span className="badge bg-success">Delivered</span></td>
+                                  <td>4 hours ago</td>
+                                  <td>
+                                    <button className="btn btn-sm btn-outline-primary">View</button>
+                                    <button className="btn btn-sm btn-outline-secondary">Edit</button>
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Broadcast Analytics */}
+                    <div className="col-lg-4 mb-4">
+                      <div className="card">
+                        <div className="card-header">
+                          <h5 className="mb-0">Broadcast Analytics</h5>
+                        </div>
+                        <div className="card-body">
+                          <div className="text-center mb-3">
+                            <h4 className="text-success">23</h4>
+                            <p className="mb-0">Active Broadcasts</p>
+                          </div>
+                          <div className="text-center mb-3">
+                            <h4 className="text-primary">2,100</h4>
+                            <p className="mb-0">Total Reach</p>
+                          </div>
+                          <div className="text-center mb-3">
+                            <h4 className="text-info">89%</h4>
+                            <p className="mb-0">Delivery Rate</p>
+                          </div>
+                          <div className="text-center mb-3">
+                            <h4 className="text-warning">76%</h4>
+                            <p className="mb-0">Open Rate</p>
+                          </div>
+                          <hr />
+                          <div className="d-grid gap-2">
+                            <button className="btn btn-outline-primary btn-sm">View Full Analytics</button>
+                            <button className="btn btn-outline-secondary btn-sm">Export Report</button>
                           </div>
                         </div>
                       </div>
@@ -4087,28 +9315,199 @@ export default function AdminDashboard() {
 
                 {activeSubSection === 'messages' && (
                   <div className="row">
+                    {/* Send Message */}
+                    <div className="col-lg-4 mb-4">
+                      <div className="card">
+                        <div className="card-header">
+                          <h5 className="mb-0">Send Message</h5>
+                        </div>
+                        <div className="card-body">
+                          <form>
+                            <div className="mb-3">
+                              <label className="form-label">Recipient</label>
+                              <select className="form-select">
+                                <option>Select recipient...</option>
+                                <option>All Players</option>
+                                <option>All Coaches</option>
+                                <option>All Parents</option>
+                                <option>U16 Team</option>
+                                <option>U18 Team</option>
+                                <option>Senior Team</option>
+                                <option>Specific User</option>
+                              </select>
+                            </div>
+                            <div className="mb-3">
+                              <label className="form-label">Subject</label>
+                              <input type="text" className="form-control" placeholder="Message subject" />
+                            </div>
+                            <div className="mb-3">
+                              <label className="form-label">Message</label>
+                              <textarea className="form-control" rows="4" placeholder="Type your message here"></textarea>
+                            </div>
+                            <div className="mb-3">
+                              <label className="form-label">Priority</label>
+                              <select className="form-select">
+                                <option>Normal</option>
+                                <option>High</option>
+                                <option>Urgent</option>
+                              </select>
+                            </div>
+                            <div className="mb-3">
+                              <div className="form-check">
+                                <input className="form-check-input" type="checkbox" id="messageEmail" />
+                                <label className="form-check-label" htmlFor="messageEmail">
+                                  Send Email Copy
+                                </label>
+                              </div>
+                              <div className="form-check">
+                                <input className="form-check-input" type="checkbox" id="messageSMS" />
+                                <label className="form-check-label" htmlFor="messageSMS">
+                                  Send SMS Copy
+                                </label>
+                              </div>
+                            </div>
+                            <div className="d-grid gap-2">
+                              <button className="btn btn-warning">Send Message</button>
+                              <button className="btn btn-outline-secondary">Save as Draft</button>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Message Templates */}
+                    <div className="col-lg-4 mb-4">
+                      <div className="card">
+                        <div className="card-header">
+                          <h5 className="mb-0">Message Templates</h5>
+                        </div>
+                        <div className="card-body">
+                          <div className="list-group">
+                            <button className="list-group-item list-group-item-action">
+                              <div className="d-flex w-100 justify-content-between">
+                                <h6 className="mb-1">Welcome Message</h6>
+                                <small>General</small>
+                              </div>
+                              <p className="mb-1">Welcome new members to the club</p>
+                            </button>
+                            <button className="list-group-item list-group-item-action">
+                              <div className="d-flex w-100 justify-content-between">
+                                <h6 className="mb-1">Training Reminder</h6>
+                                <small>Event</small>
+                              </div>
+                              <p className="mb-1">Remind players about training sessions</p>
+                            </button>
+                            <button className="list-group-item list-group-item-action">
+                              <div className="d-flex w-100 justify-content-between">
+                                <h6 className="mb-1">Payment Follow-up</h6>
+                                <small>Payment</small>
+                              </div>
+                              <p className="mb-1">Follow up on overdue payments</p>
+                            </button>
+                            <button className="list-group-item list-group-item-action">
+                              <div className="d-flex w-100 justify-content-between">
+                                <h6 className="mb-1">Equipment Notice</h6>
+                                <small>Equipment</small>
+                              </div>
+                              <p className="mb-1">Equipment collection and return notices</p>
+                            </button>
+                            <button className="list-group-item list-group-item-action">
+                              <div className="d-flex w-100 justify-content-between">
+                                <h6 className="mb-1">Team Update</h6>
+                                <small>Team</small>
+                              </div>
+                              <p className="mb-1">Team roster and schedule updates</p>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Recent Messages */}
+                    <div className="col-lg-4 mb-4">
+                      <div className="card">
+                        <div className="card-header">
+                          <h5 className="mb-0">Recent Messages</h5>
+                        </div>
+                        <div className="card-body p-0">
+                          <div className="list-group list-group-flush">
+                            <div className="list-group-item">
+                              <div className="d-flex align-items-center">
+                                <i className="bi bi-envelope text-warning me-3"></i>
+                                <div className="flex-grow-1">
+                                  <h6 className="mb-1">Training Update</h6>
+                                  <small className="text-muted">To: U16 Team</small>
+                                </div>
+                                <span className="badge bg-success">Sent</span>
+                              </div>
+                            </div>
+                            <div className="list-group-item">
+                              <div className="d-flex align-items-center">
+                                <i className="bi bi-envelope text-primary me-3"></i>
+                                <div className="flex-grow-1">
+                                  <h6 className="mb-1">Payment Reminder</h6>
+                                  <small className="text-muted">To: 12 Parents</small>
+                                </div>
+                                <span className="badge bg-warning">Pending</span>
+                              </div>
+                            </div>
+                            <div className="list-group-item">
+                              <div className="d-flex align-items-center">
+                                <i className="bi bi-envelope text-success me-3"></i>
+                                <div className="flex-grow-1">
+                                  <h6 className="mb-1">Match Announcement</h6>
+                                  <small className="text-muted">To: All Players</small>
+                                </div>
+                                <span className="badge bg-success">Delivered</span>
+                              </div>
+                            </div>
+                            <div className="list-group-item">
+                              <div className="d-flex align-items-center">
+                                <i className="bi bi-envelope text-info me-3"></i>
+                                <div className="flex-grow-1">
+                                  <h6 className="mb-1">Equipment Notice</h6>
+                                  <small className="text-muted">To: Senior Team</small>
+                                </div>
+                                <span className="badge bg-success">Sent</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Message Analytics */}
                     <div className="col-12">
                       <div className="card">
                         <div className="card-header">
-                          <h5 className="mb-0">Message Management</h5>
+                          <h5 className="mb-0">Message Analytics</h5>
                         </div>
                         <div className="card-body">
-                          <div className="alert alert-info">
-                            <i className="bi bi-info-circle me-2"></i>
-                            Message management features will be implemented here. This will include:
-                            <ul className="mt-2 mb-0">
-                              <li>Internal messaging system</li>
-                              <li>Direct user-to-user messaging</li>
-                              <li>Group messaging and channels</li>
-                              <li>Message templates and automation</li>
-                              <li>Message history and archiving</li>
-                              <li>Message analytics and reporting</li>
-                            </ul>
-                          </div>
-                          <div className="text-center py-5">
-                            <i className="bi bi-envelope display-1 text-muted"></i>
-                            <h4 className="mt-3 text-muted">Message Management</h4>
-                            <p className="text-muted">Coming soon...</p>
+                          <div className="row">
+                            <div className="col-md-3 text-center">
+                              <div className="border rounded p-3">
+                                <h4 className="text-warning">3,247</h4>
+                                <p className="mb-0">Total Messages</p>
+                              </div>
+                            </div>
+                            <div className="col-md-3 text-center">
+                              <div className="border rounded p-3">
+                                <h4 className="text-primary">156</h4>
+                                <p className="mb-0">Unread</p>
+                              </div>
+                            </div>
+                            <div className="col-md-3 text-center">
+                              <div className="border rounded p-3">
+                                <h4 className="text-success">92%</h4>
+                                <p className="mb-0">Delivery Rate</p>
+                              </div>
+                            </div>
+                            <div className="col-md-3 text-center">
+                              <div className="border rounded p-3">
+                                <h4 className="text-info">1.2h</h4>
+                                <p className="mb-0">Avg. Response</p>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -4359,28 +9758,275 @@ export default function AdminDashboard() {
 
             {activeSection === 'reports' && (
               <div>
-                <div className="row">
+                {/* Key Performance Indicators */}
+                <div className="row mb-4">
+                  <div className="col-lg-3 col-md-6 mb-3">
+                    <div className="card bg-primary text-white">
+                      <div className="card-body">
+                        <div className="d-flex justify-content-between">
+                          <div>
+                            <h4 className="mb-0">2,145</h4>
+                            <p className="mb-0">Total Users</p>
+                            <small>+12% this month</small>
+                          </div>
+                          <div className="align-self-center">
+                            <i className="bi bi-people fs-1"></i>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-lg-3 col-md-6 mb-3">
+                    <div className="card bg-success text-white">
+                      <div className="card-body">
+                        <div className="d-flex justify-content-between">
+                          <div>
+                            <h4 className="mb-0">$45,890</h4>
+                            <p className="mb-0">Revenue</p>
+                            <small>+8% this month</small>
+                          </div>
+                          <div className="align-self-center">
+                            <i className="bi bi-currency-dollar fs-1"></i>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-lg-3 col-md-6 mb-3">
+                    <div className="card bg-warning text-white">
+                      <div className="card-body">
+                        <div className="d-flex justify-content-between">
+                          <div>
+                            <h4 className="mb-0">156</h4>
+                            <p className="mb-0">Active Sessions</p>
+                            <small>+5% this week</small>
+                          </div>
+                          <div className="align-self-center">
+                            <i className="bi bi-activity fs-1"></i>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-lg-3 col-md-6 mb-3">
+                    <div className="card bg-info text-white">
+                      <div className="card-body">
+                        <div className="d-flex justify-content-between">
+                          <div>
+                            <h4 className="mb-0">89%</h4>
+                            <p className="mb-0">Satisfaction</p>
+                            <small>+3% this quarter</small>
+                          </div>
+                          <div className="align-self-center">
+                            <i className="bi bi-star-fill fs-1"></i>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Report Categories */}
+                <div className="row mb-4">
+                  <div className="col-md-4 mb-3">
+                    <div className="card">
+                      <div className="card-header">
+                        <h5 className="mb-0">Financial Reports</h5>
+                      </div>
+                      <div className="card-body">
+                        <div className="list-group list-group-flush">
+                          <button className="list-group-item list-group-item-action">
+                            <i className="bi bi-file-earmark-text text-primary me-2"></i>
+                            Revenue Report
+                          </button>
+                          <button className="list-group-item list-group-item-action">
+                            <i className="bi bi-file-earmark-text text-success me-2"></i>
+                            Expense Report
+                          </button>
+                          <button className="list-group-item list-group-item-action">
+                            <i className="bi bi-file-earmark-text text-warning me-2"></i>
+                            Profit & Loss
+                          </button>
+                          <button className="list-group-item list-group-item-action">
+                            <i className="bi bi-file-earmark-text text-info me-2"></i>
+                            Cash Flow
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="col-md-4 mb-3">
+                    <div className="card">
+                      <div className="card-header">
+                        <h5 className="mb-0">Membership Reports</h5>
+                      </div>
+                      <div className="card-body">
+                        <div className="list-group list-group-flush">
+                          <button className="list-group-item list-group-item-action">
+                            <i className="bi bi-file-earmark-text text-primary me-2"></i>
+                            Member Registration
+                          </button>
+                          <button className="list-group-item list-group-item-action">
+                            <i className="bi bi-file-earmark-text text-success me-2"></i>
+                            Active Members
+                          </button>
+                          <button className="list-group-item list-group-item-action">
+                            <i className="bi bi-file-earmark-text text-warning me-2"></i>
+                            Retention Rate
+                          </button>
+                          <button className="list-group-item list-group-item-action">
+                            <i className="bi bi-file-earmark-text text-info me-2"></i>
+                            Demographics
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="col-md-4 mb-3">
+                    <div className="card">
+                      <div className="card-header">
+                        <h5 className="mb-0">Performance Reports</h5>
+                      </div>
+                      <div className="card-body">
+                        <div className="list-group list-group-flush">
+                          <button className="list-group-item list-group-item-action">
+                            <i className="bi bi-file-earmark-text text-primary me-2"></i>
+                            Team Performance
+                          </button>
+                          <button className="list-group-item list-group-item-action">
+                            <i className="bi bi-file-earmark-text text-success me-2"></i>
+                            Player Statistics
+                          </button>
+                          <button className="list-group-item list-group-item-action">
+                            <i className="bi bi-file-earmark-text text-warning me-2"></i>
+                            Training Attendance
+                          </button>
+                          <button className="list-group-item list-group-item-action">
+                            <i className="bi bi-file-earmark-text text-info me-2"></i>
+                            Match Results
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Quick Export Options */}
+                <div className="row mb-4">
                   <div className="col-12">
                     <div className="card">
                       <div className="card-header">
-                        <h5 className="mb-0">Reports & Analytics</h5>
+                        <h5 className="mb-0">Quick Export</h5>
                       </div>
                       <div className="card-body">
-                        <div className="alert alert-info">
-                          <i className="bi bi-info-circle me-2"></i>
-                          Reporting features will be implemented here. This will include:
-                          <ul className="mt-2 mb-0">
-                            <li>Custom report generation</li>
-                            <li>Data visualization and charts</li>
-                            <li>Export reports (PDF, Excel, CSV)</li>
-                            <li>Scheduled report delivery</li>
-                            <li>Performance metrics and KPIs</li>
-                          </ul>
+                        <div className="row">
+                          <div className="col-md-4 mb-3">
+                            <button className="btn btn-outline-danger w-100 py-3">
+                              <i className="bi bi-file-pdf fs-3 d-block mb-2"></i>
+                              <strong>Export as PDF</strong>
+                              <br /><small>Generate PDF reports</small>
+                            </button>
+                          </div>
+                          <div className="col-md-4 mb-3">
+                            <button className="btn btn-outline-success w-100 py-3">
+                              <i className="bi bi-file-earmark-excel fs-3 d-block mb-2"></i>
+                              <strong>Export as Excel</strong>
+                              <br /><small>Export to spreadsheet</small>
+                            </button>
+                          </div>
+                          <div className="col-md-4 mb-3">
+                            <button className="btn btn-outline-primary w-100 py-3">
+                              <i className="bi bi-filetype-csv fs-3 d-block mb-2"></i>
+                              <strong>Export as CSV</strong>
+                              <br /><small>Export raw data</small>
+                            </button>
+                          </div>
                         </div>
-                        <div className="text-center py-5">
-                          <i className="bi bi-file-earmark-bar-graph display-1 text-muted"></i>
-                          <h4 className="mt-3 text-muted">Reports & Analytics</h4>
-                          <p className="text-muted">Coming soon...</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Recent Reports */}
+                <div className="row">
+                  <div className="col-12">
+                    <div className="card">
+                      <div className="card-header d-flex justify-content-between align-items-center">
+                        <h5 className="mb-0">Recent Reports</h5>
+                        <button className="btn btn-primary btn-sm">
+                          <i className="bi bi-plus-circle me-2"></i>Generate New Report
+                        </button>
+                      </div>
+                      <div className="card-body">
+                        <div className="table-responsive">
+                          <table className="table table-hover">
+                            <thead>
+                              <tr>
+                                <th>Report Name</th>
+                                <th>Type</th>
+                                <th>Generated</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td>Monthly Financial Summary</td>
+                                <td><span className="badge bg-primary">Financial</span></td>
+                                <td>2 hours ago</td>
+                                <td><span className="badge bg-success">Ready</span></td>
+                                <td>
+                                  <button className="btn btn-sm btn-outline-primary me-1">
+                                    <i className="bi bi-download"></i> Download
+                                  </button>
+                                  <button className="btn btn-sm btn-outline-secondary">
+                                    <i className="bi bi-eye"></i> View
+                                  </button>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td>Member Registration Report</td>
+                                <td><span className="badge bg-info">Membership</span></td>
+                                <td>5 hours ago</td>
+                                <td><span className="badge bg-success">Ready</span></td>
+                                <td>
+                                  <button className="btn btn-sm btn-outline-primary me-1">
+                                    <i className="bi bi-download"></i> Download
+                                  </button>
+                                  <button className="btn btn-sm btn-outline-secondary">
+                                    <i className="bi bi-eye"></i> View
+                                  </button>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td>Team Performance Analytics</td>
+                                <td><span className="badge bg-warning">Performance</span></td>
+                                <td>1 day ago</td>
+                                <td><span className="badge bg-success">Ready</span></td>
+                                <td>
+                                  <button className="btn btn-sm btn-outline-primary me-1">
+                                    <i className="bi bi-download"></i> Download
+                                  </button>
+                                  <button className="btn btn-sm btn-outline-secondary">
+                                    <i className="bi bi-eye"></i> View
+                                  </button>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td>Quarterly Revenue Report</td>
+                                <td><span className="badge bg-primary">Financial</span></td>
+                                <td>2 days ago</td>
+                                <td><span className="badge bg-warning">Processing</span></td>
+                                <td>
+                                  <button className="btn btn-sm btn-outline-secondary" disabled>
+                                    <i className="bi bi-hourglass-split"></i> Processing
+                                  </button>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
                         </div>
                       </div>
                     </div>
@@ -4391,306 +10037,462 @@ export default function AdminDashboard() {
 
             {activeSection === 'finance' && (
               <div>
-                <div className="row">
-                  <div className="col-12">
-                    <div className="card">
-                      <div className="card-header">
-                        <h5 className="mb-0">Financial Management</h5>
-                      </div>
-                      <div className="card-body">
-                        <div className="alert alert-success">
-                          <i className="bi bi-check-circle me-2"></i>
-                          <strong>💰 Comprehensive Financial Management System Available!</strong> Complete accounting and financial control:
-                          
-                          <div className="row mt-3 mb-3">
-                            <div className="col-md-6">
-                              <h6 className="text-success"><i className="bi bi-credit-card me-2"></i>Payment Tracking</h6>
-                              <ul className="small">
-                                <li><strong>Income Recording:</strong> Registration fees, memberships, sponsorships, fundraising, merchandise, tournaments, donations</li>
-                                <li><strong>Expense Tracking:</strong> Equipment, uniforms, facilities, coaching, travel, insurance, utilities, marketing</li>
-                                <li><strong>Payment Methods:</strong> Credit/debit cards, cash, checks, bank transfers, PayPal, Stripe</li>
-                                <li><strong>Transaction Status:</strong> Completed, pending, failed, refunded, cancelled</li>
-                                <li><strong>Reference Numbers:</strong> Track check #, invoice #, confirmation codes</li>
-                                <li><strong>Transaction History:</strong> Complete audit trail with dates and amounts</li>
-                          </ul>
-                        </div>
-                            <div className="col-md-6">
-                              <h6 className="text-success"><i className="bi bi-file-earmark-text me-2"></i>Invoicing System</h6>
-                              <ul className="small">
-                                <li><strong>Professional Invoices:</strong> Auto-generated invoice numbers</li>
-                                <li><strong>Itemized Billing:</strong> Multiple line items per invoice</li>
-                                <li><strong>Automatic Calculations:</strong> Subtotal, tax, and total</li>
-                                <li><strong>Invoice Status:</strong> Draft, sent, paid, overdue, cancelled</li>
-                                <li><strong>Payment Terms:</strong> Net 15, Net 30, Net 60, Due on receipt</li>
-                                <li><strong>Due Date Tracking:</strong> Never miss payment deadlines</li>
-                                <li><strong>Customer Management:</strong> Track customer details and emails</li>
-                              </ul>
+                {/* Header with Statistics and Action Buttons */}
+                <div className="card border-0 shadow-sm mb-4">
+                  <div className="card-body">
+                    <div className="row g-3">
+                      {/* Statistics */}
+                      <div className="col-lg-2 col-md-6">
+                        <div className="text-center p-3 bg-success bg-opacity-10 rounded">
+                          <i className="bi bi-arrow-down-circle text-success fs-2 mb-2"></i>
+                          <p className="text-muted mb-1 small fw-semibold">Total Income</p>
+                          <h4 className="mb-0 text-success fw-bold">${financeSummary.totalIncome.toLocaleString()}</h4>
                         </div>
                       </div>
-                          
-                          <div className="bg-white p-3 rounded mb-3">
-                            <h6 className="text-dark mb-2"><i className="bi bi-arrow-counterclockwise me-2"></i>Refund Processing</h6>
-                            <div className="row small">
-                              <div className="col-md-4">• Process refund requests with reason tracking</div>
-                              <div className="col-md-4">• Multiple refund methods (original payment, check, cash, transfer)</div>
-                              <div className="col-md-4">• Complete refund history and audit trail</div>
-                              <div className="col-md-4">• Refund amount tracking and analytics</div>
-                              <div className="col-md-4">• Document reasons for compliance</div>
-                              <div className="col-md-4">• Link refunds to original transactions</div>
-                            </div>
-                          </div>
-                          
-                          <div className="bg-light p-3 rounded mb-3">
-                            <h6 className="text-dark mb-2"><i className="bi bi-graph-up me-2"></i>Financial Reports & Analytics</h6>
-                            <div className="row small">
-                              <div className="col-md-3">• <strong>Income Statement:</strong> Revenue vs. expenses</div>
-                              <div className="col-md-3">• <strong>Cash Flow:</strong> Money in/out analysis</div>
-                              <div className="col-md-3">• <strong>Category Breakdown:</strong> Income/expense by category</div>
-                              <div className="col-md-3">• <strong>Trend Analysis:</strong> Financial trends over time</div>
-                              <div className="col-md-3">• <strong>Net Income:</strong> Profitability tracking</div>
-                              <div className="col-md-3">• <strong>Outstanding Invoices:</strong> Money owed to club</div>
-                              <div className="col-md-3">• <strong>Budget vs. Actual:</strong> Performance tracking</div>
-                              <div className="col-md-3">• <strong>Export Reports:</strong> PDF and Excel formats</div>
-                            </div>
-                          </div>
-                          
-                          <div className="bg-white p-3 rounded mb-3">
-                            <h6 className="text-dark mb-2"><i className="bi bi-piggy-bank me-2"></i>Budget Planning</h6>
-                            <div className="row small">
-                              <div className="col-md-4">• Set annual budget goals by category</div>
-                              <div className="col-md-4">• Track actual spending vs. budget</div>
-                              <div className="col-md-4">• Variance analysis and alerts</div>
-                              <div className="col-md-4">• Budget allocation optimization</div>
-                              <div className="col-md-4">• Multi-year budget planning</div>
-                              <div className="col-md-4">• Department-level budgets</div>
-                            </div>
-                          </div>
-                          
-                          <div className="bg-light p-3 rounded mb-3">
-                            <h6 className="text-dark mb-2"><i className="bi bi-funnel me-2"></i>Advanced Filtering</h6>
-                            <div className="row small">
-                              <div className="col-md-4">• Filter by income/expense type</div>
-                              <div className="col-md-4">• Filter by category (20+ categories)</div>
-                              <div className="col-md-4">• Filter by transaction status</div>
-                              <div className="col-md-4">• Date range filtering</div>
-                              <div className="col-md-4">• Payment method filtering</div>
-                              <div className="col-md-4">• Search by description, payer, reference</div>
-                            </div>
-                          </div>
-                          
-                          <Link to="/admin/finance" className="btn btn-success btn-lg">
-                            <i className="bi bi-arrow-right me-2"></i>
-                            Go to Financial Management
-                          </Link>
+                      <div className="col-lg-2 col-md-6">
+                        <div className="text-center p-3 bg-danger bg-opacity-10 rounded">
+                          <i className="bi bi-arrow-up-circle text-danger fs-2 mb-2"></i>
+                          <p className="text-muted mb-1 small fw-semibold">Total Expenses</p>
+                          <h4 className="mb-0 text-danger fw-bold">${financeSummary.totalExpense.toLocaleString()}</h4>
                         </div>
-                        <div className="text-center py-4">
-                          <i className="bi bi-cash-stack display-1 text-success"></i>
-                          <h4 className="mt-3 text-success">Financial Management System Ready</h4>
-                          <p className="text-muted">Track all transactions, create invoices, process refunds, generate reports, and plan budgets with complete financial control.</p>
+                      </div>
+                      <div className="col-lg-2 col-md-6">
+                        <div className="text-center p-3 bg-primary bg-opacity-10 rounded">
+                          <i className={`bi bi-${financeSummary.netIncome >= 0 ? 'check' : 'x'}-circle ${financeSummary.netIncome >= 0 ? 'text-success' : 'text-danger'} fs-2 mb-2`}></i>
+                          <p className="text-muted mb-1 small fw-semibold">Net Income</p>
+                          <h4 className={`mb-0 ${financeSummary.netIncome >= 0 ? 'text-success' : 'text-danger'} fw-bold`}>${financeSummary.netIncome.toLocaleString()}</h4>
+                        </div>
+                      </div>
+                      <div className="col-lg-2 col-md-6">
+                        <div className="text-center p-3 bg-info bg-opacity-10 rounded">
+                          <i className="bi bi-receipt text-info fs-2 mb-2"></i>
+                          <p className="text-muted mb-1 small fw-semibold">Transactions</p>
+                          <h4 className="mb-0 text-dark fw-bold">{financeSummary.totalTransactions || 0}</h4>
+                        </div>
+                      </div>
+                      
+                      {/* Quick Action Buttons */}
+                      <div className="col-lg-4">
+                        <div className="h-100 d-flex flex-column gap-2 justify-content-center">
+                          <button 
+                            className="btn btn-success btn-lg w-100"
+                            onClick={() => {
+                              setShowTransactionForm(true);
+                              setTransactionForm({...transactionForm, type: 'income'});
+                            }}
+                          >
+                            <i className="bi bi-plus-circle me-2"></i>
+                            Add Income
+                          </button>
+                          <button 
+                            className="btn btn-danger btn-lg w-100"
+                            onClick={() => {
+                              setShowTransactionForm(true);
+                              setTransactionForm({...transactionForm, type: 'expense'});
+                            }}
+                          >
+                            <i className="bi bi-dash-circle me-2"></i>
+                            Add Expense
+                          </button>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
+
+                {/* Visible Tabs */}
+                <div className="mb-4">
+                  <div className="btn-group w-100 shadow-sm" role="group">
+                    <button 
+                      type="button"
+                      className={`btn btn-lg ${financeTab === 'transactions' ? 'btn-primary' : 'btn-outline-primary'}`}
+                      onClick={() => setFinanceTab('transactions')}
+                    >
+                      <i className="bi bi-receipt me-2"></i>
+                      All Transactions
+                    </button>
+                    <button 
+                      type="button"
+                      className={`btn btn-lg ${financeTab === 'income' ? 'btn-success' : 'btn-outline-success'}`}
+                      onClick={() => setFinanceTab('income')}
+                    >
+                      <i className="bi bi-arrow-down-circle me-2"></i>
+                      Income Only
+                    </button>
+                    <button 
+                      type="button"
+                      className={`btn btn-lg ${financeTab === 'expenses' ? 'btn-danger' : 'btn-outline-danger'}`}
+                      onClick={() => setFinanceTab('expenses')}
+                    >
+                      <i className="bi bi-arrow-up-circle me-2"></i>
+                      Expenses Only
+                    </button>
+                  </div>
+                </div>
+
+                {/* Transaction Management */}
+                {(financeTab === 'transactions' || financeTab === 'income' || financeTab === 'expenses') && (
+                  <div className="card shadow-sm">
+                    <div className="card-header bg-white py-3">
+                      <h5 className="mb-3 fw-bold">
+                        {financeTab === 'transactions' && (
+                          <><i className="bi bi-receipt text-primary me-2"></i>All Transactions</>
+                        )}
+                        {financeTab === 'income' && (
+                          <><i className="bi bi-arrow-down-circle text-success me-2"></i>Income Transactions</>
+                        )}
+                        {financeTab === 'expenses' && (
+                          <><i className="bi bi-arrow-up-circle text-danger me-2"></i>Expense Transactions</>
+                        )}
+                      </h5>
+                      
+                      {/* Enhanced Filters */}
+                      {!showTransactionForm && (
+                        <div className="row g-2">
+                          <div className="col-md-3">
+                            <input 
+                              type="text" 
+                              className="form-control form-control-sm" 
+                              placeholder="🔍 Search by description, payer, payee..."
+                              onChange={(e) => {
+                                // Filter logic will be added
+                              }}
+                            />
+                          </div>
+                          <div className="col-md-2">
+                            <select className="form-select form-select-sm">
+                              <option value="">All Categories</option>
+                              {financeTab === 'income' || financeTab === 'transactions' ? 
+                                incomeCategories.map(cat => <option key={cat} value={cat}>{cat}</option>) : null}
+                              {financeTab === 'expenses' || financeTab === 'transactions' ? 
+                                expenseCategories.map(cat => <option key={cat} value={cat}>{cat}</option>) : null}
+                            </select>
+                          </div>
+                          <div className="col-md-2">
+                            <select className="form-select form-select-sm">
+                              <option value="">All Statuses</option>
+                              <option value="completed">Completed</option>
+                              <option value="pending">Pending</option>
+                              <option value="failed">Failed</option>
+                              <option value="refunded">Refunded</option>
+                              <option value="cancelled">Cancelled</option>
+                            </select>
+                          </div>
+                          <div className="col-md-2">
+                            <input type="date" className="form-control form-control-sm" placeholder="From Date" />
+                          </div>
+                          <div className="col-md-2">
+                            <input type="date" className="form-control form-control-sm" placeholder="To Date" />
+                          </div>
+                          <div className="col-md-1">
+                            <button className="btn btn-outline-secondary btn-sm w-100" title="Reset Filters">
+                              <i className="bi bi-arrow-clockwise"></i>
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    <div className="card-body">
+                      {financeLoading ? (
+                        <div className="text-center py-5">
+                          <div className="spinner-border text-primary" role="status">
+                            <span className="visually-hidden">Loading...</span>
+                          </div>
+                        </div>
+                      ) : showTransactionForm ? (
+                        <div>
+                          <div className="d-flex justify-content-between align-items-center mb-4">
+                            <h5 className="mb-0">{editingTransaction ? 'Edit Transaction' : 'Add New Transaction'}</h5>
+                            <button className="btn btn-outline-secondary" onClick={resetTransactionForm}>
+                              <i className="bi bi-x-lg me-2"></i>Cancel
+                            </button>
+                          </div>
+                          <form onSubmit={handleTransactionSubmit}>
+                            <div className="row">
+                              <div className="col-md-6 mb-3">
+                                <label className="form-label fw-bold">Type *</label>
+                                <select
+                                  className="form-select"
+                                  value={transactionForm.type}
+                                  onChange={(e) => setTransactionForm({...transactionForm, type: e.target.value, category: ""})}
+                                  required
+                                >
+                                  <option value="income">💰 Income</option>
+                                  <option value="expense">💸 Expense</option>
+                                </select>
+                              </div>
+                              <div className="col-md-6 mb-3">
+                                <label className="form-label fw-bold">Category *</label>
+                                <select
+                                  className="form-select"
+                                  value={transactionForm.category}
+                                  onChange={(e) => setTransactionForm({...transactionForm, category: e.target.value})}
+                                  required
+                                >
+                                  <option value="">Select Category</option>
+                                  {(transactionForm.type === 'income' ? incomeCategories : expenseCategories).map(cat => (
+                                    <option key={cat} value={cat}>{cat}</option>
+                                  ))}
+                                </select>
+                              </div>
+                              <div className="col-md-12 mb-3">
+                                <label className="form-label fw-bold">Description *</label>
+                                <input
+                                  type="text"
+                                  className="form-control"
+                                  value={transactionForm.description}
+                                  onChange={(e) => setTransactionForm({...transactionForm, description: e.target.value})}
+                                  placeholder="Brief description of the transaction"
+                                  required
+                                />
+                              </div>
+                              <div className="col-md-4 mb-3">
+                                <label className="form-label fw-bold">Amount ($) *</label>
+                                <input
+                                  type="number"
+                                  className="form-control"
+                                  value={transactionForm.amount}
+                                  onChange={(e) => setTransactionForm({...transactionForm, amount: parseFloat(e.target.value) || 0})}
+                                  min="0"
+                                  step="0.01"
+                                  placeholder="0.00"
+                                  required
+                                />
+                              </div>
+                              <div className="col-md-4 mb-3">
+                                <label className="form-label fw-bold">Date *</label>
+                                <input
+                                  type="date"
+                                  className="form-control"
+                                  value={transactionForm.date}
+                                  onChange={(e) => setTransactionForm({...transactionForm, date: e.target.value})}
+                                  required
+                                />
+                              </div>
+                              <div className="col-md-4 mb-3">
+                                <label className="form-label fw-bold">Payment Method *</label>
+                                <select
+                                  className="form-select"
+                                  value={transactionForm.paymentMethod}
+                                  onChange={(e) => setTransactionForm({...transactionForm, paymentMethod: e.target.value})}
+                                  required
+                                >
+                                  <option value="cash">Cash</option>
+                                  <option value="check">Check</option>
+                                  <option value="credit_card">Credit Card</option>
+                                  <option value="debit_card">Debit Card</option>
+                                  <option value="bank_transfer">Bank Transfer</option>
+                                  <option value="paypal">PayPal</option>
+                                  <option value="stripe">Stripe</option>
+                                  <option value="other">Other</option>
+                                </select>
+                              </div>
+                              <div className="col-md-6 mb-3">
+                                <label className="form-label fw-bold">Status *</label>
+                                <select
+                                  className="form-select"
+                                  value={transactionForm.status}
+                                  onChange={(e) => setTransactionForm({...transactionForm, status: e.target.value})}
+                                  required
+                                >
+                                  <option value="completed">✅ Completed</option>
+                                  <option value="pending">⏳ Pending</option>
+                                  <option value="failed">❌ Failed</option>
+                                  <option value="refunded">↩️ Refunded</option>
+                                  <option value="cancelled">🚫 Cancelled</option>
+                                </select>
+                              </div>
+                              <div className="col-md-6 mb-3">
+                                <label className="form-label fw-bold">Reference Number</label>
+                                <input
+                                  type="text"
+                                  className="form-control"
+                                  value={transactionForm.referenceNumber}
+                                  onChange={(e) => setTransactionForm({...transactionForm, referenceNumber: e.target.value})}
+                                  placeholder="Check #, Invoice #, Confirmation code"
+                                />
+                              </div>
+                              <div className="col-md-12 mb-3">
+                                <label className="form-label fw-bold">{transactionForm.type === 'income' ? 'Received From (Payer)' : 'Paid To (Payee)'}</label>
+                                <input
+                                  type="text"
+                                  className="form-control"
+                                  value={transactionForm.type === 'income' ? transactionForm.payer : transactionForm.payee}
+                                  onChange={(e) => setTransactionForm({
+                                    ...transactionForm,
+                                    [transactionForm.type === 'income' ? 'payer' : 'payee']: e.target.value
+                                  })}
+                                  placeholder={transactionForm.type === 'income' ? 'Who paid this?' : 'Who received payment?'}
+                                />
+                              </div>
+                              <div className="col-12 mb-3">
+                                <label className="form-label fw-bold">Additional Notes</label>
+                                <textarea
+                                  className="form-control"
+                                  rows="3"
+                                  value={transactionForm.notes}
+                                  onChange={(e) => setTransactionForm({...transactionForm, notes: e.target.value})}
+                                  placeholder="Any additional information about this transaction..."
+                                />
+                              </div>
+                            </div>
+                            <div className="d-flex gap-2">
+                              <button type="submit" className="btn btn-primary px-4">
+                                <i className="bi bi-save me-2"></i>
+                                {editingTransaction ? 'Update Transaction' : 'Create Transaction'}
+                              </button>
+                              <button type="button" className="btn btn-outline-secondary px-4" onClick={resetTransactionForm}>
+                                Cancel
+                              </button>
+                            </div>
+                          </form>
+                        </div>
+                      ) : transactions.filter(t => 
+                        financeTab === 'transactions' ? true : 
+                        financeTab === 'income' ? t.type === 'income' : 
+                        t.type === 'expense'
+                      ).length === 0 ? (
+                        <div className="text-center py-5">
+                          <div className="mb-4">
+                            <i className={`bi ${
+                              financeTab === 'income' ? 'bi-arrow-down-circle-fill text-success' : 
+                              financeTab === 'expenses' ? 'bi-arrow-up-circle-fill text-danger' : 
+                              'bi-receipt'
+                            }`} style={{fontSize: '5rem', opacity: 0.3}}></i>
+                          </div>
+                          <h4 className="text-muted mb-3">No {financeTab === 'income' ? 'Income' : financeTab === 'expenses' ? 'Expenses' : 'Transactions'} Yet</h4>
+                          <p className="text-muted mb-0">
+                            {financeTab === 'income' && "Click the 'Add Income' button above to start tracking your club's income."}
+                            {financeTab === 'expenses' && "Click the 'Add Expense' button above to start tracking your club's expenses."}
+                            {financeTab === 'transactions' && "Click the 'Add Transaction' button above to get started with financial tracking."}
+                          </p>
+                        </div>
+                      ) : (
+                        <div>
+                          <div className="table-responsive">
+                            <table className="table table-hover align-middle mb-0">
+                              <thead>
+                                <tr className="border-bottom">
+                                  <th className="text-muted fw-normal small">DATE</th>
+                                  <th className="text-muted fw-normal small">DESCRIPTION</th>
+                                  <th className="text-muted fw-normal small">CATEGORY</th>
+                                  <th className="text-muted fw-normal small">AMOUNT</th>
+                                  <th className="text-muted fw-normal small">PAYMENT METHOD</th>
+                                  <th className="text-muted fw-normal small">STATUS</th>
+                                  <th className="text-muted fw-normal small text-end">ACTIONS</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {transactions.filter(t => 
+                                  financeTab === 'transactions' ? true : 
+                                  financeTab === 'income' ? t.type === 'income' : 
+                                  t.type === 'expense'
+                                ).map(transaction => (
+                                  <tr key={transaction._id} className="border-bottom">
+                                    <td className="py-3">
+                                      <div className="text-dark">{transaction.date ? new Date(transaction.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}</div>
+                                    </td>
+                                    <td className="py-3">
+                                      <div className="d-flex align-items-center gap-2">
+                                        <div className="fw-semibold text-dark">{transaction.description}</div>
+                                        {transaction.notes && transaction.notes.includes('Automated entry') && (
+                                          <span className="badge bg-info text-white" title="Automatically recorded from payment system">
+                                            <i className="bi bi-lightning-charge-fill"></i> Auto
+                                          </span>
+                                        )}
+                                      </div>
+                                      {transaction.referenceNumber && (
+                                        <small className="text-muted d-block mt-1">Ref: {transaction.referenceNumber}</small>
+                                      )}
+                                      {(transaction.payer || transaction.payee) && (
+                                        <small className="text-muted d-block">
+                                          {transaction.type === 'income' ? `From: ${transaction.payer}` : `To: ${transaction.payee}`}
+                                        </small>
+                                      )}
+                                    </td>
+                                    <td className="py-3">
+                                      <span className="badge bg-light text-dark border">{transaction.category}</span>
+                                      {financeTab === 'transactions' && (
+                                        <span className={`badge ms-1 ${transaction.type === 'income' ? 'bg-success' : 'bg-danger'}`}>
+                                          {transaction.type === 'income' ? 'Income' : 'Expense'}
+                                        </span>
+                                      )}
+                                    </td>
+                                    <td className="py-3">
+                                      <div className={`fw-bold fs-5 ${transaction.type === 'income' ? 'text-success' : 'text-danger'}`}>
+                                        {transaction.type === 'income' ? '+' : '-'}${transaction.amount?.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) || '0.00'}
+                                      </div>
+                                    </td>
+                                    <td className="py-3">
+                                      <span className="text-muted">{transaction.paymentMethod?.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
+                                    </td>
+                                    <td className="py-3">
+                                      <span className={`badge ${
+                                        transaction.status === 'completed' ? 'bg-success' :
+                                        transaction.status === 'pending' ? 'bg-warning text-dark' :
+                                        transaction.status === 'failed' ? 'bg-danger' :
+                                        transaction.status === 'refunded' ? 'bg-info text-dark' :
+                                        'bg-secondary'
+                                      }`}>
+                                        {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}
+                                      </span>
+                                    </td>
+                                    <td className="py-3 text-end">
+                                      <div className="btn-group btn-group-sm" role="group">
+                                        <button
+                                          className="btn btn-outline-secondary"
+                                          onClick={() => handleEditTransaction(transaction)}
+                                          title="Edit Transaction"
+                                        >
+                                          <i className="bi bi-pencil-square"></i>
+                                        </button>
+                                        <button
+                                          className="btn btn-outline-danger"
+                                          onClick={() => handleDeleteTransaction(transaction._id)}
+                                          title="Delete Transaction"
+                                        >
+                                          <i className="bi bi-trash3"></i>
+                                        </button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                          {transactions.filter(t => 
+                            financeTab === 'transactions' ? true : 
+                            financeTab === 'income' ? t.type === 'income' : 
+                            t.type === 'expense'
+                          ).length > 0 && (
+                            <div className="card-footer bg-light text-center py-3">
+                              <small className="text-muted">
+                                Showing {transactions.filter(t => 
+                                  financeTab === 'transactions' ? true : 
+                                  financeTab === 'income' ? t.type === 'income' : 
+                                  t.type === 'expense'
+                                ).length} {financeTab === 'transactions' ? 'transaction' : financeTab === 'income' ? 'income' : 'expense'}{transactions.filter(t => 
+                                  financeTab === 'transactions' ? true : 
+                                  financeTab === 'income' ? t.type === 'income' : 
+                                  t.type === 'expense'
+                                ).length !== 1 ? 's' : ''}
+                              </small>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
             {activeSection === 'marketplace' && (
-              <div>
-                {/* Enhanced Marketplace Management Alert */}
-                <div className="alert alert-warning alert-dismissible fade show mb-4" role="alert">
-                  <div className="d-flex align-items-center">
-                    <i className="bi bi-exclamation-triangle-fill me-3 fs-4"></i>
-                    <div className="flex-grow-1">
-                      <h5 className="alert-heading mb-2">🚀 Enhanced Marketplace Management Available!</h5>
-                      <p className="mb-2">Access comprehensive marketplace controls including:</p>
-                      <ul className="mb-2">
-                        <li><strong>Global Settings:</strong> Expiration, pricing, and extension controls</li>
-                        <li><strong>Category Management:</strong> Dynamic categories with pricing tiers</li>
-                        <li><strong>Item Monitoring:</strong> Track expiring items and extensions</li>
-                        <li><strong>Fee Management:</strong> Configure marketplace fees and pricing</li>
-                      </ul>
-                      <div className="d-flex gap-2">
-                        <Link to="/admin/marketplace-settings" className="btn btn-warning btn-sm">
-                          <i className="bi bi-gear me-1"></i>Marketplace Settings
-                        </Link>
-                        <Link to="/admin/category-management" className="btn btn-warning btn-sm">
-                          <i className="bi bi-tags me-1"></i>Category Management
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Marketplace Management Cards */}
-                <div className="row mb-4">
-                  <div className="col-lg-4 col-md-6 mb-3">
-                    <div className="card h-100 border-warning" data-marketplace-management>
-                      <div className="card-header bg-warning text-dark">
-                        <h5 className="mb-0">
-                          <i className="bi bi-gear me-2"></i>Marketplace Settings
-                        </h5>
-                      </div>
-                      <div className="card-body">
-                        <p className="card-text">Configure global marketplace settings including expiration policies, pricing tiers, and extension rules.</p>
-                        <ul className="list-unstyled">
-                          <li><i className="bi bi-check text-success me-2"></i>Default expiration periods</li>
-                          <li><i className="bi bi-check text-success me-2"></i>Pricing tier management</li>
-                          <li><i className="bi bi-check text-success me-2"></i>Extension controls</li>
-                          <li><i className="bi bi-check text-success me-2"></i>Notification settings</li>
-                        </ul>
-                        <Link to="/admin/marketplace-settings" className="btn btn-warning">
-                          <i className="bi bi-gear me-1"></i>Manage Settings
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="col-lg-4 col-md-6 mb-3">
-                    <div className="card h-100 border-info">
-                      <div className="card-header bg-info text-white">
-                        <h5 className="mb-0">
-                          <i className="bi bi-tags me-2"></i>Category Management
-                        </h5>
-                      </div>
-                      <div className="card-body">
-                        <p className="card-text">Create and manage marketplace categories and subcategories with custom pricing and settings.</p>
-                        <ul className="list-unstyled">
-                          <li><i className="bi bi-check text-success me-2"></i>Dynamic categories</li>
-                          <li><i className="bi bi-check text-success me-2"></i>Category-specific pricing</li>
-                          <li><i className="bi bi-check text-success me-2"></i>Subcategory management</li>
-                          <li><i className="bi bi-check text-success me-2"></i>Custom expiration rules</li>
-                        </ul>
-                        <Link to="/admin/category-management" className="btn btn-info">
-                          <i className="bi bi-tags me-1"></i>Manage Categories
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="col-lg-4 col-md-6 mb-3">
-                    <div className="card h-100 border-success">
-                      <div className="card-header bg-success text-white">
-                        <h5 className="mb-0">
-                          <i className="bi bi-clock me-2"></i>Expiration Monitoring
-                        </h5>
-                      </div>
-                      <div className="card-body">
-                        <p className="card-text">Monitor and manage expiring marketplace items with automated notifications and extension controls.</p>
-                        <ul className="list-unstyled">
-                          <li><i className="bi bi-check text-success me-2"></i>Expiring items tracking</li>
-                          <li><i className="bi bi-check text-success me-2"></i>Automated notifications</li>
-                          <li><i className="bi bi-check text-success me-2"></i>Extension management</li>
-                          <li><i className="bi bi-check text-success me-2"></i>Bulk operations</li>
-                        </ul>
-                        <Link to="/marketplace/expiring-items" className="btn btn-success">
-                          <i className="bi bi-clock me-1"></i>View Expiring Items
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="col-lg-4 col-md-6 mb-3">
-                    <div className="card h-100 border-danger">
-                      <div className="card-header bg-danger text-white">
-                        <h5 className="mb-0">
-                          <i className="bi bi-shield-check me-2"></i>Item Approval & Moderation
-                        </h5>
-                      </div>
-                      <div className="card-body">
-                        <p className="card-text">Review, approve, and moderate marketplace items posted by users. Manage pending items and flagged content.</p>
-                        <ul className="list-unstyled">
-                          <li><i className="bi bi-check text-success me-2"></i>Approve/reject pending items</li>
-                          <li><i className="bi bi-check text-success me-2"></i>Review flagged content</li>
-                          <li><i className="bi bi-check text-success me-2"></i>Bulk moderation actions</li>
-                          <li><i className="bi bi-check text-success me-2"></i>Item status management</li>
-                        </ul>
-                        <Link to="/admin/marketplace-moderation" className="btn btn-danger">
-                          <i className="bi bi-shield-check me-1"></i>Moderate Items
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Marketplace Statistics */}
-                <div className="row mb-4">
-                  <div className="col-lg-3 col-md-6 mb-3">
-                    <div className="card text-center">
-                      <div className="card-body">
-                        <i className="bi bi-shop text-primary fs-1"></i>
-                        <h4 className="mt-2">0</h4>
-                        <p className="text-muted mb-0">Active Listings</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="col-lg-3 col-md-6 mb-3">
-                    <div className="card text-center">
-                      <div className="card-body">
-                        <i className="bi bi-people text-success fs-1"></i>
-                        <h4 className="mt-2">0</h4>
-                        <p className="text-muted mb-0">Active Sellers</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="col-lg-3 col-md-6 mb-3">
-                    <div className="card text-center">
-                      <div className="card-body">
-                        <i className="bi bi-currency-dollar text-warning fs-1"></i>
-                        <h4 className="mt-2">$0</h4>
-                        <p className="text-muted mb-0">Total Revenue</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="col-lg-3 col-md-6 mb-3">
-                    <div className="card text-center">
-                      <div className="card-body">
-                        <i className="bi bi-clock text-info fs-1"></i>
-                        <h4 className="mt-2">0</h4>
-                        <p className="text-muted mb-0">Expiring Soon</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Quick Actions */}
-                <div className="row">
-                  <div className="col-12">
-                    <div className="card">
-                      <div className="card-header">
-                        <h5 className="mb-0">
-                          <i className="bi bi-lightning me-2"></i>Quick Actions
-                        </h5>
-                      </div>
-                      <div className="card-body">
-                        <div className="row">
-                          <div className="col-md-3 mb-2">
-                            <Link to="/admin/marketplace-settings" className="btn btn-outline-primary w-100">
-                              <i className="bi bi-gear me-1"></i>Settings
-                            </Link>
-                          </div>
-                          <div className="col-md-3 mb-2">
-                            <Link to="/admin/category-management" className="btn btn-outline-info w-100">
-                              <i className="bi bi-tags me-1"></i>Categories
-                            </Link>
-                          </div>
-                          <div className="col-md-3 mb-2">
-                            <Link to="/marketplace/expiring-items" className="btn btn-outline-warning w-100">
-                              <i className="bi bi-clock me-1"></i>Expiring Items
-                            </Link>
-                          </div>
-                          <div className="col-md-3 mb-2">
-                            <Link to="/marketplace" className="btn btn-outline-success w-100">
-                              <i className="bi bi-eye me-1"></i>View Marketplace
-                            </Link>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              <div style={{padding: '0'}}>
+                <UnifiedMarketplaceManager />
               </div>
             )}
+
 
             {activeSection === 'applications' && (
               <div>
@@ -4701,59 +10503,320 @@ export default function AdminDashboard() {
                         <h5 className="mb-0">Application Management</h5>
                       </div>
                       <div className="card-body">
-                        <div className="alert alert-success">
-                          <i className="bi bi-check-circle me-2"></i>
-                          <strong>🚀 Enhanced Application Management System Now Available!</strong> Access the enterprise-grade application processing system with powerful features:
-                          
-                          <div className="row mt-3 mb-3">
-                            <div className="col-md-6">
-                              <h6 className="text-success"><i className="bi bi-check-circle-fill me-2"></i>Core Features</h6>
-                              <ul className="small">
-                                <li>12 application types (Player, Coach, Volunteer, Transfer, Scholarship, etc.)</li>
-                                <li>7-stage status workflow with automated notifications</li>
-                                <li>4-level priority system (Low, Medium, High, Urgent)</li>
-                                <li>Real-time status tracking and updates</li>
-                                <li>Advanced multi-criteria filtering</li>
-                          </ul>
-                        </div>
-                            <div className="col-md-6">
-                              <h6 className="text-success"><i className="bi bi-lightning-fill me-2"></i>Advanced Features</h6>
-                              <ul className="small">
-                                <li><strong>Bulk Actions:</strong> Select & process multiple applications</li>
-                                <li><strong>Assignment System:</strong> Distribute workload to team members</li>
-                                <li><strong>Smart Sorting:</strong> Sort by date, priority, name, or type</li>
-                                <li><strong>Timeline View:</strong> Complete audit trail for each application</li>
-                                <li><strong>Analytics Dashboard:</strong> Comprehensive reporting & insights</li>
-                              </ul>
-                        </div>
-                      </div>
-                          
-                          <div className="bg-white p-3 rounded mb-3">
-                            <h6 className="text-dark mb-2"><i className="bi bi-graph-up me-2"></i>Analytics & Insights</h6>
-                            <div className="row small">
-                              <div className="col-md-4">• Approval rate tracking</div>
-                              <div className="col-md-4">• Processing time metrics</div>
-                              <div className="col-md-4">• Type-based performance</div>
-                              <div className="col-md-4">• Status breakdown charts</div>
-                              <div className="col-md-4">• Priority distribution</div>
-                              <div className="col-md-4">• Team workload analysis</div>
-                    </div>
-                  </div>
-                          
-                          <Link to="/admin/applications" className="btn btn-success btn-lg">
-                            <i className="bi bi-arrow-right me-2"></i>
-                            Launch Application Management System
-                          </Link>
-                        </div>
-                        <div className="text-center py-4">
-                          <i className="bi bi-file-earmark-check display-1 text-success"></i>
-                          <h4 className="mt-3 text-success">Application Management Ready</h4>
-                          <p className="text-muted">Click the button above to access the comprehensive application management system.</p>
-                        </div>
+                        {applicationsLoading ? (
+                          <div className="text-center py-5">
+                            <div className="spinner-border text-primary" role="status">
+                              <span className="visually-hidden">Loading...</span>
+                            </div>
+                            <p className="text-muted mt-2">Loading applications...</p>
+                          </div>
+                        ) : (
+                          <>
+                            {/* Tabs */}
+                            <ul className="nav nav-tabs mb-4">
+                              <li className="nav-item">
+                                <button
+                                  className={`nav-link ${applicationsActiveTab === 'overview' ? 'active' : ''}`}
+                                  onClick={() => setApplicationsActiveTab('overview')}
+                                >
+                                  📊 Overview
+                                </button>
+                              </li>
+                              <li className="nav-item">
+                                <button
+                                  className={`nav-link ${applicationsActiveTab === 'all' ? 'active' : ''}`}
+                                  onClick={() => setApplicationsActiveTab('all')}
+                                >
+                                  📋 All Applications
+                                </button>
+                              </li>
+                              <li className="nav-item">
+                                <button
+                                  className={`nav-link ${applicationsActiveTab === 'pending' ? 'active' : ''}`}
+                                  onClick={() => setApplicationsActiveTab('pending')}
+                                >
+                                  ⏳ Pending ({applicationStats.pending})
+                                </button>
+                              </li>
+                            </ul>
+
+                            {/* Overview Tab */}
+                            {applicationsActiveTab === 'overview' && (
+                              <div>
+                                {/* Statistics Cards */}
+                                <div className="row g-3 mb-4">
+                                  <div className="col-md-3">
+                                    <div className="card bg-primary bg-opacity-10 border-primary">
+                                      <div className="card-body text-center">
+                                        <h2 className="display-6 fw-bold text-primary">{applicationStats.total}</h2>
+                                        <p className="text-muted mb-0">Total Applications</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="col-md-3">
+                                    <div className="card bg-warning bg-opacity-10 border-warning">
+                                      <div className="card-body text-center">
+                                        <h2 className="display-6 fw-bold text-warning">{applicationStats.pending}</h2>
+                                        <p className="text-muted mb-0">Pending</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="col-md-3">
+                                    <div className="card bg-success bg-opacity-10 border-success">
+                                      <div className="card-body text-center">
+                                        <h2 className="display-6 fw-bold text-success">{applicationStats.approved}</h2>
+                                        <p className="text-muted mb-0">Approved</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="col-md-3">
+                                    <div className="card bg-info bg-opacity-10 border-info">
+                                      <div className="card-body text-center">
+                                        <h2 className="display-6 fw-bold text-info">{applicationStats.underReview}</h2>
+                                        <p className="text-muted mb-0">Under Review</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Application Types Grid */}
+                                <h5 className="mb-3">Application Types</h5>
+                                <div className="row g-3">
+                                  {applicationStats.byType.map((type) => (
+                                    <div key={type.id} className="col-md-3">
+                                      <div className="card h-100">
+                                        <div className="card-body">
+                                          <div className="d-flex justify-content-between align-items-start mb-2">
+                                            <span style={{fontSize: '2rem'}}>{type.icon}</span>
+                                            <h3 className="mb-0">{type.count}</h3>
+                                          </div>
+                                          <h6 className="card-title">{type.name}</h6>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* All/Pending Applications Tab */}
+                            {(applicationsActiveTab === 'all' || applicationsActiveTab === 'pending') && (
+                              <div>
+                                {/* Filters */}
+                                <div className="row g-3 mb-4">
+                                  <div className="col-md-5">
+                                    <input
+                                      type="text"
+                                      className="form-control"
+                                      placeholder="Search applications..."
+                                      value={applicationFilter.search}
+                                      onChange={(e) => setApplicationFilter(f => ({ ...f, search: e.target.value }))}
+                                    />
+                                  </div>
+                                  <div className="col-md-3">
+                                    <select
+                                      className="form-select"
+                                      value={applicationFilter.type}
+                                      onChange={(e) => setApplicationFilter(f => ({ ...f, type: e.target.value }))}
+                                    >
+                                      <option value="all">All Types</option>
+                                      {applicationTypes.map(type => (
+                                        <option key={type.id} value={type.id}>{type.name}</option>
+                                      ))}
+                                    </select>
+                                  </div>
+                                  <div className="col-md-4">
+                                    <select
+                                      className="form-select"
+                                      value={applicationFilter.status}
+                                      onChange={(e) => setApplicationFilter(f => ({ ...f, status: e.target.value }))}
+                                    >
+                                      <option value="all">All Status</option>
+                                      {applicationStatusOptions.map(status => (
+                                        <option key={status.id} value={status.id}>{status.name}</option>
+                                      ))}
+                                    </select>
+                                  </div>
+                                </div>
+
+                                {/* Applications Table */}
+                                <div className="table-responsive">
+                                  <table className="table table-hover">
+                                    <thead className="table-light">
+                                      <tr>
+                                        <th>Applicant</th>
+                                        <th>Type</th>
+                                        <th>Status</th>
+                                        <th>Submitted</th>
+                                        <th>Actions</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {filteredApplications
+                                        .filter(app => applicationsActiveTab === 'all' || app.status === 'pending')
+                                        .length === 0 ? (
+                                        <tr>
+                                          <td colSpan="5" className="text-center py-5">
+                                            <div className="text-muted">
+                                              <i className="bi bi-file-earmark-check" style={{fontSize: '3rem'}}></i>
+                                              <p className="mt-2">No applications found</p>
+                                            </div>
+                                          </td>
+                                        </tr>
+                                      ) : (
+                                        filteredApplications
+                                          .filter(app => applicationsActiveTab === 'all' || app.status === 'pending')
+                                          .map((app) => (
+                                          <tr key={app._id}>
+                                            <td>
+                                              <div>
+                                                <strong>{app.applicantName || 'N/A'}</strong>
+                                                {app.applicantEmail && (
+                                                  <div className="text-muted small">{app.applicantEmail}</div>
+                                                )}
+                                              </div>
+                                            </td>
+                                            <td>
+                                              <span className="badge bg-secondary">
+                                                {applicationTypes.find(t => t.id === app.type)?.name || app.type}
+                                              </span>
+                                            </td>
+                                            <td>
+                                              <span className={`badge bg-${applicationStatusOptions.find(s => s.id === app.status)?.color || 'secondary'}`}>
+                                                {applicationStatusOptions.find(s => s.id === app.status)?.name || app.status}
+                                              </span>
+                                            </td>
+                                            <td className="text-muted small">
+                                              {app.submittedDate ? new Date(app.submittedDate).toLocaleDateString() : 'N/A'}
+                                            </td>
+                                            <td>
+                                              <div className="btn-group btn-group-sm">
+                                                <button
+                                                  className="btn btn-outline-info"
+                                                  onClick={() => {
+                                                    setSelectedApplication(app);
+                                                    setShowAppModal(true);
+                                                  }}
+                                                  title="View Details"
+                                                >
+                                                  <i className="bi bi-eye"></i>
+                                                </button>
+                                                <button
+                                                  className="btn btn-outline-success"
+                                                  onClick={() => updateApplicationStatus(app._id, 'approved')}
+                                                  title="Approve"
+                                                  disabled={app.status === 'approved'}
+                                                >
+                                                  <i className="bi bi-check"></i>
+                                                </button>
+                                                <button
+                                                  className="btn btn-outline-danger"
+                                                  onClick={() => updateApplicationStatus(app._id, 'rejected')}
+                                                  title="Reject"
+                                                  disabled={app.status === 'rejected'}
+                                                >
+                                                  <i className="bi bi-x"></i>
+                                                </button>
+                                                <button
+                                                  className="btn btn-outline-danger"
+                                                  onClick={() => deleteApplication(app._id)}
+                                                  title="Delete"
+                                                >
+                                                  <i className="bi bi-trash"></i>
+                                                </button>
+                                              </div>
+                                            </td>
+                                          </tr>
+                                        ))
+                                      )}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                            )}
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
                 </div>
+
+                {/* Application Details Modal */}
+                {showAppModal && selectedApplication && (
+                  <div className="modal show d-block" style={{backgroundColor: 'rgba(0,0,0,0.5)'}}>
+                    <div className="modal-dialog modal-lg">
+                      <div className="modal-content">
+                        <div className="modal-header">
+                          <h5 className="modal-title">Application Details</h5>
+                          <button
+                            type="button"
+                            className="btn-close"
+                            onClick={() => setShowAppModal(false)}
+                          ></button>
+                        </div>
+                        <div className="modal-body">
+                          <div className="row g-3">
+                            <div className="col-md-6">
+                              <label className="form-label fw-bold">Applicant Name</label>
+                              <p>{selectedApplication.applicantName || 'N/A'}</p>
+                            </div>
+                            <div className="col-md-6">
+                              <label className="form-label fw-bold">Email</label>
+                              <p>{selectedApplication.applicantEmail || 'N/A'}</p>
+                            </div>
+                            <div className="col-md-6">
+                              <label className="form-label fw-bold">Application Type</label>
+                              <p>{applicationTypes.find(t => t.id === selectedApplication.type)?.name || selectedApplication.type}</p>
+                            </div>
+                            <div className="col-md-6">
+                              <label className="form-label fw-bold">Status</label>
+                              <p>
+                                <span className={`badge bg-${applicationStatusOptions.find(s => s.id === selectedApplication.status)?.color || 'secondary'}`}>
+                                  {applicationStatusOptions.find(s => s.id === selectedApplication.status)?.name || selectedApplication.status}
+                                </span>
+                              </p>
+                            </div>
+                            <div className="col-md-6">
+                              <label className="form-label fw-bold">Submitted Date</label>
+                              <p>{selectedApplication.submittedDate ? new Date(selectedApplication.submittedDate).toLocaleString() : 'N/A'}</p>
+                            </div>
+                            <div className="col-12">
+                              <label className="form-label fw-bold">Additional Information</label>
+                              <p className="bg-light p-3 rounded">{selectedApplication.notes || 'No additional information provided'}</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="modal-footer">
+                          <button
+                            type="button"
+                            className="btn btn-secondary"
+                            onClick={() => setShowAppModal(false)}
+                          >
+                            Close
+                          </button>
+                          {selectedApplication.status !== 'approved' && (
+                            <button
+                              type="button"
+                              className="btn btn-success"
+                              onClick={() => updateApplicationStatus(selectedApplication._id, 'approved')}
+                            >
+                              Approve
+                            </button>
+                          )}
+                          {selectedApplication.status !== 'rejected' && (
+                            <button
+                              type="button"
+                              className="btn btn-danger"
+                              onClick={() => updateApplicationStatus(selectedApplication._id, 'rejected')}
+                            >
+                              Reject
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -4766,86 +10829,454 @@ export default function AdminDashboard() {
                         <h5 className="mb-0">Form Management</h5>
                       </div>
                       <div className="card-body">
-                        <div className="alert alert-success">
-                          <i className="bi bi-check-circle me-2"></i>
-                          <strong>📝 Comprehensive Form Builder Now Available!</strong> Create, manage, and distribute professional forms with ease:
-                          
-                          <div className="row mt-3 mb-3">
-                            <div className="col-md-6">
-                              <h6 className="text-success"><i className="bi bi-hammer me-2"></i>Form Builder Features</h6>
-                              <ul className="small">
-                                <li>Drag-and-drop form designer</li>
-                                <li>15+ field types (text, email, phone, dropdown, signature, etc.)</li>
-                                <li>Conditional logic support</li>
-                                <li>Custom validation rules</li>
-                                <li>Field ordering and organization</li>
-                              </ul>
+                        {formsLoading ? (
+                          <div className="text-center py-5">
+                            <div className="spinner-border text-primary" role="status">
+                              <span className="visually-hidden">Loading...</span>
                             </div>
-                            <div className="col-md-6">
-                              <h6 className="text-success"><i className="bi bi-gear me-2"></i>Form Management</h6>
-                              <ul className="small">
-                                <li>9 form categories (Registration, Medical, Consent, Evaluation, etc.)</li>
-                                <li>Form status control (Draft, Active, Archived)</li>
-                                <li>Duplicate and template system</li>
-                                <li>Import/Export forms as JSON</li>
-                                <li>Public form links</li>
-                              </ul>
-                            </div>
+                            <p className="text-muted mt-2">Loading forms...</p>
                           </div>
-                          
-                          <div className="bg-white p-3 rounded mb-3">
-                            <h6 className="text-dark mb-2"><i className="bi bi-inbox me-2"></i>Submission Management</h6>
-                            <div className="row small">
-                              <div className="col-md-4">• Real-time submission tracking</div>
-                              <div className="col-md-4">• Email notifications</div>
-                              <div className="col-md-4">• Export to CSV/Excel</div>
-                              <div className="col-md-4">• Automated responses</div>
-                              <div className="col-md-4">• Access control options</div>
-                              <div className="col-md-4">• Mobile responsive forms</div>
-                            </div>
-                          </div>
-                          
-                          <Link to="/admin/forms" className="btn btn-success btn-lg">
-                            <i className="bi bi-arrow-right me-2"></i>
-                            Launch Form Builder
-                          </Link>
-                        </div>
-                        <div className="text-center py-4">
-                          <i className="bi bi-ui-checks display-1 text-success"></i>
-                          <h4 className="mt-3 text-success">Form Management System Ready</h4>
-                          <p className="text-muted">Create registration forms, waivers, surveys, and more with our powerful form builder.</p>
-                        </div>
+                        ) : (
+                          <>
+                            {/* Tabs */}
+                            <ul className="nav nav-tabs mb-4">
+                              <li className="nav-item">
+                                <button
+                                  className={`nav-link ${formsActiveTab === 'overview' ? 'active' : ''}`}
+                                  onClick={() => setFormsActiveTab('overview')}
+                                >
+                                  📊 Overview
+                                </button>
+                              </li>
+                              <li className="nav-item">
+                                <button
+                                  className={`nav-link ${formsActiveTab === 'all' ? 'active' : ''}`}
+                                  onClick={() => setFormsActiveTab('all')}
+                                >
+                                  📋 All Forms
+                                </button>
+                              </li>
+                            </ul>
+
+                            {/* Overview Tab */}
+                            {formsActiveTab === 'overview' && (
+                              <div>
+                                {/* Statistics Cards */}
+                                <div className="row g-3 mb-4">
+                                  <div className="col-md-3">
+                                    <div className="card bg-primary bg-opacity-10 border-primary">
+                                      <div className="card-body text-center">
+                                        <h2 className="display-6 fw-bold text-primary">{formStats.total}</h2>
+                                        <p className="text-muted mb-0">Total Forms</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="col-md-3">
+                                    <div className="card bg-success bg-opacity-10 border-success">
+                                      <div className="card-body text-center">
+                                        <h2 className="display-6 fw-bold text-success">{formStats.active}</h2>
+                                        <p className="text-muted mb-0">Active</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="col-md-3">
+                                    <div className="card bg-warning bg-opacity-10 border-warning">
+                                      <div className="card-body text-center">
+                                        <h2 className="display-6 fw-bold text-warning">{formStats.draft}</h2>
+                                        <p className="text-muted mb-0">Drafts</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="col-md-3">
+                                    <div className="card bg-secondary bg-opacity-10 border-secondary">
+                                      <div className="card-body text-center">
+                                        <h2 className="display-6 fw-bold text-secondary">{formStats.archived}</h2>
+                                        <p className="text-muted mb-0">Archived</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Form Categories Grid */}
+                                <h5 className="mb-3">Form Categories</h5>
+                                <div className="row g-3">
+                                  {formStats.byCategory.map((cat) => (
+                                    <div key={cat.id} className="col-md-3">
+                                      <div className="card h-100">
+                                        <div className="card-body">
+                                          <div className="d-flex justify-content-between align-items-start mb-2">
+                                            <span style={{fontSize: '2rem'}}>{cat.icon}</span>
+                                            <h3 className="mb-0">{cat.count}</h3>
+                                          </div>
+                                          <h6 className="card-title">{cat.name}</h6>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* All Forms Tab */}
+                            {formsActiveTab === 'all' && (
+                              <div>
+                                {/* Filters */}
+                                <div className="row g-3 mb-4">
+                                  <div className="col-md-5">
+                                    <input
+                                      type="text"
+                                      className="form-control"
+                                      placeholder="Search forms..."
+                                      value={formFilter.search}
+                                      onChange={(e) => setFormFilter(f => ({ ...f, search: e.target.value }))}
+                                    />
+                                  </div>
+                                  <div className="col-md-3">
+                                    <select
+                                      className="form-select"
+                                      value={formFilter.category}
+                                      onChange={(e) => setFormFilter(f => ({ ...f, category: e.target.value }))}
+                                    >
+                                      <option value="all">All Categories</option>
+                                      {formCategories.map(cat => (
+                                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                      ))}
+                                    </select>
+                                  </div>
+                                  <div className="col-md-4">
+                                    <select
+                                      className="form-select"
+                                      value={formFilter.status}
+                                      onChange={(e) => setFormFilter(f => ({ ...f, status: e.target.value }))}
+                                    >
+                                      <option value="all">All Status</option>
+                                      <option value="draft">Draft</option>
+                                      <option value="active">Active</option>
+                                      <option value="archived">Archived</option>
+                                    </select>
+                                  </div>
+                                </div>
+
+                                {/* Forms Table */}
+                                <div className="table-responsive">
+                                  <table className="table table-hover">
+                                    <thead className="table-light">
+                                      <tr>
+                                        <th>Form Title</th>
+                                        <th>Category</th>
+                                        <th>Status</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {filteredForms.length === 0 ? (
+                                        <tr>
+                                          <td colSpan="5" className="text-center py-5">
+                                            <div className="text-muted">
+                                              <i className="bi bi-ui-checks" style={{fontSize: '3rem'}}></i>
+                                              <p className="mt-2">No forms found</p>
+                                            </div>
+                                          </td>
+                                        </tr>
+                                      ) : (
+                                        filteredForms.map((form) => (
+                                          <tr key={form._id}>
+                                            <td>
+                                              <div>
+                                                <strong>{form.title || 'Untitled Form'}</strong>
+                                                {form.description && (
+                                                  <div className="text-muted small">{form.description}</div>
+                                                )}
+                                              </div>
+                                            </td>
+                                            <td>
+                                              <span className="badge bg-secondary">
+                                                {formCategories.find(c => c.id === form.category)?.name || form.category}
+                                              </span>
+                                            </td>
+                                            <td>
+                                              <span className={`badge bg-${form.status === 'active' ? 'success' : form.status === 'draft' ? 'warning' : 'secondary'}`}>
+                                                {form.status}
+                                              </span>
+                                            </td>
+                                            <td className="text-muted small">
+                                              {form.createdAt ? new Date(form.createdAt).toLocaleDateString() : 'N/A'}
+                                            </td>
+                                            <td>
+                                              <div className="btn-group btn-group-sm">
+                                                <button
+                                                  className="btn btn-outline-info"
+                                                  onClick={() => {
+                                                    setSelectedForm(form);
+                                                    setShowFormModal(true);
+                                                  }}
+                                                  title="View Details"
+                                                >
+                                                  <i className="bi bi-eye"></i>
+                                                </button>
+                                                {form.status !== 'active' && (
+                                                  <button
+                                                    className="btn btn-outline-success"
+                                                    onClick={() => updateFormStatus(form._id, 'active')}
+                                                    title="Activate"
+                                                  >
+                                                    <i className="bi bi-check-circle"></i>
+                                                  </button>
+                                                )}
+                                                {form.status === 'active' && (
+                                                  <button
+                                                    className="btn btn-outline-warning"
+                                                    onClick={() => updateFormStatus(form._id, 'archived')}
+                                                    title="Archive"
+                                                  >
+                                                    <i className="bi bi-archive"></i>
+                                                  </button>
+                                                )}
+                                                <button
+                                                  className="btn btn-outline-danger"
+                                                  onClick={() => deleteForm(form._id)}
+                                                  title="Delete"
+                                                >
+                                                  <i className="bi bi-trash"></i>
+                                                </button>
+                                              </div>
+                                            </td>
+                                          </tr>
+                                        ))
+                                      )}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                            )}
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
                 </div>
+
+                {/* Form Details Modal */}
+                {showFormModal && selectedForm && (
+                  <div className="modal show d-block" style={{backgroundColor: 'rgba(0,0,0,0.5)'}}>
+                    <div className="modal-dialog modal-lg">
+                      <div className="modal-content">
+                        <div className="modal-header">
+                          <h5 className="modal-title">Form Details</h5>
+                          <button
+                            type="button"
+                            className="btn-close"
+                            onClick={() => setShowFormModal(false)}
+                          ></button>
+                        </div>
+                        <div className="modal-body">
+                          <div className="row g-3">
+                            <div className="col-md-12">
+                              <label className="form-label fw-bold">Form Title</label>
+                              <p>{selectedForm.title || 'Untitled Form'}</p>
+                            </div>
+                            <div className="col-md-12">
+                              <label className="form-label fw-bold">Description</label>
+                              <p>{selectedForm.description || 'No description provided'}</p>
+                            </div>
+                            <div className="col-md-6">
+                              <label className="form-label fw-bold">Category</label>
+                              <p>{formCategories.find(c => c.id === selectedForm.category)?.name || selectedForm.category}</p>
+                            </div>
+                            <div className="col-md-6">
+                              <label className="form-label fw-bold">Status</label>
+                              <p>
+                                <span className={`badge bg-${selectedForm.status === 'active' ? 'success' : selectedForm.status === 'draft' ? 'warning' : 'secondary'}`}>
+                                  {selectedForm.status}
+                                </span>
+                              </p>
+                            </div>
+                            <div className="col-md-6">
+                              <label className="form-label fw-bold">Created</label>
+                              <p>{selectedForm.createdAt ? new Date(selectedForm.createdAt).toLocaleString() : 'N/A'}</p>
+                            </div>
+                            <div className="col-md-6">
+                              <label className="form-label fw-bold">Total Fields</label>
+                              <p>{selectedForm.fields?.length || 0} fields</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="modal-footer">
+                          <button
+                            type="button"
+                            className="btn btn-secondary"
+                            onClick={() => setShowFormModal(false)}
+                          >
+                            Close
+                          </button>
+                          {selectedForm.status !== 'active' && (
+                            <button
+                              type="button"
+                              className="btn btn-success"
+                              onClick={() => {
+                                updateFormStatus(selectedForm._id, 'active');
+                                setShowFormModal(false);
+                              }}
+                            >
+                              Activate Form
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
             {activeSection === 'broadcasts' && (
               <div>
+                {/* Broadcast Stats */}
+                <div className="row mb-4">
+                  <div className="col-md-3 mb-3">
+                    <div className="card bg-primary text-white">
+                      <div className="card-body">
+                        <h6>Total Broadcasts</h6>
+                        <h4 className="mb-0">245</h4>
+                        <small>All time</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-3 mb-3">
+                    <div className="card bg-success text-white">
+                      <div className="card-body">
+                        <h6>Delivered</h6>
+                        <h4 className="mb-0">238</h4>
+                        <small>97% success rate</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-3 mb-3">
+                    <div className="card bg-warning text-white">
+                      <div className="card-body">
+                        <h6>Scheduled</h6>
+                        <h4 className="mb-0">5</h4>
+                        <small>Upcoming</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-3 mb-3">
+                    <div className="card bg-info text-white">
+                      <div className="card-body">
+                        <h6>Total Reach</h6>
+                        <h4 className="mb-0">12.5K</h4>
+                        <small>Recipients</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Create Broadcast */}
+                <div className="row mb-4">
+                  <div className="col-12">
+                    <div className="card">
+                      <div className="card-header">
+                        <h5 className="mb-0">Create New Broadcast</h5>
+                      </div>
+                      <div className="card-body">
+                        <form>
+                          <div className="row">
+                            <div className="col-md-6 mb-3">
+                              <label className="form-label">Broadcast Title</label>
+                              <input type="text" className="form-control" placeholder="Enter broadcast title" />
+                            </div>
+                            <div className="col-md-6 mb-3">
+                              <label className="form-label">Target Audience</label>
+                              <select className="form-select">
+                                <option>All Users</option>
+                                <option>Players</option>
+                                <option>Coaches</option>
+                                <option>Parents</option>
+                                <option>Specific Team</option>
+                              </select>
+                            </div>
+                          </div>
+                          <div className="mb-3">
+                            <label className="form-label">Message</label>
+                            <textarea className="form-control" rows="4" placeholder="Enter your broadcast message"></textarea>
+                          </div>
+                          <div className="row">
+                            <div className="col-md-6 mb-3">
+                              <label className="form-label">Delivery Method</label>
+                              <div className="form-check">
+                                <input className="form-check-input" type="checkbox" id="bcEmail" defaultChecked />
+                                <label className="form-check-label" htmlFor="bcEmail">Email</label>
+                              </div>
+                              <div className="form-check">
+                                <input className="form-check-input" type="checkbox" id="bcPush" defaultChecked />
+                                <label className="form-check-label" htmlFor="bcPush">Push Notification</label>
+                              </div>
+                              <div className="form-check">
+                                <input className="form-check-input" type="checkbox" id="bcSMS" />
+                                <label className="form-check-label" htmlFor="bcSMS">SMS</label>
+                              </div>
+                            </div>
+                            <div className="col-md-6 mb-3">
+                              <label className="form-label">Schedule</label>
+                              <select className="form-select mb-2">
+                                <option>Send Now</option>
+                                <option>Schedule for Later</option>
+                              </select>
+                              <input type="datetime-local" className="form-control" />
+                            </div>
+                          </div>
+                          <button type="button" className="btn btn-primary">Send Broadcast</button>
+                          <button type="button" className="btn btn-outline-secondary ms-2">Save as Draft</button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Recent Broadcasts */}
                 <div className="row">
                   <div className="col-12">
                     <div className="card">
                       <div className="card-header">
-                        <h5 className="mb-0">Broadcast Center</h5>
+                        <h5 className="mb-0">Recent Broadcasts</h5>
                       </div>
-                      <div className="card-body">
-                        <div className="alert alert-info">
-                          <i className="bi bi-info-circle me-2"></i>
-                          Broadcast features will be implemented here. This will include:
-                          <ul className="mt-2 mb-0">
-                            <li>Create and send broadcasts</li>
-                            <li>Target specific user groups</li>
-                            <li>Schedule broadcast delivery</li>
-                            <li>Broadcast templates and history</li>
-                            <li>Delivery tracking and analytics</li>
-                          </ul>
-                        </div>
-                        <div className="text-center py-5">
-                          <i className="bi bi-megaphone display-1 text-muted"></i>
-                          <h4 className="mt-3 text-muted">Broadcast Center</h4>
-                          <p className="text-muted">Coming soon...</p>
+                      <div className="card-body p-0">
+                        <div className="table-responsive">
+                          <table className="table table-hover mb-0">
+                            <thead>
+                              <tr>
+                                <th>Title</th>
+                                <th>Audience</th>
+                                <th>Sent</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td>Weekly Training Update</td>
+                                <td>All Players (1,200)</td>
+                                <td>2 hours ago</td>
+                                <td><span className="badge bg-success">Delivered</span></td>
+                                <td><button className="btn btn-sm btn-outline-primary">View</button></td>
+                              </tr>
+                              <tr>
+                                <td>Match Reminder</td>
+                                <td>U16 Team (25)</td>
+                                <td>1 day ago</td>
+                                <td><span className="badge bg-success">Delivered</span></td>
+                                <td><button className="btn btn-sm btn-outline-primary">View</button></td>
+                              </tr>
+                              <tr>
+                                <td>Season Kickoff Event</td>
+                                <td>All Users (2,100)</td>
+                                <td>3 days ago</td>
+                                <td><span className="badge bg-success">Delivered</span></td>
+                                <td><button className="btn btn-sm btn-outline-primary">View</button></td>
+                              </tr>
+                            </tbody>
+                          </table>
                         </div>
                       </div>
                     </div>
@@ -4856,28 +11287,159 @@ export default function AdminDashboard() {
 
             {activeSection === 'backup' && (
               <div>
+                {/* Backup Status */}
+                <div className="row mb-4">
+                  <div className="col-md-3 mb-3">
+                    <div className="card bg-success text-white">
+                      <div className="card-body">
+                        <h6>Last Backup</h6>
+                        <h4 className="mb-0">2 hours ago</h4>
+                        <small>Automatic backup completed</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-3 mb-3">
+                    <div className="card bg-primary text-white">
+                      <div className="card-body">
+                        <h6>Total Backups</h6>
+                        <h4 className="mb-0">145</h4>
+                        <small>32.5 GB total size</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-3 mb-3">
+                    <div className="card bg-warning text-white">
+                      <div className="card-body">
+                        <h6>Next Backup</h6>
+                        <h4 className="mb-0">In 10 hours</h4>
+                        <small>Scheduled for midnight</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-3 mb-3">
+                    <div className="card bg-info text-white">
+                      <div className="card-body">
+                        <h6>Storage Used</h6>
+                        <h4 className="mb-0">65%</h4>
+                        <small>32.5 GB / 50 GB</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Quick Actions */}
+                <div className="row mb-4">
+                  <div className="col-12">
+                    <div className="card">
+                      <div className="card-header">
+                        <h5 className="mb-0">Quick Actions</h5>
+                      </div>
+                      <div className="card-body">
+                        <div className="row">
+                          <div className="col-md-4 mb-3">
+                            <button className="btn btn-primary w-100 py-3">
+                              <i className="bi bi-cloud-arrow-up fs-3 d-block mb-2"></i>
+                              <strong>Create Backup Now</strong>
+                              <br /><small>Manual backup</small>
+                            </button>
+                          </div>
+                          <div className="col-md-4 mb-3">
+                            <button className="btn btn-success w-100 py-3">
+                              <i className="bi bi-cloud-arrow-down fs-3 d-block mb-2"></i>
+                              <strong>Restore Backup</strong>
+                              <br /><small>Restore from backup</small>
+                            </button>
+                          </div>
+                          <div className="col-md-4 mb-3">
+                            <button className="btn btn-warning w-100 py-3">
+                              <i className="bi bi-gear fs-3 d-block mb-2"></i>
+                              <strong>Configure Schedule</strong>
+                              <br /><small>Backup settings</small>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Recent Backups */}
                 <div className="row">
                   <div className="col-12">
                     <div className="card">
                       <div className="card-header">
-                        <h5 className="mb-0">Backup & Restore</h5>
+                        <h5 className="mb-0">Recent Backups</h5>
                       </div>
                       <div className="card-body">
-                        <div className="alert alert-info">
-                          <i className="bi bi-info-circle me-2"></i>
-                          Backup and restore features will be implemented here. This will include:
-                          <ul className="mt-2 mb-0">
-                            <li>Automated backup scheduling</li>
-                            <li>Manual backup creation</li>
-                            <li>Backup restoration</li>
-                            <li>Backup verification and integrity</li>
-                            <li>Backup storage management</li>
-                          </ul>
-                        </div>
-                        <div className="text-center py-5">
-                          <i className="bi bi-cloud-arrow-down display-1 text-muted"></i>
-                          <h4 className="mt-3 text-muted">Backup & Restore</h4>
-                          <p className="text-muted">Coming soon...</p>
+                        <div className="table-responsive">
+                          <table className="table table-hover">
+                            <thead>
+                              <tr>
+                                <th>Backup Name</th>
+                                <th>Type</th>
+                                <th>Size</th>
+                                <th>Created</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td>Auto Backup - 2024-10-22</td>
+                                <td><span className="badge bg-primary">Automatic</span></td>
+                                <td>2.3 GB</td>
+                                <td>2 hours ago</td>
+                                <td><span className="badge bg-success">Verified</span></td>
+                                <td>
+                                  <button className="btn btn-sm btn-success me-1">
+                                    <i className="bi bi-arrow-counterclockwise"></i> Restore
+                                  </button>
+                                  <button className="btn btn-sm btn-primary me-1">
+                                    <i className="bi bi-download"></i> Download
+                                  </button>
+                                  <button className="btn btn-sm btn-danger">
+                                    <i className="bi bi-trash"></i>
+                                  </button>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td>Manual Backup - Pre Update</td>
+                                <td><span className="badge bg-info">Manual</span></td>
+                                <td>2.2 GB</td>
+                                <td>1 day ago</td>
+                                <td><span className="badge bg-success">Verified</span></td>
+                                <td>
+                                  <button className="btn btn-sm btn-success me-1">
+                                    <i className="bi bi-arrow-counterclockwise"></i> Restore
+                                  </button>
+                                  <button className="btn btn-sm btn-primary me-1">
+                                    <i className="bi bi-download"></i> Download
+                                  </button>
+                                  <button className="btn btn-sm btn-danger">
+                                    <i className="bi bi-trash"></i>
+                                  </button>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td>Auto Backup - 2024-10-21</td>
+                                <td><span className="badge bg-primary">Automatic</span></td>
+                                <td>2.3 GB</td>
+                                <td>2 days ago</td>
+                                <td><span className="badge bg-success">Verified</span></td>
+                                <td>
+                                  <button className="btn btn-sm btn-success me-1">
+                                    <i className="bi bi-arrow-counterclockwise"></i> Restore
+                                  </button>
+                                  <button className="btn btn-sm btn-primary me-1">
+                                    <i className="bi bi-download"></i> Download
+                                  </button>
+                                  <button className="btn btn-sm btn-danger">
+                                    <i className="bi bi-trash"></i>
+                                  </button>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
                         </div>
                       </div>
                     </div>
@@ -4888,29 +11450,201 @@ export default function AdminDashboard() {
 
             {activeSection === 'logs' && (
               <div>
-                <div className="row">
+                {/* Log Statistics */}
+                <div className="row mb-4">
+                  <div className="col-md-3 mb-3">
+                    <div className="card bg-primary text-white">
+                      <div className="card-body">
+                        <h6>Total Events</h6>
+                        <h4 className="mb-0">12,456</h4>
+                        <small>Last 30 days</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-3 mb-3">
+                    <div className="card bg-danger text-white">
+                      <div className="card-body">
+                        <h6>Errors</h6>
+                        <h4 className="mb-0">23</h4>
+                        <small>Requires attention</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-3 mb-3">
+                    <div className="card bg-warning text-white">
+                      <div className="card-body">
+                        <h6>Warnings</h6>
+                        <h4 className="mb-0">145</h4>
+                        <small>Last 24 hours</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-3 mb-3">
+                    <div className="card bg-success text-white">
+                      <div className="card-body">
+                        <h6>Success Rate</h6>
+                        <h4 className="mb-0">98.9%</h4>
+                        <small>System uptime</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Log Filters */}
+                <div className="row mb-4">
                   <div className="col-12">
                     <div className="card">
                       <div className="card-header">
-                        <h5 className="mb-0">System Logs</h5>
+                        <h5 className="mb-0">Filter Logs</h5>
                       </div>
                       <div className="card-body">
-                        <div className="alert alert-info">
-                          <i className="bi bi-info-circle me-2"></i>
-                          System logging features will be implemented here. This will include:
-                          <ul className="mt-2 mb-0">
-                            <li>System activity logs</li>
-                            <li>Error and exception tracking</li>
-                            <li>User activity monitoring</li>
-                            <li>Security event logging</li>
-                            <li>Log filtering and search</li>
+                        <div className="row">
+                          <div className="col-md-3 mb-3">
+                            <label className="form-label">Log Level</label>
+                            <select className="form-select">
+                              <option>All Levels</option>
+                              <option>Error</option>
+                              <option>Warning</option>
+                              <option>Info</option>
+                              <option>Debug</option>
+                            </select>
+                          </div>
+                          <div className="col-md-3 mb-3">
+                            <label className="form-label">Category</label>
+                            <select className="form-select">
+                              <option>All Categories</option>
+                              <option>Authentication</option>
+                              <option>Database</option>
+                              <option>API</option>
+                              <option>System</option>
+                            </select>
+                          </div>
+                          <div className="col-md-3 mb-3">
+                            <label className="form-label">Time Range</label>
+                            <select className="form-select">
+                              <option>Last 24 Hours</option>
+                              <option>Last 7 Days</option>
+                              <option>Last 30 Days</option>
+                              <option>Custom Range</option>
+                            </select>
+                          </div>
+                          <div className="col-md-3 mb-3">
+                            <label className="form-label">Search</label>
+                            <input type="text" className="form-control" placeholder="Search logs..." />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Recent Logs */}
+                <div className="row">
+                  <div className="col-12">
+                    <div className="card">
+                      <div className="card-header d-flex justify-content-between align-items-center">
+                        <h5 className="mb-0">Recent Activity</h5>
+                        <div>
+                          <button className="btn btn-sm btn-outline-primary me-2">
+                            <i className="bi bi-download"></i> Export
+                          </button>
+                          <button className="btn btn-sm btn-outline-secondary">
+                            <i className="bi bi-arrow-clockwise"></i> Refresh
+                          </button>
+                        </div>
+                      </div>
+                      <div className="card-body p-0">
+                        <div className="table-responsive">
+                          <table className="table table-hover table-sm mb-0">
+                            <thead>
+                              <tr>
+                                <th>Time</th>
+                                <th>Level</th>
+                                <th>Category</th>
+                                <th>Message</th>
+                                <th>User</th>
+                                <th>Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td><small>2024-10-22 14:23:45</small></td>
+                                <td><span className="badge bg-success">INFO</span></td>
+                                <td>Auth</td>
+                                <td>User login successful</td>
+                                <td>john@example.com</td>
+                                <td><button className="btn btn-sm btn-link">Details</button></td>
+                              </tr>
+                              <tr>
+                                <td><small>2024-10-22 14:22:10</small></td>
+                                <td><span className="badge bg-danger">ERROR</span></td>
+                                <td>Database</td>
+                                <td>Connection timeout on query execution</td>
+                                <td>System</td>
+                                <td><button className="btn btn-sm btn-link">Details</button></td>
+                              </tr>
+                              <tr>
+                                <td><small>2024-10-22 14:20:33</small></td>
+                                <td><span className="badge bg-warning">WARN</span></td>
+                                <td>API</td>
+                                <td>Rate limit approaching for endpoint /api/users</td>
+                                <td>admin@club.com</td>
+                                <td><button className="btn btn-sm btn-link">Details</button></td>
+                              </tr>
+                              <tr>
+                                <td><small>2024-10-22 14:18:12</small></td>
+                                <td><span className="badge bg-success">INFO</span></td>
+                                <td>Payment</td>
+                                <td>Payment processed successfully - $49.99</td>
+                                <td>member@club.com</td>
+                                <td><button className="btn btn-sm btn-link">Details</button></td>
+                              </tr>
+                              <tr>
+                                <td><small>2024-10-22 14:15:22</small></td>
+                                <td><span className="badge bg-info">DEBUG</span></td>
+                                <td>System</td>
+                                <td>Backup process initiated</td>
+                                <td>System</td>
+                                <td><button className="btn btn-sm btn-link">Details</button></td>
+                              </tr>
+                              <tr>
+                                <td><small>2024-10-22 14:12:45</small></td>
+                                <td><span className="badge bg-danger">ERROR</span></td>
+                                <td>Auth</td>
+                                <td>Failed login attempt - Invalid credentials</td>
+                                <td>unknown@test.com</td>
+                                <td><button className="btn btn-sm btn-link">Details</button></td>
+                              </tr>
+                              <tr>
+                                <td><small>2024-10-22 14:10:11</small></td>
+                                <td><span className="badge bg-warning">WARN</span></td>
+                                <td>Storage</td>
+                                <td>Disk space usage at 85%</td>
+                                <td>System</td>
+                                <td><button className="btn btn-sm btn-link">Details</button></td>
+                              </tr>
+                              <tr>
+                                <td><small>2024-10-22 14:08:33</small></td>
+                                <td><span className="badge bg-success">INFO</span></td>
+                                <td>Email</td>
+                                <td>Notification email sent successfully</td>
+                                <td>System</td>
+                                <td><button className="btn btn-sm btn-link">Details</button></td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                      <div className="card-footer">
+                        <nav>
+                          <ul className="pagination pagination-sm mb-0 justify-content-center">
+                            <li className="page-item disabled"><a className="page-link" href="#">Previous</a></li>
+                            <li className="page-item active"><a className="page-link" href="#">1</a></li>
+                            <li className="page-item"><a className="page-link" href="#">2</a></li>
+                            <li className="page-item"><a className="page-link" href="#">3</a></li>
+                            <li className="page-item"><a className="page-link" href="#">Next</a></li>
                           </ul>
-                        </div>
-                        <div className="text-center py-5">
-                          <i className="bi bi-journal-text display-1 text-muted"></i>
-                          <h4 className="mt-3 text-muted">System Logs</h4>
-                          <p className="text-muted">Coming soon...</p>
-                        </div>
+                        </nav>
                       </div>
                     </div>
                   </div>
@@ -4923,81 +11657,59 @@ export default function AdminDashboard() {
                 <div className="row">
                   <div className="col-12">
                     <div className="card">
-                      <div className="card-header">
-                        <h5 className="mb-0">Scheduling & Calendar Management</h5>
-                      </div>
                       <div className="card-body">
-                        <div className="alert alert-success">
-                          <i className="bi bi-check-circle me-2"></i>
-                          <strong>📅 Master Calendar & Scheduling System Available!</strong> Coordinate ALL club activities (public + internal):
-                          
-                          <div className="row mt-3 mb-3">
-                            <div className="col-md-6">
-                              <h6 className="text-success"><i className="bi bi-globe me-2"></i>PUBLIC SCHEDULING</h6>
-                              <ul className="small">
-                                <li><strong>Team Practices</strong> - Visible on public calendar</li>
-                                <li><strong>Match Schedules</strong> - Game times for parents</li>
-                                <li><strong>Training Sessions</strong> - Public training times</li>
-                                <li><strong>Events</strong> - Tournaments, camps, tryouts</li>
-                                <li><strong>Public Calendar</strong> - Website integration</li>
-                          </ul>
-                              <div className="mt-2 p-2 bg-blue-50 rounded">
-                                <small className="text-blue-800">
-                                  <strong>Purpose:</strong> Keep families informed of all activities
-                                </small>
-                        </div>
-                        </div>
-                            <div className="col-md-6">
-                              <h6 className="text-success"><i className="bi bi-building me-2"></i>INTERNAL SCHEDULING</h6>
-                              <ul className="small">
-                                <li><strong>Staff Meetings</strong> - Board, committee meetings</li>
-                                <li><strong>Planning Sessions</strong> - Strategic planning</li>
-                                <li><strong>Facility Maintenance</strong> - Downtime coordination</li>
-                                <li><strong>Coach Meetings</strong> - Internal coordination</li>
-                                <li><strong>Private Calendar</strong> - Staff-only view</li>
-                              </ul>
-                              <div className="mt-2 p-2 bg-gray-100 rounded">
-                                <small className="text-gray-800">
-                                  <strong>Purpose:</strong> Internal operations and coordination
-                                </small>
-                              </div>
+                        {schedulesLoading ? (
+                          <div className="text-center py-5"><div className="spinner-border text-primary"></div></div>
+                        ) : showScheduleForm ? (
+                          <form onSubmit={handleScheduleSubmit}>
+                            <div className="d-flex justify-content-between mb-3">
+                              <h5>{editingSchedule ? 'Edit' : 'Create'} Schedule</h5>
+                              <button type="button" className="btn btn-secondary" onClick={() => { setShowScheduleForm(false); setEditingSchedule(null); }}>Cancel</button>
                             </div>
-                          </div>
-                          
-                          <div className="bg-white p-3 rounded mb-3">
-                            <h6 className="text-dark mb-2"><i className="bi bi-gear me-2"></i>Core Features</h6>
-                            <div className="row small">
-                              <div className="col-md-4">• 9 schedule types (Practice, Match, Meeting, etc.)</div>
-                              <div className="col-md-4">• 3 visibility levels (Public, Members, Internal)</div>
-                              <div className="col-md-4">• Resource booking system</div>
-                              <div className="col-md-4">• Automatic conflict detection</div>
-                              <div className="col-md-4">• Recurring schedule patterns</div>
-                              <div className="col-md-4">• Multi-view calendar (Day/Week/Month)</div>
+                            <div className="row g-3">
+                              <div className="col-md-8"><label className="form-label">Title *</label><input type="text" className="form-control" value={scheduleForm.title} onChange={(e) => setScheduleForm({...scheduleForm, title: e.target.value})} required /></div>
+                              <div className="col-md-4"><label className="form-label">Event Type *</label><select className="form-select" value={scheduleForm.eventType} onChange={(e) => setScheduleForm({...scheduleForm, eventType: e.target.value})} required><option value="Practice">Practice</option><option value="Game">Game</option><option value="Meeting">Meeting</option><option value="Training">Training</option><option value="Tournament">Tournament</option><option value="Tryout">Tryout</option><option value="Scrimmage">Scrimmage</option><option value="Friendly Match">Friendly Match</option></select></div>
+                              <div className="col-md-6"><label className="form-label">Team/Group *</label><input type="text" className="form-control" value={scheduleForm.team} onChange={(e) => setScheduleForm({...scheduleForm, team: e.target.value})} required placeholder="e.g., U12 Boys, U14 Girls" /></div>
+                              <div className="col-md-6"><label className="form-label">Location *</label><input type="text" className="form-control" value={scheduleForm.location} onChange={(e) => setScheduleForm({...scheduleForm, location: e.target.value})} required placeholder="e.g., Field 1, Main Stadium" /></div>
+                              <div className="col-md-4"><label className="form-label">Date *</label><input type="date" className="form-control" value={scheduleForm.startDate} onChange={(e) => setScheduleForm({...scheduleForm, startDate: e.target.value})} required /></div>
+                              <div className="col-md-4"><label className="form-label">Start Time *</label><input type="time" className="form-control" value={scheduleForm.startTime} onChange={(e) => setScheduleForm({...scheduleForm, startTime: e.target.value})} required /></div>
+                              <div className="col-md-4"><label className="form-label">End Time *</label><input type="time" className="form-control" value={scheduleForm.endTime} onChange={(e) => setScheduleForm({...scheduleForm, endTime: e.target.value})} required /></div>
+                              <div className="col-md-6"><label className="form-label">Visibility</label><select className="form-select" value={scheduleForm.isPublic} onChange={(e) => setScheduleForm({...scheduleForm, isPublic: e.target.value === 'true'})}><option value="true">Public - Visible to Everyone</option><option value="false">Internal - Staff Only</option></select></div>
+                              <div className="col-md-6"><label className="form-label">Status</label><select className="form-select" value={scheduleForm.status} onChange={(e) => setScheduleForm({...scheduleForm, status: e.target.value})}><option value="scheduled">Scheduled</option><option value="confirmed">Confirmed</option><option value="cancelled">Cancelled</option><option value="completed">Completed</option></select></div>
+                              <div className="col-12"><label className="form-label">Notes</label><textarea className="form-control" rows="2" value={scheduleForm.notes} onChange={(e) => setScheduleForm({...scheduleForm, notes: e.target.value})} placeholder="Add any additional details..."></textarea></div>
+                              <div className="col-12"><button type="submit" className="btn btn-success w-100" disabled={schedulesLoading}>{schedulesLoading ? 'Saving...' : (editingSchedule ? 'Update Schedule' : 'Create Schedule')}</button></div>
                             </div>
-                          </div>
-                          
-                          <div className="bg-light p-3 rounded mb-3">
-                            <h6 className="text-dark mb-2"><i className="bi bi-building-fill-gear me-2"></i>Resource Management</h6>
-                            <div className="row small">
-                              <div className="col-md-4">• Field and facility booking</div>
-                              <div className="col-md-4">• Equipment reservation</div>
-                              <div className="col-md-4">• Availability tracking</div>
-                              <div className="col-md-4">• Double-booking prevention</div>
-                              <div className="col-md-4">• Resource utilization analytics</div>
-                              <div className="col-md-4">• Booking conflicts resolution</div>
-                            </div>
-                          </div>
-                          
-                          <Link to="/admin/scheduling" className="btn btn-success btn-lg">
-                            <i className="bi bi-arrow-right me-2"></i>
-                            Go to Scheduling & Calendar
-                          </Link>
-                        </div>
-                        <div className="text-center py-4">
-                          <i className="bi bi-calendar-week-fill display-1 text-success"></i>
-                          <h4 className="mt-3 text-success">Scheduling System Ready</h4>
-                          <p className="text-muted">Master calendar coordinating public schedules and internal operations with conflict prevention.</p>
-                        </div>
+                          </form>
+                        ) : (
+                          <>
+                            <button className="btn btn-primary mb-3" onClick={() => setShowScheduleForm(true)}><i className="bi bi-plus-circle me-1"></i> New Schedule</button>
+                            <table className="table table-hover">
+                              <thead className="table-light"><tr><th>Date</th><th>Time</th><th>Title</th><th>Type</th><th>Location</th><th>Status</th><th>Actions</th></tr></thead>
+                              <tbody>
+                                {schedules.length === 0 ? (
+                                  <tr><td colSpan="7" className="text-center py-5"><p className="text-muted mb-0">No schedules created</p></td></tr>
+                                ) : (
+                                  schedules.map((schedule) => (
+                                    <tr key={schedule._id}>
+                                      <td>{schedule.date ? new Date(schedule.date).toLocaleDateString() : 'N/A'}</td>
+                                      <td><small>{schedule.startTime} - {schedule.endTime}</small></td>
+                                      <td><strong>{schedule.title}</strong><br/><small className="text-muted">{schedule.team}</small></td>
+                                      <td><span className="badge bg-info">{schedule.type}</span></td>
+                                      <td>{schedule.location}</td>
+                                      <td><span className={`badge bg-${schedule.status === 'Confirmed' ? 'success' : schedule.status === 'Cancelled' ? 'danger' : 'warning'}`}>{schedule.status}</span></td>
+                                      <td>
+                                        <div className="btn-group btn-group-sm">
+                                          <button className="btn btn-outline-primary" onClick={() => { setScheduleForm(schedule); setEditingSchedule(schedule); setShowScheduleForm(true); }}><i className="bi bi-pencil"></i></button>
+                                          <button className="btn btn-outline-danger" onClick={() => handleDeleteSchedule(schedule._id)}><i className="bi bi-trash"></i></button>
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  ))
+                                )}
+                              </tbody>
+                            </table>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -5010,88 +11722,72 @@ export default function AdminDashboard() {
                 <div className="row">
                   <div className="col-12">
                     <div className="card">
-                      <div className="card-header">
-                        <h5 className="mb-0">Standings Management</h5>
-                      </div>
                       <div className="card-body">
-                        <div className="alert alert-success">
-                          <i className="bi bi-check-circle me-2"></i>
-                          <strong>🏆 Comprehensive Standings System Available!</strong> Manage league tables and rankings (PUBLIC + INTERNAL):
-                          
-                          <div className="row mt-3 mb-3">
-                            <div className="col-md-6">
-                              <h6 className="text-success"><i className="bi bi-globe me-2"></i>PUBLIC STANDINGS</h6>
-                              <ul className="small">
-                                <li><strong>League Tables</strong> - Visible on website for fans</li>
-                                <li><strong>Team Rankings</strong> - Current positions</li>
-                                <li><strong>Win/Loss/Draw Records</strong> - Match results</li>
-                                <li><strong>Goals Statistics</strong> - Scoring data</li>
-                                <li><strong>Current Form</strong> - Last 5 results (W/L/D)</li>
-                                <li><strong>Position Changes</strong> - Up/down arrows</li>
-                                <li><strong>Season History</strong> - Past standings</li>
-                              </ul>
-                              <div className="mt-2 p-2 bg-blue-50 rounded">
-                                <small className="text-blue-800">
-                                  <strong>Purpose:</strong> Show fans and parents how teams are performing in competitions
-                                </small>
-                              </div>
+                        {standingsLoading ? (
+                          <div className="text-center py-5"><div className="spinner-border text-primary"></div></div>
+                        ) : showStandingForm ? (
+                          <form onSubmit={handleStandingSubmit}>
+                            <div className="d-flex justify-content-between mb-3">
+                              <h5>{editingStanding ? 'Edit' : 'Add'} Standing</h5>
+                              <button type="button" className="btn btn-secondary" onClick={() => { setShowStandingForm(false); setEditingStanding(null); }}>Cancel</button>
                             </div>
-                            <div className="col-md-6">
-                              <h6 className="text-success"><i className="bi bi-building me-2"></i>INTERNAL STANDINGS</h6>
-                              <ul className="small">
-                                <li><strong>Practice Performance</strong> - Internal rankings</li>
-                                <li><strong>Development Tracking</strong> - Player progress</li>
-                                <li><strong>Evaluation Tables</strong> - Staff assessments</li>
-                                <li><strong>Selection Rankings</strong> - Team selection data</li>
-                                <li><strong>Trial Period Results</strong> - Tryout standings</li>
-                                <li><strong>Private Metrics</strong> - Internal analysis</li>
-                                <li><strong>Staff-Only Data</strong> - Confidential evaluations</li>
-                              </ul>
-                              <div className="mt-2 p-2 bg-gray-100 rounded">
-                                <small className="text-gray-800">
-                                  <strong>Purpose:</strong> Internal evaluation and team management decisions
-                                </small>
-                              </div>
+                            <div className="row g-3">
+                              <div className="col-md-4"><label className="form-label">Season *</label><input type="text" className="form-control" value={standingForm.season} onChange={(e) => setStandingForm({...standingForm, season: e.target.value})} required placeholder="e.g., 2024/2025" /></div>
+                              <div className="col-md-4"><label className="form-label">League *</label><input type="text" className="form-control" value={standingForm.league} onChange={(e) => setStandingForm({...standingForm, league: e.target.value})} required placeholder="e.g., Premier League" /></div>
+                              <div className="col-md-4"><label className="form-label">Division</label><input type="text" className="form-control" value={standingForm.division} onChange={(e) => setStandingForm({...standingForm, division: e.target.value})} placeholder="e.g., U12 Boys" /></div>
+                              <div className="col-md-6"><label className="form-label">Team Name *</label><input type="text" className="form-control" value={standingForm.team} onChange={(e) => setStandingForm({...standingForm, team: e.target.value})} required placeholder="Team name" /></div>
+                              <div className="col-md-6"><label className="form-label">Form</label><input type="text" className="form-control" value={standingForm.form} onChange={(e) => setStandingForm({...standingForm, form: e.target.value})} placeholder="e.g., WWLDW" /></div>
+                              <div className="col-12"><hr className="my-2" /></div>
+                              <div className="col-12"><h6 className="mb-0">Match Statistics</h6></div>
+                              <div className="col-md-3"><label className="form-label">Played</label><input type="number" className="form-control" value={standingForm.played} onChange={(e) => setStandingForm({...standingForm, played: parseInt(e.target.value) || 0})} min="0" /></div>
+                              <div className="col-md-3"><label className="form-label">Won</label><input type="number" className="form-control" value={standingForm.won} onChange={(e) => setStandingForm({...standingForm, won: parseInt(e.target.value) || 0})} min="0" /></div>
+                              <div className="col-md-3"><label className="form-label">Drawn</label><input type="number" className="form-control" value={standingForm.drawn} onChange={(e) => setStandingForm({...standingForm, drawn: parseInt(e.target.value) || 0})} min="0" /></div>
+                              <div className="col-md-3"><label className="form-label">Lost</label><input type="number" className="form-control" value={standingForm.lost} onChange={(e) => setStandingForm({...standingForm, lost: parseInt(e.target.value) || 0})} min="0" /></div>
+                              <div className="col-md-6"><label className="form-label">Goals For</label><input type="number" className="form-control" value={standingForm.goalsFor} onChange={(e) => setStandingForm({...standingForm, goalsFor: parseInt(e.target.value) || 0})} min="0" /></div>
+                              <div className="col-md-6"><label className="form-label">Goals Against</label><input type="number" className="form-control" value={standingForm.goalsAgainst} onChange={(e) => setStandingForm({...standingForm, goalsAgainst: parseInt(e.target.value) || 0})} min="0" /></div>
+                              <div className="col-md-6"><label className="form-label">Visibility</label><select className="form-select" value={standingForm.isPublic} onChange={(e) => setStandingForm({...standingForm, isPublic: e.target.value === 'true'})}><option value="true">Public - Visible to Everyone</option><option value="false">Internal - Staff Only</option></select></div>
+                              <div className="col-md-6"><label className="form-label">Points</label><input type="number" className="form-control" value={standingForm.points} onChange={(e) => setStandingForm({...standingForm, points: parseInt(e.target.value) || 0})} min="0" placeholder="Auto-calculated: Won*3 + Drawn*1" /></div>
+                              <div className="col-12"><label className="form-label">Notes</label><textarea className="form-control" rows="2" value={standingForm.notes} onChange={(e) => setStandingForm({...standingForm, notes: e.target.value})} placeholder="Internal notes..."></textarea></div>
+                              <div className="col-12"><button type="submit" className="btn btn-success w-100" disabled={standingsLoading}>{standingsLoading ? 'Saving...' : (editingStanding ? 'Update Standing' : 'Add Standing')}</button></div>
                             </div>
-                          </div>
-                          
-                          <div className="bg-white p-3 rounded mb-3">
-                            <h6 className="text-dark mb-2"><i className="bi bi-calculator me-2"></i>Automatic Calculations</h6>
-                            <div className="row small">
-                              <div className="col-md-4">• Automatic points calculation</div>
-                              <div className="col-md-4">• Goal difference computation</div>
-                              <div className="col-md-4">• Win rate percentages</div>
-                              <div className="col-md-4">• Automatic table sorting</div>
-                              <div className="col-md-4">• Tiebreaker rules (4 methods)</div>
-                              <div className="col-md-4">• Position change tracking</div>
-                              <div className="col-md-4">• Form indicators (last 5 games)</div>
-                              <div className="col-md-4">• Promotion/relegation zones</div>
-                              <div className="col-md-4">• Real-time updates</div>
+                          </form>
+                        ) : (
+                          <>
+                            <button className="btn btn-primary mb-3" onClick={() => setShowStandingForm(true)}><i className="bi bi-plus-circle me-1"></i> Add Standing</button>
+                            <div className="table-responsive">
+                              <table className="table table-hover">
+                                <thead className="table-light"><tr><th>Pos</th><th>Team</th><th>Played</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th><th>Pts</th><th>Form</th><th>Actions</th></tr></thead>
+                                <tbody>
+                                  {standings.length === 0 ? (
+                                    <tr><td colSpan="12" className="text-center py-5"><p className="text-muted mb-0">No standings yet</p></td></tr>
+                                  ) : (
+                                    standings.map((standing, index) => (
+                                      <tr key={standing._id}>
+                                        <td><strong>{index + 1}</strong></td>
+                                        <td><strong>{standing.team}</strong><br/><small className="text-muted">{standing.league} {standing.division && `- ${standing.division}`}</small></td>
+                                        <td>{standing.played}</td>
+                                        <td>{standing.won}</td>
+                                        <td>{standing.drawn}</td>
+                                        <td>{standing.lost}</td>
+                                        <td>{standing.goalsFor}</td>
+                                        <td>{standing.goalsAgainst}</td>
+                                        <td><span className={standing.goalDifference >= 0 ? 'text-success' : 'text-danger'}>{standing.goalDifference > 0 ? '+' : ''}{standing.goalDifference}</span></td>
+                                        <td><strong>{standing.points}</strong></td>
+                                        <td><small>{standing.form || '-'}</small></td>
+                                        <td>
+                                          <div className="btn-group btn-group-sm">
+                                            <button className="btn btn-outline-primary" onClick={() => { setStandingForm(standing); setEditingStanding(standing); setShowStandingForm(true); }}><i className="bi bi-pencil"></i></button>
+                                            <button className="btn btn-outline-danger" onClick={() => handleDeleteStanding(standing._id)}><i className="bi bi-trash"></i></button>
+                                          </div>
+                                        </td>
+                                      </tr>
+                                    ))
+                                  )}
+                                </tbody>
+                              </table>
                             </div>
-                          </div>
-                          
-                          <div className="bg-light p-3 rounded mb-3">
-                            <h6 className="text-dark mb-2"><i className="bi bi-trophy-fill me-2"></i>League Features</h6>
-                            <div className="row small">
-                              <div className="col-md-4">• Multiple divisions (U6 to Adult)</div>
-                              <div className="col-md-4">• 5 league types (League, Cup, Tournament, etc.)</div>
-                              <div className="col-md-4">• Customizable points system</div>
-                              <div className="col-md-4">• Season management</div>
-                              <div className="col-md-4">• Export to CSV/PDF</div>
-                              <div className="col-md-4">• Mobile responsive tables</div>
-                            </div>
-                          </div>
-                          
-                          <Link to="/admin/standings" className="btn btn-success btn-lg">
-                            <i className="bi bi-arrow-right me-2"></i>
-                            Go to Standings Management
-                          </Link>
-                        </div>
-                        <div className="text-center py-4">
-                          <i className="bi bi-trophy-fill display-1 text-success"></i>
-                          <h4 className="mt-3 text-success">Standings System Ready</h4>
-                          <p className="text-muted">Create public league tables and internal evaluation rankings with automatic calculations.</p>
-                        </div>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -5104,80 +11800,224 @@ export default function AdminDashboard() {
                 <div className="row">
                   <div className="col-12">
                     <div className="card">
-                      <div className="card-header">
-                        <h5 className="mb-0">Statistics & Analytics</h5>
-                      </div>
                       <div className="card-body">
-                        <div className="alert alert-success">
-                          <i className="bi bi-check-circle me-2"></i>
-                          <strong>📊 Comprehensive Statistics & Analytics System Available!</strong> Data-driven insights for better decision making:
-                          
-                          <div className="row mt-3 mb-3">
-                            <div className="col-md-6">
-                              <h6 className="text-success"><i className="bi bi-trophy me-2"></i>Match Statistics</h6>
-                              <ul className="small">
-                                <li>Win/Loss/Draw records and percentages</li>
-                                <li>Goals scored and conceded tracking</li>
-                                <li>Clean sheets and shutouts</li>
-                                <li>Home vs away performance analysis</li>
-                                <li>Win streaks and form tracking</li>
-                                <li>Biggest wins and losses</li>
-                                <li>Head-to-head records</li>
-                              </ul>
-                            </div>
-                            <div className="col-md-6">
-                              <h6 className="text-success"><i className="bi bi-people me-2"></i>Player Analytics</h6>
-                              <ul className="small">
-                                <li>Top scorers and assist leaders</li>
-                                <li>Goals per match averages</li>
-                                <li>Shot accuracy and efficiency</li>
-                                <li>Appearances and minutes played</li>
-                                <li>Disciplinary records (cards)</li>
-                                <li>Player comparisons</li>
-                                <li>Performance rankings</li>
-                              </ul>
+                        {/* Key Metrics */}
+                        <div className="row g-3 mb-4">
+                          <div className="col-md-3">
+                            <div className="card bg-primary bg-opacity-10 border-primary h-100">
+                              <div className="card-body text-center">
+                                <i className="bi bi-people-fill display-4 text-primary"></i>
+                                <h3 className="mt-2 mb-0">{managedTeams.length}</h3>
+                                <p className="text-muted mb-0">Total Teams</p>
+                              </div>
                             </div>
                           </div>
-                          
-                          <div className="bg-white p-3 rounded mb-3">
-                            <h6 className="text-dark mb-2"><i className="bi bi-graph-up me-2"></i>Advanced Analytics</h6>
-                            <div className="row small">
-                              <div className="col-md-4">• Goal difference analysis</div>
-                              <div className="col-md-4">• Win rate calculations</div>
-                              <div className="col-md-4">• Scoring patterns</div>
-                              <div className="col-md-4">• Defensive metrics</div>
-                              <div className="col-md-4">• Performance trends</div>
-                              <div className="col-md-4">• Season comparisons</div>
-                              <div className="col-md-4">• Team benchmarking</div>
-                              <div className="col-md-4">• Player development tracking</div>
-                              <div className="col-md-4">• Tactical insights</div>
+                          <div className="col-md-3">
+                            <div className="card bg-success bg-opacity-10 border-success h-100">
+                              <div className="card-body text-center">
+                                <i className="bi bi-trophy-fill display-4 text-success"></i>
+                                <h3 className="mt-2 mb-0">{matches.length}</h3>
+                                <p className="text-muted mb-0">Total Matches</p>
+                              </div>
                             </div>
                           </div>
-                          
-                          <div className="bg-light p-3 rounded mb-3">
-                            <h6 className="text-dark mb-2"><i className="bi bi-file-earmark-bar-graph me-2"></i>Reports & Insights</h6>
-                            <div className="row small">
-                              <div className="col-md-4">• Automated season reports</div>
-                              <div className="col-md-4">• Player performance reports</div>
-                              <div className="col-md-4">• Team comparison reports</div>
-                              <div className="col-md-4">• Export to PDF/Excel</div>
-                              <div className="col-md-4">• Custom report builder</div>
-                              <div className="col-md-4">• Visual charts and graphs</div>
-                              <div className="col-md-4">• Print-friendly formats</div>
-                              <div className="col-md-4">• Email report distribution</div>
-                              <div className="col-md-4">• Historical data archives</div>
+                          <div className="col-md-3">
+                            <div className="card bg-warning bg-opacity-10 border-warning h-100">
+                              <div className="card-body text-center">
+                                <i className="bi bi-calendar-event-fill display-4 text-warning"></i>
+                                <h3 className="mt-2 mb-0">{schedules.length}</h3>
+                                <p className="text-muted mb-0">Schedules</p>
+                              </div>
                             </div>
                           </div>
-                          
-                          <Link to="/admin/statistics" className="btn btn-success btn-lg">
-                            <i className="bi bi-arrow-right me-2"></i>
-                            Go to Statistics & Analytics
-                          </Link>
+                          <div className="col-md-3">
+                            <div className="card bg-info bg-opacity-10 border-info h-100">
+                              <div className="card-body text-center">
+                                <i className="bi bi-bar-chart-fill display-4 text-info"></i>
+                                <h3 className="mt-2 mb-0">{standings.length}</h3>
+                                <p className="text-muted mb-0">Standings</p>
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                        <div className="text-center py-4">
-                          <i className="bi bi-graph-up-arrow display-1 text-success"></i>
-                          <h4 className="mt-3 text-success">Statistics System Ready</h4>
-                          <p className="text-muted">Comprehensive analytics dashboard with match stats, player performance, and season insights.</p>
+
+                        {/* Team Statistics */}
+                        <div className="row g-3 mb-4">
+                          <div className="col-md-6">
+                            <div className="card h-100">
+                              <div className="card-header">
+                                <h6 className="mb-0"><i className="bi bi-trophy me-2"></i>Team Performance</h6>
+                              </div>
+                              <div className="card-body">
+                                {managedTeams.length > 0 ? (
+                                  <div className="table-responsive">
+                                    <table className="table table-sm">
+                                      <thead>
+                                        <tr>
+                                          <th>Team</th>
+                                          <th>Status</th>
+                                          <th>Players</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {managedTeams.slice(0, 5).map(team => (
+                                          <tr key={team._id}>
+                                            <td><strong>{team.name}</strong></td>
+                                            <td><span className={`badge bg-${team.status === 'Active' ? 'success' : 'warning'}`}>{team.status}</span></td>
+                                            <td>{team.currentPlayers}/{team.maxPlayers}</td>
+                                          </tr>
+                                        ))}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                ) : (
+                                  <p className="text-muted text-center mb-0">No teams data available</p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="col-md-6">
+                            <div className="card h-100">
+                              <div className="card-header">
+                                <h6 className="mb-0"><i className="bi bi-bar-chart-line me-2"></i>Match Statistics</h6>
+                              </div>
+                              <div className="card-body">
+                                {matches.length > 0 ? (
+                                  <div>
+                                    <div className="d-flex justify-content-between mb-2">
+                                      <span>Total Matches:</span>
+                                      <strong>{matches.length}</strong>
+                                    </div>
+                                    <div className="d-flex justify-content-between mb-2">
+                                      <span>Completed:</span>
+                                      <strong className="text-success">{matches.filter(m => m.status === 'Completed').length}</strong>
+                                    </div>
+                                    <div className="d-flex justify-content-between mb-2">
+                                      <span>Scheduled:</span>
+                                      <strong className="text-primary">{matches.filter(m => m.status === 'Scheduled').length}</strong>
+                                    </div>
+                                    <div className="d-flex justify-content-between mb-2">
+                                      <span>In Progress:</span>
+                                      <strong className="text-warning">{matches.filter(m => m.status === 'In Progress').length}</strong>
+                                    </div>
+                                    <div className="d-flex justify-content-between">
+                                      <span>Cancelled:</span>
+                                      <strong className="text-danger">{matches.filter(m => m.status === 'Cancelled').length}</strong>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <p className="text-muted text-center mb-0">No match data available</p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Standings Overview */}
+                        <div className="row g-3 mb-4">
+                          <div className="col-12">
+                            <div className="card">
+                              <div className="card-header">
+                                <h6 className="mb-0"><i className="bi bi-list-ol me-2"></i>League Standings Overview</h6>
+                              </div>
+                              <div className="card-body">
+                                {standings.length > 0 ? (
+                                  <div className="table-responsive">
+                                    <table className="table table-sm table-hover">
+                                      <thead className="table-light">
+                                        <tr>
+                                          <th>Pos</th>
+                                          <th>Team</th>
+                                          <th>P</th>
+                                          <th>W</th>
+                                          <th>D</th>
+                                          <th>L</th>
+                                          <th>GD</th>
+                                          <th>Pts</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {standings.slice(0, 10).map((standing, index) => (
+                                          <tr key={standing._id}>
+                                            <td><strong>{index + 1}</strong></td>
+                                            <td><strong>{standing.team}</strong></td>
+                                            <td>{standing.played}</td>
+                                            <td>{standing.won}</td>
+                                            <td>{standing.drawn}</td>
+                                            <td>{standing.lost}</td>
+                                            <td className={standing.goalDifference >= 0 ? 'text-success' : 'text-danger'}>
+                                              {standing.goalDifference > 0 ? '+' : ''}{standing.goalDifference}
+                                            </td>
+                                            <td><strong>{standing.points}</strong></td>
+                                          </tr>
+                                        ))}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                ) : (
+                                  <p className="text-muted text-center mb-0">No standings data available</p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Upcoming Events */}
+                        <div className="row g-3">
+                          <div className="col-md-6">
+                            <div className="card h-100">
+                              <div className="card-header">
+                                <h6 className="mb-0"><i className="bi bi-calendar-check me-2"></i>Upcoming Matches</h6>
+                              </div>
+                              <div className="card-body">
+                                {matches.filter(m => m.status === 'Scheduled').length > 0 ? (
+                                  <div className="list-group list-group-flush">
+                                    {matches.filter(m => m.status === 'Scheduled').slice(0, 5).map(match => (
+                                      <div key={match._id} className="list-group-item px-0">
+                                        <div className="d-flex justify-content-between">
+                                          <div>
+                                            <strong>{match.homeTeam}</strong> vs <strong>{match.awayTeam}</strong>
+                                            <br/>
+                                            <small className="text-muted">{match.date ? new Date(match.date).toLocaleDateString() : 'N/A'} - {match.time || 'TBD'}</small>
+                                          </div>
+                                          <span className="badge bg-primary align-self-center">{match.type}</span>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <p className="text-muted text-center mb-0">No upcoming matches</p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="col-md-6">
+                            <div className="card h-100">
+                              <div className="card-header">
+                                <h6 className="mb-0"><i className="bi bi-clock me-2"></i>Recent Activity</h6>
+                              </div>
+                              <div className="card-body">
+                                {matches.filter(m => m.status === 'Completed').length > 0 ? (
+                                  <div className="list-group list-group-flush">
+                                    {matches.filter(m => m.status === 'Completed').slice(0, 5).map(match => (
+                                      <div key={match._id} className="list-group-item px-0">
+                                        <div className="d-flex justify-content-between">
+                                          <div>
+                                            <strong>{match.homeTeam}</strong> {match.homeScore || 0} - {match.awayScore || 0} <strong>{match.awayTeam}</strong>
+                                            <br/>
+                                            <small className="text-muted">{match.date ? new Date(match.date).toLocaleDateString() : 'N/A'}</small>
+                                          </div>
+                                          <span className="badge bg-success align-self-center">Final</span>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <p className="text-muted text-center mb-0">No completed matches</p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -5295,71 +12135,139 @@ export default function AdminDashboard() {
                 <div className="row">
                   <div className="col-12">
                     <div className="card">
-                      <div className="card-header">
-                        <h5 className="mb-0">Match Management</h5>
+                      <div className="card-header d-flex justify-content-end align-items-center">
+                        {!showMatchForm && (
+                          <button className="btn btn-primary" onClick={() => setShowMatchForm(true)}>
+                            <i className="bi bi-plus-circle me-1"></i> Schedule New Match
+                          </button>
+                        )}
                       </div>
                       <div className="card-body">
-                        <div className="alert alert-success">
-                          <i className="bi bi-check-circle me-2"></i>
-                          <strong>⚽ Comprehensive Match Management System Available!</strong> Complete match scheduling and tracking system:
-                          
-                          <div className="row mt-3 mb-3">
-                            <div className="col-md-6">
-                              <h6 className="text-success"><i className="bi bi-calendar-event me-2"></i>Match Scheduling</h6>
-                              <ul className="small">
-                                <li>6 match types (League, Cup, Friendly, Tournament, Playoff, Exhibition)</li>
-                                <li>7 status stages (Scheduled, Confirmed, In Progress, Halftime, Completed, etc.)</li>
-                                <li>Date, time, and venue management</li>
-                                <li>Referee and officials assignment</li>
-                                <li>Weather and attendance tracking</li>
-                          </ul>
-                        </div>
-                            <div className="col-md-6">
-                              <h6 className="text-success"><i className="bi bi-graph-up me-2"></i>Score & Statistics</h6>
-                              <ul className="small">
-                                <li>Live score updates</li>
-                                <li>Detailed match statistics (shots, possession, corners, fouls)</li>
-                                <li>Cards tracking (yellow/red cards)</li>
-                                <li>Team lineups and formations</li>
-                                <li>Match events timeline</li>
-                              </ul>
-                        </div>
-                      </div>
-                          
-                          <div className="bg-white p-3 rounded mb-3">
-                            <h6 className="text-dark mb-2"><i className="bi bi-trophy me-2"></i>Analytics & Reporting</h6>
-                            <div className="row small">
-                              <div className="col-md-4">• Win/Loss/Draw records</div>
-                              <div className="col-md-4">• Goals scored/conceded</div>
-                              <div className="col-md-4">• Win rate percentage</div>
-                              <div className="col-md-4">• Goal difference tracking</div>
-                              <div className="col-md-4">• Performance analytics</div>
-                              <div className="col-md-4">• Match reports generation</div>
+                        {matchesLoading ? (
+                          <div className="text-center py-5">
+                            <div className="spinner-border text-primary" role="status">
+                              <span className="visually-hidden">Loading...</span>
                             </div>
+                            <p className="text-muted mt-2">Loading matches...</p>
                           </div>
-                          
-                          <div className="bg-light p-3 rounded mb-3">
-                            <h6 className="text-dark mb-2"><i className="bi bi-list-check me-2"></i>Features</h6>
-                            <div className="row small">
-                              <div className="col-md-4">• Advanced filtering (type, status, date range)</div>
-                              <div className="col-md-4">• Live match tracking with real-time updates</div>
-                              <div className="col-md-4">• Upcoming matches dashboard</div>
-                              <div className="col-md-4">• Match history and archives</div>
-                              <div className="col-md-4">• Export match data</div>
-                              <div className="col-md-4">• Mobile responsive interface</div>
+                        ) : showMatchForm ? (
+                          <form onSubmit={handleMatchSubmit}>
+                            <div className="d-flex justify-content-between mb-3">
+                              <h5>{editingMatch ? 'Edit Match' : 'Schedule New Match'}</h5>
+                              <button type="button" className="btn btn-secondary" onClick={() => { setShowMatchForm(false); setEditingMatch(null); }}>Cancel</button>
                             </div>
+                            <div className="row g-3">
+                              <div className="col-md-6">
+                                <label className="form-label">Home Team *</label>
+                                <input type="text" className="form-control" value={matchForm.homeTeam} onChange={(e) => setMatchForm({...matchForm, homeTeam: e.target.value})} required />
+                              </div>
+                              <div className="col-md-6">
+                                <label className="form-label">Away Team *</label>
+                                <input type="text" className="form-control" value={matchForm.awayTeam} onChange={(e) => setMatchForm({...matchForm, awayTeam: e.target.value})} required />
+                              </div>
+                              <div className="col-md-4">
+                                <label className="form-label">Date *</label>
+                                <input type="date" className="form-control" value={matchForm.date} onChange={(e) => setMatchForm({...matchForm, date: e.target.value})} required />
+                              </div>
+                              <div className="col-md-4">
+                                <label className="form-label">Time *</label>
+                                <input type="time" className="form-control" value={matchForm.time} onChange={(e) => setMatchForm({...matchForm, time: e.target.value})} required />
+                              </div>
+                              <div className="col-md-4">
+                                <label className="form-label">Location *</label>
+                                <input type="text" className="form-control" value={matchForm.location} onChange={(e) => setMatchForm({...matchForm, location: e.target.value})} required />
+                              </div>
+                              <div className="col-md-6">
+                                <label className="form-label">Match Type</label>
+                                <select className="form-select" value={matchForm.type} onChange={(e) => setMatchForm({...matchForm, type: e.target.value})}>
+                                  <option value="League">League</option>
+                                  <option value="Cup">Cup</option>
+                                  <option value="Friendly">Friendly</option>
+                                  <option value="Tournament">Tournament</option>
+                                </select>
+                              </div>
+                              {editingMatch && (
+                                <>
+                                  <div className="col-md-6">
+                                    <label className="form-label">Status</label>
+                                    <select className="form-select" value={matchForm.status} onChange={(e) => setMatchForm({...matchForm, status: e.target.value})}>
+                                      <option value="Scheduled">Scheduled</option>
+                                      <option value="In Progress">In Progress</option>
+                                      <option value="Completed">Completed</option>
+                                      <option value="Cancelled">Cancelled</option>
+                                    </select>
+                                  </div>
+                                  <div className="col-12"><hr className="my-2" /></div>
+                                  <div className="col-12"><h6 className="mb-0">Match Result</h6></div>
+                                  <div className="col-md-6">
+                                    <label className="form-label">Home Score</label>
+                                    <input type="number" className="form-control" value={matchForm.homeScore} onChange={(e) => setMatchForm({...matchForm, homeScore: parseInt(e.target.value) || 0})} min="0" />
+                                  </div>
+                                  <div className="col-md-6">
+                                    <label className="form-label">Away Score</label>
+                                    <input type="number" className="form-control" value={matchForm.awayScore} onChange={(e) => setMatchForm({...matchForm, awayScore: parseInt(e.target.value) || 0})} min="0" />
+                                  </div>
+                                </>
+                              )}
+                              <div className="col-12">
+                                <label className="form-label">Notes</label>
+                                <textarea className="form-control" rows="2" value={matchForm.notes} onChange={(e) => setMatchForm({...matchForm, notes: e.target.value})} placeholder="Add any additional details..."></textarea>
+                              </div>
+                              <div className="col-12">
+                                <button type="submit" className="btn btn-success w-100" disabled={matchesLoading}>
+                                  {matchesLoading ? 'Saving...' : (editingMatch ? 'Update Match' : 'Schedule Match')}
+                                </button>
+                              </div>
+                            </div>
+                          </form>
+                        ) : (
+                          <div className="table-responsive">
+                            <table className="table table-hover">
+                              <thead className="table-light">
+                                <tr>
+                                  <th>Date</th>
+                                  <th>Time</th>
+                                  <th>Match</th>
+                                  <th>Score</th>
+                                  <th>Type</th>
+                                  <th>Status</th>
+                                  <th>Actions</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {matches.length === 0 ? (
+                                  <tr>
+                                    <td colSpan="7" className="text-center py-5">
+                                      <i className="bi bi-trophy-fill" style={{fontSize: '3rem', color: '#ccc'}}></i>
+                                      <p className="text-muted mt-2 mb-0">No matches scheduled</p>
+                                    </td>
+                                  </tr>
+                                ) : (
+                                  matches.map((match) => (
+                                    <tr key={match._id}>
+                                      <td>{match.date ? new Date(match.date).toLocaleDateString() : 'N/A'}</td>
+                                      <td>{match.time || 'N/A'}</td>
+                                      <td><strong>{match.homeTeam}</strong> vs <strong>{match.awayTeam}</strong><br/><small className="text-muted">{match.location}</small></td>
+                                      <td><span className="badge bg-secondary">{match.homeScore} - {match.awayScore}</span></td>
+                                      <td><span className="badge bg-info">{match.type}</span></td>
+                                      <td><span className={`badge bg-${match.status === 'Completed' ? 'success' : match.status === 'In Progress' ? 'warning' : match.status === 'Cancelled' ? 'danger' : 'primary'}`}>{match.status}</span></td>
+                                      <td>
+                                        <div className="btn-group btn-group-sm">
+                                          <button className="btn btn-outline-primary" onClick={() => { setMatchForm(match); setEditingMatch(match); setShowMatchForm(true); }} title="Edit">
+                                            <i className="bi bi-pencil"></i>
+                                          </button>
+                                          <button className="btn btn-outline-danger" onClick={() => handleDeleteMatch(match._id)} title="Delete">
+                                            <i className="bi bi-trash"></i>
+                                          </button>
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  ))
+                                )}
+                              </tbody>
+                            </table>
                           </div>
-                          
-                          <Link to="/admin/matches" className="btn btn-success btn-lg">
-                            <i className="bi bi-arrow-right me-2"></i>
-                            Go to Match Management
-                          </Link>
-                        </div>
-                        <div className="text-center py-4">
-                          <i className="bi bi-trophy-fill display-1 text-success"></i>
-                          <h4 className="mt-3 text-success">Match Management System Ready</h4>
-                          <p className="text-muted">Schedule matches, track scores, manage officials, and analyze performance all in one place.</p>
-                        </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -5372,73 +12280,60 @@ export default function AdminDashboard() {
                 <div className="row">
                   <div className="col-12">
                     <div className="card">
-                      <div className="card-header">
-                        <h5 className="mb-0">Training Management</h5>
-                      </div>
                       <div className="card-body">
-                        <div className="alert alert-success">
-                          <i className="bi bi-check-circle me-2"></i>
-                          <strong>🎯 Comprehensive Training Management System Available!</strong> Complete training planning and development system:
-                          
-                          <div className="row mt-3 mb-3">
-                            <div className="col-md-6">
-                              <h6 className="text-success"><i className="bi bi-calendar-check me-2"></i>Session Planning</h6>
-                              <ul className="small">
-                                <li>9 training types (Technical, Tactical, Physical, Mental, etc.)</li>
-                                <li>Session scheduling with date, time, and location</li>
-                                <li>Objectives and focus area setting</li>
-                                <li>4 intensity levels (Low, Medium, High, Very High)</li>
-                                <li>Coach and assistant assignments</li>
-                                <li>Equipment requirements tracking</li>
-                          </ul>
-                        </div>
-                            <div className="col-md-6">
-                              <h6 className="text-success"><i className="bi bi-trophy me-2"></i>Development Tracking</h6>
-                              <ul className="small">
-                                <li>Attendance tracking per session</li>
-                                <li>Progress monitoring and assessments</li>
-                                <li>Skill focus areas (14 categories)</li>
-                                <li>Session notes and feedback</li>
-                                <li>Training history and archives</li>
-                                <li>Player development analytics</li>
-                              </ul>
-                        </div>
-                      </div>
-                          
-                          <div className="bg-white p-3 rounded mb-3">
-                            <h6 className="text-dark mb-2"><i className="bi bi-book me-2"></i>Drill Library & Resources</h6>
-                            <div className="row small">
-                              <div className="col-md-4">• 9 drill categories</div>
-                              <div className="col-md-4">• Pre-built drill templates</div>
-                              <div className="col-md-4">• Custom drill creation</div>
-                              <div className="col-md-4">• Drill diagrams and videos</div>
-                              <div className="col-md-4">• Equipment lists</div>
-                              <div className="col-md-4">• Age-appropriate exercises</div>
-                            </div>
+                        {trainingsLoading ? (
+                          <div className="text-center py-5">
+                            <div className="spinner-border text-primary" role="status"></div>
                           </div>
-                          
-                          <div className="bg-light p-3 rounded mb-3">
-                            <h6 className="text-dark mb-2"><i className="bi bi-graph-up me-2"></i>Analytics & Reporting</h6>
-                            <div className="row small">
-                              <div className="col-md-4">• Training completion rates</div>
-                              <div className="col-md-4">• Average attendance tracking</div>
-                              <div className="col-md-4">• Training frequency metrics</div>
-                              <div className="col-md-4">• Total training hours</div>
-                              <div className="col-md-4">• Type distribution analysis</div>
-                              <div className="col-md-4">• Export session data</div>
+                        ) : showTrainingForm ? (
+                          <form onSubmit={handleTrainingSubmit}>
+                            <div className="d-flex justify-content-between mb-3">
+                              <h5>{editingTraining ? 'Edit' : 'Create'} Training</h5>
+                              <button type="button" className="btn btn-secondary" onClick={() => { setShowTrainingForm(false); setEditingTraining(null); }}>Cancel</button>
                             </div>
-                          </div>
-                          
-                          <Link to="/admin/training" className="btn btn-success btn-lg">
-                            <i className="bi bi-arrow-right me-2"></i>
-                            Go to Training Management
-                          </Link>
-                        </div>
-                        <div className="text-center py-4">
-                          <i className="bi bi-clipboard-check display-1 text-success"></i>
-                          <h4 className="mt-3 text-success">Training Management System Ready</h4>
-                          <p className="text-muted">Plan training sessions, track player development, manage drill libraries, and analyze training effectiveness.</p>
-                        </div>
+                            <div className="row g-3">
+                              <div className="col-md-6"><label>Title *</label><input type="text" className="form-control" value={trainingForm.title} onChange={(e) => setTrainingForm({...trainingForm, title: e.target.value})} required /></div>
+                              <div className="col-md-6"><label>Team</label><input type="text" className="form-control" value={trainingForm.team} onChange={(e) => setTrainingForm({...trainingForm, team: e.target.value})} /></div>
+                              <div className="col-md-6"><label>Coach</label><input type="text" className="form-control" value={trainingForm.coach} onChange={(e) => setTrainingForm({...trainingForm, coach: e.target.value})} /></div>
+                              <div className="col-md-6"><label>Type</label><select className="form-select" value={trainingForm.type} onChange={(e) => setTrainingForm({...trainingForm, type: e.target.value})}><option>Technical</option><option>Tactical</option><option>Physical</option></select></div>
+                              <div className="col-md-4"><label>Date</label><input type="date" className="form-control" value={trainingForm.date} onChange={(e) => setTrainingForm({...trainingForm, date: e.target.value})} /></div>
+                              <div className="col-md-4"><label>Start Time</label><input type="time" className="form-control" value={trainingForm.startTime} onChange={(e) => setTrainingForm({...trainingForm, startTime: e.target.value})} /></div>
+                              <div className="col-md-4"><label>End Time</label><input type="time" className="form-control" value={trainingForm.endTime} onChange={(e) => setTrainingForm({...trainingForm, endTime: e.target.value})} /></div>
+                              <div className="col-md-6"><label>Location</label><input type="text" className="form-control" value={trainingForm.location} onChange={(e) => setTrainingForm({...trainingForm, location: e.target.value})} /></div>
+                              <div className="col-md-6"><label>Capacity</label><input type="number" className="form-control" value={trainingForm.capacity} onChange={(e) => setTrainingForm({...trainingForm, capacity: parseInt(e.target.value) || 20})} /></div>
+                              <div className="col-12"><label>Description</label><textarea className="form-control" rows="2" value={trainingForm.description} onChange={(e) => setTrainingForm({...trainingForm, description: e.target.value})}></textarea></div>
+                              <div className="col-12"><button type="submit" className="btn btn-success w-100">{trainingsLoading ? 'Saving...' : (editingTraining ? 'Update' : 'Create')}</button></div>
+                            </div>
+                          </form>
+                        ) : (
+                          <>
+                            <button className="btn btn-primary mb-3" onClick={() => setShowTrainingForm(true)}><i className="bi bi-plus-circle me-1"></i> New Training</button>
+                            <table className="table table-hover">
+                              <thead className="table-light"><tr><th>Title</th><th>Team</th><th>Date & Time</th><th>Type</th><th>Capacity</th><th>Actions</th></tr></thead>
+                              <tbody>
+                                {trainings.length === 0 ? (
+                                  <tr><td colSpan="6" className="text-center py-5"><p className="text-muted mb-0">No trainings scheduled</p></td></tr>
+                                ) : (
+                                  trainings.map((t) => (
+                                    <tr key={t._id}>
+                                      <td><strong>{t.title}</strong></td>
+                                      <td>{t.team}</td>
+                                      <td>{t.date ? new Date(t.date).toLocaleDateString() : 'N/A'}<br/><small>{t.startTime} - {t.endTime}</small></td>
+                                      <td><span className="badge bg-info">{t.type}</span></td>
+                                      <td>{t.enrolled}/{t.capacity}</td>
+                                      <td>
+                                        <div className="btn-group btn-group-sm">
+                                          <button className="btn btn-outline-primary" onClick={() => { setTrainingForm(t); setEditingTraining(t); setShowTrainingForm(true); }}><i className="bi bi-pencil"></i></button>
+                                          <button className="btn btn-outline-danger" onClick={() => handleDeleteTraining(t._id)}><i className="bi bi-trash"></i></button>
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  ))
+                                )}
+                              </tbody>
+                            </table>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -5478,37 +12373,37 @@ export default function AdminDashboard() {
               </div>
             )}
 
-            {activeSection === 'equipment' && (
-              <div>
-                <div className="row">
-                  <div className="col-12">
-                    <div className="card">
-                      <div className="card-header">
-                        <h5 className="mb-0">Equipment Management</h5>
-                      </div>
-                      <div className="card-body">
-                        <div className="alert alert-info">
-                          <i className="bi bi-info-circle me-2"></i>
-                          Equipment management features will be implemented here. This will include:
-                          <ul className="mt-2 mb-0">
-                            <li>Equipment inventory and tracking</li>
-                            <li>Check-out and return system</li>
-                            <li>Maintenance and repair scheduling</li>
-                            <li>Equipment condition monitoring</li>
-                            <li>Purchase and procurement management</li>
-                          </ul>
-                        </div>
-                        <div className="text-center py-5">
-                          <i className="bi bi-gear display-1 text-muted"></i>
-                          <h4 className="mt-3 text-muted">Equipment Management</h4>
-                          <p className="text-muted">Coming soon...</p>
-                        </div>
-                      </div>
+        {activeSection === 'inventory' && (
+          <div>
+            <div className="row">
+              <div className="col-12">
+                <div className="card">
+                  <div className="card-header">
+                    <h5 className="mb-0">Inventory Management</h5>
+                  </div>
+                  <div className="card-body">
+                    <div className="alert alert-success">
+                      <i className="bi bi-check-circle me-2"></i>
+                      Inventory management system is now available! Click below to access the complete inventory management interface.
+                    </div>
+                    <div className="text-center py-5">
+                      <i className="bi bi-box display-1 text-primary"></i>
+                      <h4 className="mt-3">Inventory Management System</h4>
+                      <p className="text-muted mb-4">Access the complete inventory management interface with equipment tracking, maintenance scheduling, rental management, and more.</p>
+                      <a
+                        href="/admin/inventory"
+                        className="btn btn-primary btn-lg"
+                      >
+                        <i className="bi bi-arrow-right me-2"></i>
+                        Open Inventory Management
+                      </a>
                     </div>
                   </div>
                 </div>
               </div>
-            )}
+            </div>
+          </div>
+        )}
 
             {activeSection === 'volunteers' && (
               <div>
@@ -5549,92 +12444,373 @@ export default function AdminDashboard() {
 
             {activeSection === 'sponsors' && (
               <div>
-                <div className="row">
-                  <div className="col-12">
-                    <div className="card">
-                      <div className="card-header">
-                        <h5 className="mb-0">Sponsor Management</h5>
-                      </div>
+                {/* Statistics Cards */}
+                <div className="row mb-4">
+                  <div className="col-md-3">
+                    <div className="card border-0 shadow-sm">
                       <div className="card-body">
-                        <div className="alert alert-success">
-                          <i className="bi bi-check-circle me-2"></i>
-                          <strong>🤝 Comprehensive Sponsor Management System Available!</strong> Build and maintain valuable partnerships:
-                          
-                          <div className="row mt-3 mb-3">
-                            <div className="col-md-6">
-                              <h6 className="text-success"><i className="bi bi-building me-2"></i>Sponsor Profiles</h6>
-                              <ul className="small">
-                                <li>Complete company information and contacts</li>
-                                <li>Logo and branding assets storage</li>
-                                <li>Contract tracking and management</li>
-                                <li>Payment schedules and history</li>
-                                <li>Communication logs and notes</li>
-                                <li>Website and social media links</li>
-                                <li>Address and location details</li>
-                          </ul>
-                        </div>
-                            <div className="col-md-6">
-                              <h6 className="text-success"><i className="bi bi-trophy me-2"></i>Sponsorship Tiers</h6>
-                              <ul className="small">
-                                <li><strong>💎 Platinum:</strong> $10,000+ (Premium benefits)</li>
-                                <li><strong>🥇 Gold:</strong> $5,000+ (Enhanced visibility)</li>
-                                <li><strong>🥈 Silver:</strong> $2,500+ (Standard package)</li>
-                                <li><strong>🥉 Bronze:</strong> $1,000+ (Basic recognition)</li>
-                                <li><strong>🎁 In-Kind:</strong> Product/service donations</li>
-                              </ul>
-                        </div>
-                      </div>
-                          
-                          <div className="bg-white p-3 rounded mb-3">
-                            <h6 className="text-dark mb-2"><i className="bi bi-calendar-check me-2"></i>Contract Management</h6>
-                            <div className="row small">
-                              <div className="col-md-4">• Start and end date tracking</div>
-                              <div className="col-md-4">• Automatic expiration alerts</div>
-                              <div className="col-md-4">• Renewal reminders (30/60/90 days)</div>
-                              <div className="col-md-4">• Contract document storage</div>
-                              <div className="col-md-4">• Status tracking (Active, Pending, Expired)</div>
-                              <div className="col-md-4">• Multi-year agreements</div>
-                            </div>
+                        <div className="d-flex justify-content-between align-items-center">
+                          <div>
+                            <p className="text-muted mb-1 small">Total Sponsors</p>
+                            <h3 className="mb-0">{sponsorStats().total}</h3>
                           </div>
-                          
-                          <div className="bg-light p-3 rounded mb-3">
-                            <h6 className="text-dark mb-2"><i className="bi bi-cash-stack me-2"></i>Financial Tracking</h6>
-                            <div className="row small">
-                              <div className="col-md-4">• Payment frequency options (Annual, Quarterly, Monthly)</div>
-                              <div className="col-md-4">• Total revenue calculation</div>
-                              <div className="col-md-4">• Revenue by tier analytics</div>
-                              <div className="col-md-4">• Average sponsor value</div>
-                              <div className="col-md-4">• Payment schedule tracking</div>
-                              <div className="col-md-4">• Financial reporting</div>
-                            </div>
+                          <div className="bg-primary bg-opacity-10 p-3 rounded">
+                            <i className="bi bi-building text-primary fs-4"></i>
                           </div>
-                          
-                          <div className="bg-white p-3 rounded mb-3">
-                            <h6 className="text-dark mb-2"><i className="bi bi-gift me-2"></i>Sponsor Benefits</h6>
-                            <div className="row small">
-                              <div className="col-md-3">• Logo on jerseys/equipment</div>
-                              <div className="col-md-3">• Website placement and links</div>
-                              <div className="col-md-3">• Social media recognition</div>
-                              <div className="col-md-3">• Banner at games/events</div>
-                              <div className="col-md-3">• Season passes allocation</div>
-                              <div className="col-md-3">• Newsletter features</div>
-                              <div className="col-md-3">• Press release inclusion</div>
-                              <div className="col-md-3">• Event recognition</div>
-                            </div>
-                          </div>
-                          
-                          <Link to="/admin/sponsors" className="btn btn-success btn-lg">
-                            <i className="bi bi-arrow-right me-2"></i>
-                            Go to Sponsor Management
-                          </Link>
-                        </div>
-                        <div className="text-center py-4">
-                          <i className="bi bi-award display-1 text-success"></i>
-                          <h4 className="mt-3 text-success">Sponsor Management System Ready</h4>
-                          <p className="text-muted">Manage partnerships, track revenue, automate renewals, and deliver sponsor benefits effectively.</p>
                         </div>
                       </div>
                     </div>
+                  </div>
+                  <div className="col-md-3">
+                    <div className="card border-0 shadow-sm">
+                      <div className="card-body">
+                        <div className="d-flex justify-content-between align-items-center">
+                          <div>
+                            <p className="text-muted mb-1 small">Active Sponsors</p>
+                            <h3 className="mb-0">{sponsorStats().active}</h3>
+                          </div>
+                          <div className="bg-success bg-opacity-10 p-3 rounded">
+                            <i className="bi bi-check-circle text-success fs-4"></i>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-3">
+                    <div className="card border-0 shadow-sm">
+                      <div className="card-body">
+                        <div className="d-flex justify-content-between align-items-center">
+                          <div>
+                            <p className="text-muted mb-1 small">Pending</p>
+                            <h3 className="mb-0">{sponsorStats().pending}</h3>
+                          </div>
+                          <div className="bg-warning bg-opacity-10 p-3 rounded">
+                            <i className="bi bi-clock text-warning fs-4"></i>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-3">
+                    <div className="card border-0 shadow-sm">
+                      <div className="card-body">
+                        <div className="d-flex justify-content-between align-items-center">
+                          <div>
+                            <p className="text-muted mb-1 small">Total Revenue</p>
+                            <h3 className="mb-0">${sponsorStats().totalRevenue.toLocaleString()}</h3>
+                          </div>
+                          <div className="bg-info bg-opacity-10 p-3 rounded">
+                            <i className="bi bi-cash-stack text-info fs-4"></i>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Sponsors Management Section */}
+                <div className="card">
+                  <div className="card-body">
+                    {sponsorsLoading ? (
+                      <div className="text-center py-5">
+                        <div className="spinner-border text-primary" role="status">
+                          <span className="visually-hidden">Loading...</span>
+                        </div>
+                      </div>
+                    ) : showSponsorForm ? (
+                      <div>
+                        <div className="d-flex justify-content-between align-items-center mb-3">
+                          <h5 className="mb-0">{editingSponsor ? 'Edit Sponsor' : 'Add New Sponsor'}</h5>
+                          <button className="btn btn-secondary" onClick={resetSponsorForm}>
+                            <i className="bi bi-x-lg me-2"></i>Cancel
+                          </button>
+                        </div>
+                        <form onSubmit={handleSponsorSubmit}>
+                          <div className="row">
+                            <div className="col-md-6 mb-3">
+                              <label className="form-label">Company Name *</label>
+                              <input
+                                type="text"
+                                className="form-control"
+                                value={sponsorForm.companyName}
+                                onChange={(e) => setSponsorForm({...sponsorForm, companyName: e.target.value})}
+                                required
+                              />
+                            </div>
+                            <div className="col-md-6 mb-3">
+                              <label className="form-label">Contact Person *</label>
+                              <input
+                                type="text"
+                                className="form-control"
+                                value={sponsorForm.contactPerson}
+                                onChange={(e) => setSponsorForm({...sponsorForm, contactPerson: e.target.value})}
+                                required
+                              />
+                            </div>
+                            <div className="col-md-6 mb-3">
+                              <label className="form-label">Email *</label>
+                              <input
+                                type="email"
+                                className="form-control"
+                                value={sponsorForm.email}
+                                onChange={(e) => setSponsorForm({...sponsorForm, email: e.target.value})}
+                                required
+                              />
+                            </div>
+                            <div className="col-md-6 mb-3">
+                              <label className="form-label">Phone</label>
+                              <input
+                                type="tel"
+                                className="form-control"
+                                value={sponsorForm.phone}
+                                onChange={(e) => setSponsorForm({...sponsorForm, phone: e.target.value})}
+                              />
+                            </div>
+                            <div className="col-md-6 mb-3">
+                              <label className="form-label">Website</label>
+                              <input
+                                type="url"
+                                className="form-control"
+                                value={sponsorForm.website}
+                                onChange={(e) => setSponsorForm({...sponsorForm, website: e.target.value})}
+                              />
+                            </div>
+                            <div className="col-md-6 mb-3">
+                              <label className="form-label">Tier *</label>
+                              <select
+                                className="form-select"
+                                value={sponsorForm.tier}
+                                onChange={(e) => setSponsorForm({...sponsorForm, tier: e.target.value})}
+                                required
+                              >
+                                <option value="Platinum">💎 Platinum</option>
+                                <option value="Gold">🥇 Gold</option>
+                                <option value="Silver">🥈 Silver</option>
+                                <option value="Bronze">🥉 Bronze</option>
+                                <option value="In-Kind">🎁 In-Kind</option>
+                              </select>
+                            </div>
+                            <div className="col-md-6 mb-3">
+                              <label className="form-label">Sponsorship Amount ($)</label>
+                              <input
+                                type="number"
+                                className="form-control"
+                                value={sponsorForm.amount}
+                                onChange={(e) => setSponsorForm({...sponsorForm, amount: parseFloat(e.target.value) || 0})}
+                                min="0"
+                              />
+                            </div>
+                            <div className="col-md-6 mb-3">
+                              <label className="form-label">Payment Frequency</label>
+                              <select
+                                className="form-select"
+                                value={sponsorForm.paymentFrequency}
+                                onChange={(e) => setSponsorForm({...sponsorForm, paymentFrequency: e.target.value})}
+                              >
+                                <option value="Annual">Annual</option>
+                                <option value="Quarterly">Quarterly</option>
+                                <option value="Monthly">Monthly</option>
+                                <option value="One-Time">One-Time</option>
+                              </select>
+                            </div>
+                            <div className="col-md-6 mb-3">
+                              <label className="form-label">Contract Start Date</label>
+                              <input
+                                type="date"
+                                className="form-control"
+                                value={sponsorForm.contractStart}
+                                onChange={(e) => setSponsorForm({...sponsorForm, contractStart: e.target.value})}
+                              />
+                            </div>
+                            <div className="col-md-6 mb-3">
+                              <label className="form-label">Contract End Date</label>
+                              <input
+                                type="date"
+                                className="form-control"
+                                value={sponsorForm.contractEnd}
+                                onChange={(e) => setSponsorForm({...sponsorForm, contractEnd: e.target.value})}
+                              />
+                            </div>
+                            <div className="col-md-6 mb-3">
+                              <label className="form-label">Status</label>
+                              <select
+                                className="form-select"
+                                value={sponsorForm.status}
+                                onChange={(e) => setSponsorForm({...sponsorForm, status: e.target.value})}
+                              >
+                                <option value="Active">Active</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Expired">Expired</option>
+                                <option value="Cancelled">Cancelled</option>
+                              </select>
+                            </div>
+                            <div className="col-md-6 mb-3">
+                              <label className="form-label">Visible on Website</label>
+                              <select
+                                className="form-select"
+                                value={sponsorForm.isVisible}
+                                onChange={(e) => setSponsorForm({...sponsorForm, isVisible: e.target.value === 'true'})}
+                              >
+                                <option value="true">Yes</option>
+                                <option value="false">No</option>
+                              </select>
+                            </div>
+                            <div className="col-12 mb-3">
+                              <label className="form-label">Address</label>
+                              <input
+                                type="text"
+                                className="form-control"
+                                value={sponsorForm.address}
+                                onChange={(e) => setSponsorForm({...sponsorForm, address: e.target.value})}
+                              />
+                            </div>
+                            <div className="col-12 mb-3">
+                              <label className="form-label">Benefits</label>
+                              <textarea
+                                className="form-control"
+                                rows="3"
+                                value={sponsorForm.benefits}
+                                onChange={(e) => setSponsorForm({...sponsorForm, benefits: e.target.value})}
+                                placeholder="e.g., Logo on jerseys, Website placement, Banner at games..."
+                              />
+                            </div>
+                            <div className="col-12 mb-3">
+                              <label className="form-label">Notes</label>
+                              <textarea
+                                className="form-control"
+                                rows="3"
+                                value={sponsorForm.notes}
+                                onChange={(e) => setSponsorForm({...sponsorForm, notes: e.target.value})}
+                                placeholder="Additional notes about the sponsor..."
+                              />
+                            </div>
+                          </div>
+                          <div className="d-flex gap-2">
+                            <button type="submit" className="btn btn-primary">
+                              <i className="bi bi-save me-2"></i>
+                              {editingSponsor ? 'Update Sponsor' : 'Create Sponsor'}
+                            </button>
+                            <button type="button" className="btn btn-secondary" onClick={resetSponsorForm}>
+                              Cancel
+                            </button>
+                          </div>
+                        </form>
+                      </div>
+                    ) : (
+                      <div>
+                        <div className="d-flex justify-content-between align-items-center mb-3">
+                          <h5 className="mb-0">All Sponsors</h5>
+                          <button className="btn btn-primary" onClick={() => setShowSponsorForm(true)}>
+                            <i className="bi bi-plus-lg me-2"></i>Add New Sponsor
+                          </button>
+                        </div>
+                        
+                        {sponsors.length === 0 ? (
+                          <div className="text-center py-5">
+                            <i className="bi bi-building" style={{fontSize: '4rem', color: '#ccc'}}></i>
+                            <p className="text-muted mt-3">No sponsors found. Add your first sponsor to get started!</p>
+                            <button className="btn btn-primary mt-2" onClick={() => setShowSponsorForm(true)}>
+                              <i className="bi bi-plus-lg me-2"></i>Add First Sponsor
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="table-responsive">
+                            <table className="table table-hover">
+                              <thead>
+                                <tr>
+                                  <th>Company</th>
+                                  <th>Contact</th>
+                                  <th>Tier</th>
+                                  <th>Amount</th>
+                                  <th>Contract Period</th>
+                                  <th>Status</th>
+                                  <th>Actions</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {sponsors.map(sponsor => (
+                                  <tr key={sponsor._id}>
+                                    <td>
+                                      <strong>{sponsor.companyName}</strong>
+                                      {sponsor.website && (
+                                        <a href={sponsor.website} target="_blank" rel="noopener noreferrer" className="ms-2">
+                                          <i className="bi bi-box-arrow-up-right"></i>
+                                        </a>
+                                      )}
+                                    </td>
+                                    <td>
+                                      <div>{sponsor.contactPerson}</div>
+                                      <small className="text-muted">{sponsor.email}</small>
+                                    </td>
+                                    <td>
+                                      <span className={`badge ${
+                                        sponsor.tier === 'Platinum' ? 'bg-dark' :
+                                        sponsor.tier === 'Gold' ? 'bg-warning' :
+                                        sponsor.tier === 'Silver' ? 'bg-secondary' :
+                                        sponsor.tier === 'Bronze' ? 'bg-info' :
+                                        'bg-light text-dark'
+                                      }`}>
+                                        {sponsor.tier === 'Platinum' && '💎'} 
+                                        {sponsor.tier === 'Gold' && '🥇'} 
+                                        {sponsor.tier === 'Silver' && '🥈'} 
+                                        {sponsor.tier === 'Bronze' && '🥉'} 
+                                        {sponsor.tier === 'In-Kind' && '🎁'} 
+                                        {sponsor.tier}
+                                      </span>
+                                    </td>
+                                    <td>
+                                      <strong>${sponsor.amount?.toLocaleString() || 0}</strong>
+                                      <br/>
+                                      <small className="text-muted">{sponsor.paymentFrequency}</small>
+                                    </td>
+                                    <td>
+                                      {sponsor.contractStart && sponsor.contractEnd ? (
+                                        <small>
+                                          {new Date(sponsor.contractStart).toLocaleDateString()} - {new Date(sponsor.contractEnd).toLocaleDateString()}
+                                        </small>
+                                      ) : (
+                                        <small className="text-muted">Not set</small>
+                                      )}
+                                    </td>
+                                    <td>
+                                      <span className={`badge ${
+                                        sponsor.status === 'Active' ? 'bg-success' :
+                                        sponsor.status === 'Pending' ? 'bg-warning' :
+                                        sponsor.status === 'Expired' ? 'bg-danger' :
+                                        'bg-secondary'
+                                      }`}>
+                                        {sponsor.status}
+                                      </span>
+                                      {!sponsor.isVisible && (
+                                        <span className="badge bg-secondary ms-1">Hidden</span>
+                                      )}
+                                    </td>
+                                    <td>
+                                      <div className="btn-group btn-group-sm">
+                                        <button
+                                          className="btn btn-outline-primary"
+                                          onClick={() => handleEditSponsor(sponsor)}
+                                          title="Edit"
+                                        >
+                                          <i className="bi bi-pencil"></i>
+                                        </button>
+                                        <button
+                                          className="btn btn-outline-danger"
+                                          onClick={() => handleDeleteSponsor(sponsor._id)}
+                                          title="Delete"
+                                        >
+                                          <i className="bi bi-trash"></i>
+                                        </button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -5642,119 +12818,405 @@ export default function AdminDashboard() {
 
             {activeSection === 'membership' && (
               <div>
-                <div className="row">
-                  <div className="col-12">
-                    <div className="card">
-                      <div className="card-header">
-                        <h5 className="mb-0">Membership Management</h5>
-                      </div>
-                      <div className="card-body">
-                        <div className="alert alert-success">
-                          <i className="bi bi-check-circle me-2"></i>
-                          <strong>👥 Comprehensive Membership Management System Available!</strong> Complete membership lifecycle management:
-                          
-                          <div className="row mt-3 mb-3">
-                            <div className="col-md-6">
-                              <h6 className="text-success"><i className="bi bi-person-badge me-2"></i>Member Management</h6>
-                              <ul className="small">
-                                <li><strong>Complete Profiles:</strong> Personal info, contact details, emergency contacts</li>
-                                <li><strong>Unique Member Numbers:</strong> Auto-generated MEM-xxxxx format</li>
-                                <li><strong>Member History:</strong> Track membership timeline and changes</li>
-                                <li><strong>Family Memberships:</strong> Link family members together</li>
-                                <li><strong>Status Tracking:</strong> Active, pending, expired, suspended, cancelled</li>
-                                <li><strong>Advanced Search:</strong> Find by name, email, member number</li>
-                                <li><strong>Bulk Operations:</strong> Renew multiple members at once</li>
-                                <li><strong>Export Data:</strong> CSV export for external analysis</li>
-                          </ul>
-                        </div>
-                            <div className="col-md-6">
-                              <h6 className="text-success"><i className="bi bi-trophy me-2"></i>Membership Tiers (5 Levels)</h6>
-                              <ul className="small">
-                                <li><strong>🥉 Basic ($50/year):</strong> Events, newsletter, 10% merch discount</li>
-                                <li><strong>🥈 Standard ($100/year):</strong> Priority registration, members events, 15% discount</li>
-                                <li><strong>🥇 Premium ($200/year):</strong> VIP access, reserved seating, 20% discount, coaching session</li>
-                                <li><strong>💎 Elite ($500/year):</strong> Unlimited passes, VIP parking, 30% discount, private coaching</li>
-                                <li><strong>👨‍👩‍👧‍👦 Family ($150/year):</strong> Up to 4 members, standard benefits for all</li>
-                                <li><strong>Custom Tiers:</strong> Create your own membership levels</li>
-                                <li><strong>Flexible Pricing:</strong> Monthly, quarterly, semi-annual, annual, lifetime</li>
-                              </ul>
+                {/* Header with Statistics and Action Buttons */}
+                <div className="card border-0 shadow-sm mb-4">
+                  <div className="card-body">
+                    <div className="row g-3">
+                      {/* Statistics */}
+                      <div className="col-lg-2 col-md-6">
+                        <div className="text-center p-3 bg-primary bg-opacity-10 rounded">
+                          <i className="bi bi-people text-primary fs-2 mb-2"></i>
+                          <p className="text-muted mb-1 small fw-semibold">Total Members</p>
+                          <h4 className="mb-0 text-dark fw-bold">{membershipStats.totalMembers}</h4>
                         </div>
                       </div>
-                          
-                          <div className="bg-white p-3 rounded mb-3">
-                            <h6 className="text-dark mb-2"><i className="bi bi-arrow-repeat me-2"></i>Renewal System</h6>
-                            <div className="row small">
-                              <div className="col-md-4">• <strong>Auto-Renewal:</strong> Automatic membership renewal with saved payment</div>
-                              <div className="col-md-4">• <strong>Renewal Reminders:</strong> Automated emails 30/60/90 days before expiry</div>
-                              <div className="col-md-4">• <strong>Expiration Tracking:</strong> Color-coded alerts for expiring memberships</div>
-                              <div className="col-md-4">• <strong>Bulk Renewals:</strong> Renew multiple members simultaneously</div>
-                              <div className="col-md-4">• <strong>Grace Period:</strong> Configurable grace period after expiration</div>
-                              <div className="col-md-4">• <strong>Manual Renewal:</strong> Process renewals manually when needed</div>
-                            </div>
-                          </div>
-                          
-                          <div className="bg-light p-3 rounded mb-3">
-                            <h6 className="text-dark mb-2"><i className="bi bi-cash-stack me-2"></i>Payment & Billing</h6>
-                            <div className="row small">
-                              <div className="col-md-3">• Multiple payment methods (cards, PayPal, Stripe, check, cash)</div>
-                              <div className="col-md-3">• Billing cycle options (monthly, quarterly, annual, lifetime)</div>
-                              <div className="col-md-3">• Discount code support</div>
-                              <div className="col-md-3">• Payment history tracking</div>
-                              <div className="col-md-3">• Invoice generation</div>
-                              <div className="col-md-3">• Failed payment handling</div>
-                              <div className="col-md-3">• Prorated memberships</div>
-                              <div className="col-md-3">• Payment reminders</div>
-                            </div>
-                          </div>
-                          
-                          <div className="bg-white p-3 rounded mb-3">
-                            <h6 className="text-dark mb-2"><i className="bi bi-graph-up me-2"></i>Analytics & Reporting</h6>
-                            <div className="row small">
-                              <div className="col-md-4">• Total membership revenue tracking</div>
-                              <div className="col-md-4">• Revenue by tier breakdown</div>
-                              <div className="col-md-4">• Average revenue per member</div>
-                              <div className="col-md-4">• Retention rate calculation</div>
-                              <div className="col-md-4">• Growth trends and projections</div>
-                              <div className="col-md-4">• Expiration forecasting</div>
-                              <div className="col-md-4">• Member acquisition analysis</div>
-                              <div className="col-md-4">• Churn rate monitoring</div>
-                              <div className="col-md-4">• Export reports to Excel/PDF</div>
-                            </div>
-                          </div>
-                          
-                          <div className="bg-light p-3 rounded mb-3">
-                            <h6 className="text-dark mb-2"><i className="bi bi-gear me-2"></i>Admin Controls</h6>
-                            <div className="row small">
-                              <div className="col-md-4">• Tier management (create, edit, delete)</div>
-                              <div className="col-md-4">• Benefit customization per tier</div>
-                              <div className="col-md-4">• Pricing adjustments</div>
-                              <div className="col-md-4">• Member status changes (suspend, cancel, reactivate)</div>
-                              <div className="col-md-4">• Manual expiry date adjustments</div>
-                              <div className="col-md-4">• Upgrade/downgrade members between tiers</div>
-                              <div className="col-md-4">• Discount code creation and management</div>
-                              <div className="col-md-4">• Email template customization</div>
-                              <div className="col-md-4">• Automated workflow configuration</div>
-                            </div>
-                          </div>
-                          
-                          <Link to="/admin/membership" className="btn btn-success btn-lg">
-                            <i className="bi bi-arrow-right me-2"></i>
-                            Go to Membership Management
-                          </Link>
+                      <div className="col-lg-2 col-md-6">
+                        <div className="text-center p-3 bg-success bg-opacity-10 rounded">
+                          <i className="bi bi-person-check text-success fs-2 mb-2"></i>
+                          <p className="text-muted mb-1 small fw-semibold">Active Members</p>
+                          <h4 className="mb-0 text-success fw-bold">{membershipStats.activeMembers}</h4>
                         </div>
-                        <div className="text-center py-4">
-                          <i className="bi bi-person-check-fill display-1 text-success"></i>
-                          <h4 className="mt-3 text-success">Membership Management System Ready</h4>
-                          <p className="text-muted">Manage members, tiers, renewals, payments with comprehensive analytics and automation.</p>
+                      </div>
+                      <div className="col-lg-2 col-md-6">
+                        <div className="text-center p-3 bg-warning bg-opacity-10 rounded">
+                          <i className="bi bi-clock-history text-warning fs-2 mb-2"></i>
+                          <p className="text-muted mb-1 small fw-semibold">Expired</p>
+                          <h4 className="mb-0 text-warning fw-bold">{membershipStats.expiredMembers}</h4>
+                        </div>
+                      </div>
+                      <div className="col-lg-2 col-md-6">
+                        <div className="text-center p-3 bg-info bg-opacity-10 rounded">
+                          <i className="bi bi-currency-dollar text-info fs-2 mb-2"></i>
+                          <p className="text-muted mb-1 small fw-semibold">Total Revenue</p>
+                          <h4 className="mb-0 text-info fw-bold">${membershipStats.totalRevenue.toLocaleString()}</h4>
+                        </div>
+                      </div>
+                      
+                      {/* Quick Action Buttons */}
+                      <div className="col-lg-4">
+                        <div className="h-100 d-flex flex-column gap-2 justify-content-center">
+                          <button 
+                            className="btn btn-warning btn-lg w-100"
+                            onClick={() => {
+                              setMembershipTab('tiers');
+                              setShowTierForm(true);
+                            }}
+                          >
+                            <i className="bi bi-trophy me-2"></i>
+                            Create Membership Tier
+                          </button>
+                          <button 
+                            className="btn btn-success btn-lg w-100"
+                            onClick={() => {
+                              setMembershipTab('members');
+                              setShowMembershipForm(true);
+                            }}
+                          >
+                            <i className="bi bi-person-plus me-2"></i>
+                            Add New Member
+                          </button>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
+
+                {/* Visible Tabs */}
+                <div className="mb-4">
+                  <div className="btn-group w-100 shadow-sm" role="group">
+                    <button 
+                      type="button"
+                      className={`btn btn-lg ${membershipTab === 'tiers' ? 'btn-warning' : 'btn-outline-warning'}`}
+                      onClick={() => setMembershipTab('tiers')}
+                    >
+                      <i className="bi bi-trophy me-2"></i>
+                      Membership Tiers
+                    </button>
+                    <button 
+                      type="button"
+                      className={`btn btn-lg ${membershipTab === 'members' ? 'btn-primary' : 'btn-outline-primary'}`}
+                      onClick={() => setMembershipTab('members')}
+                    >
+                      <i className="bi bi-people-fill me-2"></i>
+                      All Members
+                    </button>
+                  </div>
+                </div>
+
+                {/* Tiers Tab */}
+                {membershipTab === 'tiers' && (
+                  <div className="card shadow-sm">
+                    <div className="card-header bg-white py-3">
+                      <h5 className="mb-0 fw-bold">
+                        <i className="bi bi-trophy text-warning me-2"></i>Membership Tiers
+                      </h5>
+                    </div>
+                    <div className="card-body">
+                      {membershipsLoading ? (
+                        <div className="text-center py-5">
+                          <div className="spinner-border text-primary" role="status">
+                            <span className="visually-hidden">Loading...</span>
+                          </div>
+                        </div>
+                      ) : showTierForm ? (
+                        <div className="bg-light p-4 rounded">
+                          <div className="d-flex justify-content-between align-items-center mb-4">
+                            <h5 className="mb-0 fw-bold">
+                              <i className="bi bi-trophy text-warning me-2"></i>
+                              {editingTier ? 'Edit Tier' : 'Create New Tier'}
+                            </h5>
+                            <button className="btn btn-outline-secondary" onClick={resetTierForm}>
+                              <i className="bi bi-x-lg me-2"></i>Cancel
+                            </button>
+                          </div>
+                          <form onSubmit={handleTierSubmit}>
+                            <div className="row">
+                              <div className="col-md-6 mb-3">
+                                <label className="form-label">Tier Name *</label>
+                                <input
+                                  type="text"
+                                  className="form-control"
+                                  value={tierForm.name}
+                                  onChange={(e) => setTierForm({...tierForm, name: e.target.value})}
+                                  required
+                                />
+                              </div>
+                              <div className="col-md-6 mb-3">
+                                <label className="form-label">Price ($) *</label>
+                                <input
+                                  type="number"
+                                  className="form-control"
+                                  value={tierForm.price}
+                                  onChange={(e) => setTierForm({...tierForm, price: parseFloat(e.target.value) || 0})}
+                                  min="0"
+                                  required
+                                />
+                              </div>
+                              <div className="col-md-6 mb-3">
+                                <label className="form-label">Duration (months) *</label>
+                                <input
+                                  type="number"
+                                  className="form-control"
+                                  value={tierForm.duration}
+                                  onChange={(e) => setTierForm({...tierForm, duration: parseInt(e.target.value) || 12})}
+                                  min="1"
+                                  required
+                                />
+                              </div>
+                              <div className="col-md-6 mb-3">
+                                <label className="form-label">Discount Percentage (%)</label>
+                                <input
+                                  type="number"
+                                  className="form-control"
+                                  value={tierForm.discountPercentage}
+                                  onChange={(e) => setTierForm({...tierForm, discountPercentage: parseInt(e.target.value) || 0})}
+                                  min="0"
+                                  max="100"
+                                />
+                              </div>
+                              <div className="col-md-6 mb-3">
+                                <label className="form-label">Color</label>
+                                <input
+                                  type="color"
+                                  className="form-control"
+                                  value={tierForm.color}
+                                  onChange={(e) => setTierForm({...tierForm, color: e.target.value})}
+                                />
+                              </div>
+                              <div className="col-md-6 mb-3">
+                                <label className="form-label">Status</label>
+                                <select
+                                  className="form-select"
+                                  value={tierForm.isActive}
+                                  onChange={(e) => setTierForm({...tierForm, isActive: e.target.value === 'true'})}
+                                >
+                                  <option value="true">Active</option>
+                                  <option value="false">Inactive</option>
+                                </select>
+                              </div>
+                              <div className="col-12 mb-3">
+                                <label className="form-label">Description</label>
+                                <textarea
+                                  className="form-control"
+                                  rows="3"
+                                  value={tierForm.description}
+                                  onChange={(e) => setTierForm({...tierForm, description: e.target.value})}
+                                />
+                              </div>
+                            </div>
+                            <div className="d-flex gap-2">
+                              <button type="submit" className="btn btn-primary">
+                                <i className="bi bi-save me-2"></i>
+                                {editingTier ? 'Update Tier' : 'Create Tier'}
+                              </button>
+                              <button type="button" className="btn btn-secondary" onClick={resetTierForm}>
+                                Cancel
+                              </button>
+                            </div>
+                          </form>
+                        </div>
+                      ) : (
+                        <div>
+                          {membershipTiers.length === 0 ? (
+                            <div className="text-center py-5">
+                              <div className="mb-4">
+                                <i className="bi bi-trophy-fill text-warning" style={{fontSize: '5rem', opacity: 0.3}}></i>
+                              </div>
+                              <h4 className="text-muted mb-3">No Membership Tiers Yet</h4>
+                              <p className="text-muted mb-0">Click the 'Add New Tier' button above to create your first membership tier.</p>
+                            </div>
+                          ) : (
+                            <div className="row">
+                              {membershipTiers.map(tier => (
+                                <div key={tier._id} className="col-lg-4 col-md-6 mb-4">
+                                  <div className="card h-100 border-0 shadow-sm" style={{borderLeft: `4px solid ${tier.color || '#007bff'}`}}>
+                                    <div className="card-body d-flex flex-column">
+                                      <div className="d-flex justify-content-between align-items-start mb-3">
+                                        <div>
+                                          <h5 className="card-title fw-bold mb-1">{tier.name}</h5>
+                                          <small className="text-muted">
+                                            <i className="bi bi-clock me-1"></i>{tier.duration} month{tier.duration !== 1 ? 's' : ''}
+                                          </small>
+                                        </div>
+                                        <span className={`badge ${tier.isActive ? 'bg-success' : 'bg-secondary'}`}>
+                                          {tier.isActive ? 'Active' : 'Inactive'}
+                                        </span>
+                                      </div>
+                                      
+                                      <div className="mb-3">
+                                        <h2 className="text-dark mb-0">
+                                          <strong>${tier.price}</strong>
+                                        </h2>
+                                        {tier.discountPercentage > 0 && (
+                                          <span className="badge bg-warning text-dark mt-2">
+                                            <i className="bi bi-tag-fill me-1"></i>{tier.discountPercentage}% OFF
+                                          </span>
+                                        )}
+                                      </div>
+                                      
+                                      {tier.description && (
+                                        <p className="card-text text-muted small mb-3 flex-grow-1">{tier.description}</p>
+                                      )}
+                                      
+                                      <hr className="my-3" />
+                                      
+                                      <div className="d-flex gap-2 mt-auto">
+                                        <button
+                                          className="btn btn-outline-secondary btn-sm flex-fill"
+                                          onClick={() => handleEditTier(tier)}
+                                        >
+                                          <i className="bi bi-pencil-square me-1"></i> Edit
+                                        </button>
+                                        <button
+                                          className="btn btn-outline-danger btn-sm"
+                                          onClick={() => {
+                                            if (window.confirm(`Are you sure you want to delete the "${tier.name}" tier?`)) {
+                                              handleDeleteTier(tier._id);
+                                            }
+                                          }}
+                                          title="Delete tier"
+                                        >
+                                          <i className="bi bi-trash"></i>
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Members Tab */}
+                {membershipTab === 'members' && (
+                  <div className="card shadow-sm">
+                    <div className="card-header bg-white py-3">
+                      <h5 className="mb-0 fw-bold">
+                        <i className="bi bi-people-fill text-info me-2"></i>All Memberships
+                      </h5>
+                    </div>
+                    <div className="card-body">
+                      {membershipsLoading ? (
+                        <div className="text-center py-5">
+                          <div className="spinner-border text-primary" role="status">
+                            <span className="visually-hidden">Loading...</span>
+                          </div>
+                        </div>
+                      ) : memberships.length === 0 ? (
+                        <div className="text-center py-5">
+                          <div className="mb-4">
+                            <i className="bi bi-people-fill text-info" style={{fontSize: '5rem', opacity: 0.3}}></i>
+                          </div>
+                          <h4 className="text-muted mb-3">No Memberships Yet</h4>
+                          <p className="text-muted mb-0">Memberships will appear here once members sign up for tiers.</p>
+                        </div>
+                      ) : (
+                        <div>
+                          <div className="table-responsive">
+                            <table className="table table-hover align-middle mb-0">
+                              <thead>
+                                <tr className="border-bottom">
+                                  <th className="text-muted fw-normal small">MEMBER</th>
+                                  <th className="text-muted fw-normal small">TIER</th>
+                                  <th className="text-muted fw-normal small">START DATE</th>
+                                  <th className="text-muted fw-normal small">END DATE</th>
+                                  <th className="text-muted fw-normal small">AMOUNT</th>
+                                  <th className="text-muted fw-normal small">STATUS</th>
+                                  <th className="text-muted fw-normal small text-end">ACTIONS</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {memberships.map(membership => (
+                                  <tr key={membership._id} className="border-bottom">
+                                    <td className="py-3">
+                                      <div className="fw-semibold text-dark">{membership.user?.username || 'N/A'}</div>
+                                      <small className="text-muted d-block">{membership.user?.email || 'N/A'}</small>
+                                    </td>
+                                    <td className="py-3">
+                                      <span className="badge bg-primary">
+                                        {membership.tier?.name || 'N/A'}
+                                      </span>
+                                    </td>
+                                    <td className="py-3">
+                                      <span className="text-dark">{membership.startDate ? new Date(membership.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}</span>
+                                    </td>
+                                    <td className="py-3">
+                                      <span className="text-dark">{membership.endDate ? new Date(membership.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}</span>
+                                    </td>
+                                    <td className="py-3">
+                                      <div className="fw-bold text-dark">${membership.totalAmount || membership.amount || 0}</div>
+                                    </td>
+                                    <td className="py-3">
+                                      <span className={`badge ${
+                                        membership.status === 'active' ? 'bg-success' :
+                                        membership.status === 'pending' ? 'bg-warning text-dark' :
+                                        membership.status === 'expired' ? 'bg-danger' :
+                                        membership.status === 'suspended' ? 'bg-secondary' :
+                                        'bg-dark'
+                                      }`}>
+                                        {membership.status?.charAt(0).toUpperCase() + membership.status?.slice(1) || 'N/A'}
+                                      </span>
+                                    </td>
+                                    <td className="py-3 text-end">
+                                      <div className="btn-group btn-group-sm" role="group">
+                                        <button
+                                          className="btn btn-outline-secondary"
+                                          onClick={() => handleEditMembership(membership)}
+                                          title="Edit Membership"
+                                        >
+                                          <i className="bi bi-pencil-square"></i>
+                                        </button>
+                                        {membership.status === 'suspended' && (
+                                          <button
+                                            className="btn btn-outline-success"
+                                            onClick={() => handleMembershipStatusChange(membership._id, 'active')}
+                                            title="Activate"
+                                          >
+                                            <i className="bi bi-check-circle"></i>
+                                          </button>
+                                        )}
+                                        {membership.status === 'active' && (
+                                          <button
+                                            className="btn btn-outline-warning"
+                                            onClick={() => handleMembershipStatusChange(membership._id, 'suspended')}
+                                            title="Suspend"
+                                          >
+                                            <i className="bi bi-pause-circle"></i>
+                                          </button>
+                                        )}
+                                      </div>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                          {memberships.length > 0 && (
+                            <div className="card-footer bg-light text-center py-3">
+                              <small className="text-muted">
+                                Showing {memberships.length} membership{memberships.length !== 1 ? 's' : ''}
+                              </small>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
             {activeSection === 'payments' && (
+              <div style={{padding: '0', margin: '-20px'}}>
+                <UnifiedPaymentManager />
+              </div>
+            )}
+
+            {activeSection === 'payments-old' && (
               <div>
                 <div className="row">
                   <div className="col-12">
@@ -5928,121 +13390,187 @@ export default function AdminDashboard() {
               </div>
             )}
 
-            {activeSection === 'equipment' && (
+
+            {activeSection === 'waivers' && (
               <div>
-                <div className="row">
-                  <div className="col-12">
+                {/* Waiver Statistics */}
+                <div className="row mb-4">
+                  <div className="col-md-3 mb-3">
+                    <div className="card bg-success text-white">
+                      <div className="card-body">
+                        <h6>Signed Waivers</h6>
+                        <h4 className="mb-0">1,234</h4>
+                        <small>100% compliance</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-3 mb-3">
+                    <div className="card bg-warning text-white">
+                      <div className="card-body">
+                        <h6>Pending Signatures</h6>
+                        <h4 className="mb-0">12</h4>
+                        <small>Awaiting completion</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-3 mb-3">
+                    <div className="card bg-danger text-white">
+                      <div className="card-body">
+                        <h6>Expiring Soon</h6>
+                        <h4 className="mb-0">23</h4>
+                        <small>Next 30 days</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-3 mb-3">
+                    <div className="card bg-primary text-white">
+                      <div className="card-body">
+                        <h6>Total Templates</h6>
+                        <h4 className="mb-0">8</h4>
+                        <small>Active templates</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Waiver Templates */}
+                <div className="row mb-4">
+                  <div className="col-md-8 mb-4">
                     <div className="card">
-                      <div className="card-header">
-                        <h5 className="mb-0">Equipment Management</h5>
+                      <div className="card-header d-flex justify-content-between align-items-center">
+                        <h5 className="mb-0">Waiver Templates</h5>
+                        <button className="btn btn-primary btn-sm">
+                          <i className="bi bi-plus-circle me-2"></i>Create Template
+                        </button>
                       </div>
                       <div className="card-body">
-                        <div className="alert alert-primary">
-                          <i className="bi bi-check-circle me-2"></i>
-                          <strong>📦 Comprehensive Equipment Management System Available!</strong> Track and manage all club assets:
-                          
-                          <div className="row mt-3 mb-3">
-                            <div className="col-md-6">
-                              <h6 className="text-primary"><i className="bi bi-box me-2"></i>Inventory Management</h6>
-                              <ul className="small">
-                                <li><strong>12+ Categories:</strong> Balls, Goals, Cones, Uniforms, Goalkeeper Gear, Training, Medical, Safety, Field, Technology, Storage</li>
-                                <li><strong>Real-time Tracking:</strong> Quantity, location, condition, status</li>
-                                <li><strong>Value Management:</strong> Unit price, total value, investment tracking</li>
-                                <li><strong>Purchase History:</strong> Date, supplier, cost tracking</li>
-                                <li><strong>Condition Monitoring:</strong> Excellent, Good, Fair, Poor, Damaged, Retired</li>
-                                <li><strong>Location Tracking:</strong> 9 locations (facilities, fields, storage)</li>
-                              </ul>
+                        <div className="list-group">
+                          <div className="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                              <h6 className="mb-1">General Liability Waiver</h6>
+                              <small className="text-muted">Standard waiver for all members • 1,200 signed</small>
                             </div>
-                            <div className="col-md-6">
-                              <h6 className="text-primary"><i className="bi bi-tools me-2"></i>Advanced Features</h6>
-                              <ul className="small">
-                                <li><strong>Status Management:</strong> Available, In Use, Rented, Maintenance, Repair, Lost, Retired</li>
-                                <li><strong>Maintenance Schedules:</strong> Weekly, Monthly, Quarterly, Annual tracking</li>
-                                <li><strong>Rental System:</strong> Rent out equipment with daily rates</li>
-                                <li><strong>Warranty Tracking:</strong> Expiry dates and coverage</li>
-                                <li><strong>Serial Numbers:</strong> Track individual items</li>
-                                <li><strong>Reports & Analytics:</strong> Value by category, utilization rates</li>
-                              </ul>
+                            <div>
+                              <button className="btn btn-sm btn-outline-primary me-2">Edit</button>
+                              <button className="btn btn-sm btn-outline-secondary">View</button>
                             </div>
                           </div>
-                          
-                          <div className="bg-white p-3 rounded mb-3">
-                            <h6 className="text-dark mb-2"><i className="bi bi-graph-up me-2"></i>Key Features</h6>
-                            <div className="row small">
-                              <div className="col-md-4">• Real-time inventory tracking</div>
-                              <div className="col-md-4">• Equipment value management</div>
-                              <div className="col-md-4">• Purchase history & suppliers</div>
-                              <div className="col-md-4">• Condition assessments</div>
-                              <div className="col-md-4">• Location management</div>
-                              <div className="col-md-4">• Maintenance scheduling</div>
-                              <div className="col-md-4">• Rental system with rates</div>
-                              <div className="col-md-4">• Low stock alerts</div>
-                              <div className="col-md-4">• Repair tracking</div>
-                              <div className="col-md-4">• CSV export</div>
-                              <div className="col-md-4">• Visual analytics</div>
-                              <div className="col-md-4">• Warranty management</div>
+                          <div className="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                              <h6 className="mb-1">Minor Participation Waiver</h6>
+                              <small className="text-muted">For players under 18 • 456 signed</small>
+                            </div>
+                            <div>
+                              <button className="btn btn-sm btn-outline-primary me-2">Edit</button>
+                              <button className="btn btn-sm btn-outline-secondary">View</button>
                             </div>
                           </div>
-                          
-                          <div className="bg-light p-3 rounded mb-3">
-                            <h6 className="text-dark mb-2"><i className="bi bi-grid-3x3 me-2"></i>Equipment Categories</h6>
-                            <div className="row small">
-                              <div className="col-md-3">• ⚽ <strong>Soccer Balls:</strong> Match & training balls</div>
-                              <div className="col-md-3">• 🥅 <strong>Goals & Nets:</strong> Portable & fixed goals</div>
-                              <div className="col-md-3">• 🔶 <strong>Training Cones:</strong> Cones, markers, flags</div>
-                              <div className="col-md-3">• 👕 <strong>Uniforms:</strong> Jerseys, shorts, socks</div>
-                              <div className="col-md-3">• 🧤 <strong>Goalkeeper:</strong> Gloves, pads, jerseys</div>
-                              <div className="col-md-3">• 🏋️ <strong>Training Equipment:</strong> Agility gear, weights</div>
-                              <div className="col-md-3">• 🏥 <strong>Medical:</strong> First aid, ice packs</div>
-                              <div className="col-md-3">• 🦺 <strong>Safety:</strong> Shin guards, vests</div>
-                              <div className="col-md-3">• 🏟️ <strong>Field Equipment:</strong> Line markers, benches</div>
-                              <div className="col-md-3">• 💻 <strong>Technology:</strong> Tablets, cameras, software</div>
-                              <div className="col-md-3">• 🎒 <strong>Storage:</strong> Bags, carts, shelves</div>
-                              <div className="col-md-3">• 📦 <strong>Other:</strong> Miscellaneous items</div>
+                          <div className="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                              <h6 className="mb-1">Medical Information Form</h6>
+                              <small className="text-muted">Health and emergency contacts • 1,150 signed</small>
+                            </div>
+                            <div>
+                              <button className="btn btn-sm btn-outline-primary me-2">Edit</button>
+                              <button className="btn btn-sm btn-outline-secondary">View</button>
                             </div>
                           </div>
-                          
-                          <Link to="/admin/equipment" className="btn btn-primary btn-lg">
-                            <i className="bi bi-arrow-right me-2"></i>
-                            Go to Equipment Management
-                          </Link>
+                          <div className="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                              <h6 className="mb-1">Tournament Consent Form</h6>
+                              <small className="text-muted">Special events and tournaments • 89 signed</small>
+                            </div>
+                            <div>
+                              <button className="btn btn-sm btn-outline-primary me-2">Edit</button>
+                              <button className="btn btn-sm btn-outline-secondary">View</button>
+                            </div>
+                          </div>
                         </div>
-                        <div className="text-center py-4">
-                          <i className="bi bi-box-seam display-1 text-primary"></i>
-                          <h4 className="mt-3 text-primary">Equipment Management System Ready</h4>
-                          <p className="text-muted">Track inventory, manage purchases, schedule maintenance, and rent equipment with complete asset management.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Quick Actions */}
+                  <div className="col-md-4 mb-4">
+                    <div className="card">
+                      <div className="card-header">
+                        <h5 className="mb-0">Quick Actions</h5>
+                      </div>
+                      <div className="card-body">
+                        <div className="d-grid gap-2">
+                          <button className="btn btn-primary">
+                            <i className="bi bi-plus-circle me-2"></i>Create Waiver
+                          </button>
+                          <button className="btn btn-outline-success">
+                            <i className="bi bi-send me-2"></i>Send Reminders
+                          </button>
+                          <button className="btn btn-outline-warning">
+                            <i className="bi bi-file-earmark-check me-2"></i>Review Pending
+                          </button>
+                          <button className="btn btn-outline-info">
+                            <i className="bi bi-download me-2"></i>Export Records
+                          </button>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
 
-            {activeSection === 'waivers' && (
-              <div>
+                {/* Recent Activity */}
                 <div className="row">
                   <div className="col-12">
                     <div className="card">
                       <div className="card-header">
-                        <h5 className="mb-0">Waiver Management</h5>
+                        <h5 className="mb-0">Recent Signatures</h5>
                       </div>
-                      <div className="card-body">
-                        <div className="alert alert-info">
-                          <i className="bi bi-info-circle me-2"></i>
-                          Waiver management features will be implemented here. This will include:
-                          <ul className="mt-2 mb-0">
-                            <li>Digital waiver creation and management</li>
-                            <li>Electronic signature collection</li>
-                            <li>Waiver compliance tracking</li>
-                            <li>Expiration and renewal management</li>
-                            <li>Legal document storage and retrieval</li>
-                          </ul>
-                        </div>
-                        <div className="text-center py-5">
-                          <i className="bi bi-file-earmark-check display-1 text-muted"></i>
-                          <h4 className="mt-3 text-muted">Waiver Management</h4>
-                          <p className="text-muted">Coming soon...</p>
+                      <div className="card-body p-0">
+                        <div className="table-responsive">
+                          <table className="table table-hover mb-0">
+                            <thead>
+                              <tr>
+                                <th>Member</th>
+                                <th>Waiver Type</th>
+                                <th>Signed Date</th>
+                                <th>Expires</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td>John Smith</td>
+                                <td>General Liability</td>
+                                <td>2024-10-20</td>
+                                <td>2025-10-20</td>
+                                <td><span className="badge bg-success">Active</span></td>
+                                <td><button className="btn btn-sm btn-outline-primary">View</button></td>
+                              </tr>
+                              <tr>
+                                <td>Sarah Johnson</td>
+                                <td>Minor Participation</td>
+                                <td>2024-10-19</td>
+                                <td>2025-10-19</td>
+                                <td><span className="badge bg-success">Active</span></td>
+                                <td><button className="btn btn-sm btn-outline-primary">View</button></td>
+                              </tr>
+                              <tr>
+                                <td>Mike Davis</td>
+                                <td>Medical Information</td>
+                                <td>2024-10-18</td>
+                                <td>2025-10-18</td>
+                                <td><span className="badge bg-success">Active</span></td>
+                                <td><button className="btn btn-sm btn-outline-primary">View</button></td>
+                              </tr>
+                              <tr>
+                                <td>Emily Brown</td>
+                                <td>General Liability</td>
+                                <td>2024-10-17</td>
+                                <td>2024-11-15</td>
+                                <td><span className="badge bg-warning">Expiring Soon</span></td>
+                                <td><button className="btn btn-sm btn-outline-primary">View</button></td>
+                              </tr>
+                            </tbody>
+                          </table>
                         </div>
                       </div>
                     </div>
@@ -6053,28 +13581,188 @@ export default function AdminDashboard() {
 
             {activeSection === 'insurance' && (
               <div>
-                <div className="row">
+                {/* Insurance Overview */}
+                <div className="row mb-4">
+                  <div className="col-md-3 mb-3">
+                    <div className="card bg-success text-white">
+                      <div className="card-body">
+                        <h6>Active Policies</h6>
+                        <h4 className="mb-0">6</h4>
+                        <small>All current and valid</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-3 mb-3">
+                    <div className="card bg-primary text-white">
+                      <div className="card-body">
+                        <h6>Total Coverage</h6>
+                        <h4 className="mb-0">$5M</h4>
+                        <small>Combined liability</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-3 mb-3">
+                    <div className="card bg-warning text-white">
+                      <div className="card-body">
+                        <h6>Open Claims</h6>
+                        <h4 className="mb-0">2</h4>
+                        <small>In processing</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-md-3 mb-3">
+                    <div className="card bg-info text-white">
+                      <div className="card-body">
+                        <h6>Annual Premium</h6>
+                        <h4 className="mb-0">$45,890</h4>
+                        <small>Total yearly cost</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Active Policies */}
+                <div className="row mb-4">
                   <div className="col-12">
                     <div className="card">
+                      <div className="card-header d-flex justify-content-between align-items-center">
+                        <h5 className="mb-0">Active Insurance Policies</h5>
+                        <button className="btn btn-primary btn-sm">
+                          <i className="bi bi-plus-circle me-2"></i>Add Policy
+                        </button>
+                      </div>
+                      <div className="card-body p-0">
+                        <div className="table-responsive">
+                          <table className="table table-hover mb-0">
+                            <thead>
+                              <tr>
+                                <th>Policy Type</th>
+                                <th>Provider</th>
+                                <th>Coverage</th>
+                                <th>Premium</th>
+                                <th>Renewal Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td><strong>General Liability</strong></td>
+                                <td>ABC Insurance Co.</td>
+                                <td>$2,000,000</td>
+                                <td>$15,000/year</td>
+                                <td>2025-03-15</td>
+                                <td><span className="badge bg-success">Active</span></td>
+                                <td>
+                                  <button className="btn btn-sm btn-outline-primary me-1">View</button>
+                                  <button className="btn btn-sm btn-outline-secondary">Edit</button>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td><strong>Property Insurance</strong></td>
+                                <td>XYZ Insurance</td>
+                                <td>$1,500,000</td>
+                                <td>$12,500/year</td>
+                                <td>2025-06-20</td>
+                                <td><span className="badge bg-success">Active</span></td>
+                                <td>
+                                  <button className="btn btn-sm btn-outline-primary me-1">View</button>
+                                  <button className="btn btn-sm btn-outline-secondary">Edit</button>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td><strong>Workers Compensation</strong></td>
+                                <td>Safety First Insurance</td>
+                                <td>$1,000,000</td>
+                                <td>$8,900/year</td>
+                                <td>2025-01-10</td>
+                                <td><span className="badge bg-warning">Renewing Soon</span></td>
+                                <td>
+                                  <button className="btn btn-sm btn-outline-primary me-1">View</button>
+                                  <button className="btn btn-sm btn-outline-secondary">Edit</button>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td><strong>Directors & Officers</strong></td>
+                                <td>Executive Shield Ltd.</td>
+                                <td>$500,000</td>
+                                <td>$5,490/year</td>
+                                <td>2025-09-01</td>
+                                <td><span className="badge bg-success">Active</span></td>
+                                <td>
+                                  <button className="btn btn-sm btn-outline-primary me-1">View</button>
+                                  <button className="btn btn-sm btn-outline-secondary">Edit</button>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Claims Management */}
+                <div className="row">
+                  <div className="col-md-6 mb-4">
+                    <div className="card">
                       <div className="card-header">
-                        <h5 className="mb-0">Insurance Management</h5>
+                        <h5 className="mb-0">Recent Claims</h5>
                       </div>
                       <div className="card-body">
-                        <div className="alert alert-info">
-                          <i className="bi bi-info-circle me-2"></i>
-                          Insurance management features will be implemented here. This will include:
-                          <ul className="mt-2 mb-0">
-                            <li>Insurance policy management</li>
-                            <li>Claim processing and tracking</li>
-                            <li>Coverage verification and validation</li>
-                            <li>Premium payment tracking</li>
-                            <li>Insurance compliance monitoring</li>
-                          </ul>
+                        <div className="list-group list-group-flush">
+                          <div className="list-group-item">
+                            <div className="d-flex justify-content-between align-items-center">
+                              <div>
+                                <h6 className="mb-1">Minor Injury - Training Session</h6>
+                                <small className="text-muted">Claim #2024-0123 • Filed: Oct 15, 2024</small>
+                              </div>
+                              <span className="badge bg-warning">Processing</span>
+                            </div>
+                          </div>
+                          <div className="list-group-item">
+                            <div className="d-flex justify-content-between align-items-center">
+                              <div>
+                                <h6 className="mb-1">Equipment Damage</h6>
+                                <small className="text-muted">Claim #2024-0098 • Filed: Sep 22, 2024</small>
+                              </div>
+                              <span className="badge bg-success">Approved</span>
+                            </div>
+                          </div>
+                          <div className="list-group-item">
+                            <div className="d-flex justify-content-between align-items-center">
+                              <div>
+                                <h6 className="mb-1">Facility Water Damage</h6>
+                                <small className="text-muted">Claim #2024-0067 • Filed: Aug 10, 2024</small>
+                              </div>
+                              <span className="badge bg-info">Settled</span>
+                            </div>
+                          </div>
                         </div>
-                        <div className="text-center py-5">
-                          <i className="bi bi-shield display-1 text-muted"></i>
-                          <h4 className="mt-3 text-muted">Insurance Management</h4>
-                          <p className="text-muted">Coming soon...</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Quick Actions */}
+                  <div className="col-md-6 mb-4">
+                    <div className="card">
+                      <div className="card-header">
+                        <h5 className="mb-0">Insurance Actions</h5>
+                      </div>
+                      <div className="card-body">
+                        <div className="d-grid gap-3">
+                          <button className="btn btn-outline-primary">
+                            <i className="bi bi-file-earmark-plus me-2"></i>File New Claim
+                          </button>
+                          <button className="btn btn-outline-success">
+                            <i className="bi bi-shield-check me-2"></i>Verify Coverage
+                          </button>
+                          <button className="btn btn-outline-warning">
+                            <i className="bi bi-arrow-repeat me-2"></i>Renewal Reminders
+                          </button>
+                          <button className="btn btn-outline-info">
+                            <i className="bi bi-file-earmark-text me-2"></i>Generate Report
+                          </button>
                         </div>
                       </div>
                     </div>
