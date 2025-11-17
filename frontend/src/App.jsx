@@ -32,6 +32,7 @@ import UserManager from "./UserManager";
 import NewsManager from "./NewsManager";
 import PaymentManager from "./PaymentManager";
 import SiteSettings from "./SiteSettings";
+import AdminEmailSettings from "./AdminEmailSettings";
 import ScheduleManager from "./ScheduleManager";
 import Schedules from "./Schedules";
 import Account from "./Account";
@@ -419,6 +420,7 @@ export default function App() {
           <Route path="/admin/invoicing" element={<InvoicingSystem />} />
           <Route path="/admin/inventory" element={<InventoryManagementSystem />} />
           <Route path="/admin/settings" element={<SiteSettings />} />
+          <Route path="/admin/email-settings" element={<AdminEmailSettings />} />
           <Route path="/admin/schedules" element={<ScheduleManager />} />
           <Route path="/admin/gallery" element={<Gallery />} />
           <Route path="/admin/gallery-moderation" element={<GalleryModerationManager />} />

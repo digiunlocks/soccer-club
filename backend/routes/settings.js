@@ -6,6 +6,7 @@ const fs = require('fs');
 const sharp = require('sharp');
 const Settings = require('../models/Settings');
 const { superAdminAuth } = require('./auth');
+const { sendCustomEmail } = require('../services/emailService');
 
 // Configure multer for logo uploads
 const storage = multer.diskStorage({
@@ -379,6 +380,92 @@ router.post('/upload-logo', superAdminAuth, upload.single('logo'), async (req, r
   } catch (error) {
     console.error('Error uploading logo:', error);
     res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Send test email (admin only)
+router.post('/test-email', superAdminAuth, async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({ message: 'Email address is required' });
+    }
+    
+    // Create test email content
+    const subject = 'Test Email - Seattle Leopards FC';
+    const content = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f4f4f4;">
+        <div style="background-color: #ffffff; border-radius: 10px; padding: 30px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <div style="text-align: center; border-bottom: 3px solid #007bff; padding-bottom: 20px; margin-bottom: 30px;">
+            <div style="font-size: 28px; font-weight: bold; color: #007bff; margin-bottom: 10px;">⚽ Seattle Leopards FC</div>
+            <div style="color: #666; font-size: 16px;">Email Configuration Test</div>
+          </div>
+          
+          <h2 style="color: #333; margin-bottom: 20px;">✅ Test Email Successful!</h2>
+          
+          <p style="color: #666; font-size: 16px; line-height: 1.6;">
+            Congratulations! Your email configuration is working correctly. This test email confirms that:
+          </p>
+          
+          <div style="background-color: #d4edda; border-left: 4px solid #28a745; padding: 15px; margin: 20px 0; border-radius: 5px;">
+            <ul style="margin: 0; padding-left: 20px; color: #155724;">
+              <li>Email credentials are properly configured</li>
+              <li>SMTP connection is successful</li>
+              <li>Your email service is operational</li>
+              <li>Email templates are rendering correctly</li>
+            </ul>
+          </div>
+          
+          <p style="color: #666; font-size: 16px; line-height: 1.6;">
+            Your automated email notifications are now ready to use! Application submissions, approvals, and status updates will be sent automatically.
+          </p>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <div style="display: inline-block; background-color: #007bff; color: white; padding: 12px 25px; border-radius: 5px; font-weight: bold;">
+              Configuration Verified ✓
+            </div>
+          </div>
+          
+          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; color: #666; font-size: 14px;">
+            <p>This is an automated test email from Seattle Leopards FC</p>
+            <p><strong>Seattle Leopards FC</strong><br>Building Champions, Creating Memories</p>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    try {
+      const result = await sendCustomEmail(email, subject, content, true);
+      
+      if (result.success) {
+        res.json({ 
+          success: true,
+          message: `Test email sent successfully to ${email}`,
+          messageId: result.messageId
+        });
+      } else {
+        res.status(500).json({ 
+          success: false,
+          message: 'Failed to send test email. Please check your email configuration in the server environment variables.',
+          error: result.error
+        });
+      }
+    } catch (emailError) {
+      console.error('Error sending test email:', emailError);
+      res.status(500).json({ 
+        success: false,
+        message: 'Failed to send test email. Please ensure EMAIL_USER and EMAIL_PASS environment variables are properly configured.',
+        error: emailError.message
+      });
+    }
+  } catch (error) {
+    console.error('Error in test-email endpoint:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Server error',
+      error: error.message
+    });
   }
 });
 

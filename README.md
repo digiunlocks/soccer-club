@@ -25,6 +25,7 @@ A comprehensive web application for managing a soccer club with player applicati
 - **User Management** (manage user accounts)
 - **Payment Management** (track donations and payments)
 - **Site Settings** (maintenance mode, general settings)
+- **Email Notifications** (automated emails for applications) ⭐ NEW
 - **News & Blog Management**
 
 ## 🛠️ Technology Stack
@@ -264,6 +265,51 @@ soccer-club/
 - **Input Validation** and sanitization
 - **File Upload Restrictions** and validation
 
+## 📧 Email Notifications
+
+### Automated Email System
+The system now includes a comprehensive automated email notification system that sends beautiful HTML emails for:
+- ✅ Application submission confirmations
+- ✅ Application approval notifications (with team placement)
+- ✅ Application rejection notifications
+- ✅ Application status updates
+- ✅ Correction request notifications
+
+### Setup Email Notifications
+
+1. **Quick Setup (Gmail):**
+   - Enable 2-factor authentication on your Gmail account
+   - Generate an App Password from your Google Account settings
+   - Add to `backend/.env`:
+     ```env
+     EMAIL_USER=your-email@gmail.com
+     EMAIL_PASS=your-16-char-app-password
+     FRONTEND_URL=http://localhost:5173
+     ```
+
+2. **Configure in Admin Dashboard:**
+   - Login as admin
+   - Go to `/admin/email-settings`
+   - Test your configuration with the "Send Test Email" feature
+   - Customize email settings as needed
+
+3. **Complete Setup Guide:**
+   - See `EMAIL_SETUP_GUIDE.md` for detailed instructions
+   - Includes setup for Gmail, Outlook, Yahoo, and custom SMTP
+   - Troubleshooting guide included
+
+### Email Settings Features
+- Toggle email notifications on/off
+- Configure email addresses (admin, support, no-reply)
+- Customize email templates
+- Test email functionality
+- Beautiful, responsive email templates
+- Professional branding with club colors
+
+For complete documentation, see:
+- `EMAIL_SETUP_GUIDE.md` - Step-by-step setup instructions
+- `EMAIL_NOTIFICATION_ENHANCEMENT.md` - Technical details and features
+
 ## 🚨 Troubleshooting
 
 ### Common Issues
@@ -336,21 +382,35 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 🎯 Roadmap
 
+### Recently Completed ✅
+- [x] **Email notifications for applications** (v1.4.0) - Comprehensive automated email system
+- [x] Marketplace with offers system
+- [x] Unified inbox for notifications
+- [x] Payment tracking system
+- [x] Broadcast messaging system
+
 ### Planned Features
-- [ ] Email notifications for applications
 - [ ] Payment integration (Stripe/PayPal)
 - [ ] Mobile app development
 - [ ] Advanced analytics dashboard
 - [ ] Multi-language support
 - [ ] Social media integration
-- [ ] Newsletter subscription
+- [ ] Newsletter subscription with email campaigns
 - [ ] Advanced search and filtering
+- [ ] SMS notifications integration
+- [ ] Email analytics (open rates, click tracking)
 
 ### Version History
 - **v1.0.0** - Initial release with core features
 - **v1.1.0** - Added gallery and file upload features
 - **v1.2.0** - Enhanced admin dashboard and user management
 - **v1.3.0** - Added Docker support and deployment scripts
+- **v1.4.0** - Comprehensive email notification system ⭐ NEW
+  - Automated application emails (submission, approval, rejection)
+  - Admin email settings dashboard
+  - Test email functionality
+  - Professional HTML email templates
+  - Complete setup guide and documentation
 
 ---
 

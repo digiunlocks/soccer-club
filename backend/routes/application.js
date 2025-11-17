@@ -2,6 +2,11 @@ const express = require('express');
 const router = express.Router();
 const Application = require('../models/Application');
 const nodemailer = require('nodemailer');
+const {
+  sendApplicationSubmissionEmail,
+  sendApplicationStatusEmail,
+  sendCustomApplicationEmail
+} = require('../services/applicationEmailService');
 
 // Get all applications (optionally filter by type/status)
 router.get('/', async (req, res) => {
@@ -53,6 +58,18 @@ router.post('/', async (req, res) => {
   try {
     const app = new Application(req.body);
     await app.save();
+    
+    // Send confirmation email to applicant
+    if (app.info && app.info.email) {
+      try {
+        await sendApplicationSubmissionEmail(app);
+        console.log('✅ Confirmation email sent for application:', app._id);
+      } catch (emailError) {
+        console.error('❌ Failed to send confirmation email:', emailError);
+        // Don't fail the application submission if email fails
+      }
+    }
+    
     res.status(201).json(app);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -63,47 +80,33 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     console.log('PUT /api/applications/:id payload:', req.body);
-    const { status, actionReason, sendEmail } = req.body;
+    const { status, actionReason, sendEmail, teamPlacement } = req.body;
     if (!status || !['approved', 'denied', 'pending', 'rejected'].includes(status)) {
       console.error('Invalid or missing status:', status);
       return res.status(400).json({ error: 'Invalid or missing status' });
     }
     const app = await Application.findById(req.params.id);
     if (!app) return res.status(404).json({ error: 'Not found' });
+    
+    const oldStatus = app.status;
     app.status = status;
     if (actionReason !== undefined) app.actionReason = actionReason;
+    if (teamPlacement && status === 'approved') app.teamPlacement = teamPlacement;
     app.reviewedAt = new Date();
-    // Optionally send email (only in production)
-    if (process.env.NODE_ENV === 'production' && sendEmail && app.info && app.info.email) {
-      const nodemailer = require('nodemailer');
-      const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS,
-        },
-      });
-      const subject = status === 'approved' ? 'Your application has been approved' : 'Your application has been denied';
-      const text = `Dear ${app.info.name},\n\nYour application has been ${status}.\nReason: ${actionReason || 'No reason provided.'}\n\nThank you,\nSeattle Leopards FC`;
-      await transporter.sendMail({
-        from: process.env.EMAIL_USER,
-        to: app.info.email,
-        subject,
-        text,
-      });
-      app.emailSent = true;
+    
+    // Send email notification using the new email service
+    if (sendEmail !== false && app.info && app.info.email && oldStatus !== status) {
+      try {
+        await sendApplicationStatusEmail(app, status, teamPlacement, actionReason);
+        app.emailSent = true;
+        app.emailSentAt = new Date();
+        console.log(`✅ Status email (${status}) sent for application:`, app._id);
+      } catch (emailError) {
+        console.error('❌ Failed to send status email:', emailError);
+        // Don't fail the application update if email fails
+      }
     }
-    // For local email testing, you can use Ethereal:
-    // if (process.env.NODE_ENV !== 'production') {
-    //   const testAccount = await nodemailer.createTestAccount();
-    //   const transporter = nodemailer.createTransport({
-    //     host: 'smtp.ethereal.email',
-    //     port: 587,
-    //     auth: { user: testAccount.user, pass: testAccount.pass },
-    //   });
-    //   // ... same as above ...
-    //   // console.log('Preview URL: ' + nodemailer.getTestMessageUrl(info));
-    // }
+    
     await app.save();
     res.json(app);
   } catch (err) {
@@ -155,32 +158,40 @@ router.post('/:id/notify', async (req, res) => {
       return res.status(400).json({ error: 'Application has no email address' });
     }
     
-    // For now, just log the notification (you can implement actual email sending later)
-    console.log('Notification would be sent to:', app.info.email);
-    console.log('Team placement:', teamPlacement);
-    console.log('Include placement:', includePlacement);
-    console.log('Custom message:', customMessage);
-    console.log('Is auto:', isAuto);
-    
-    // Mark notification as sent
-    app.notificationSent = true;
-    app.notificationSentAt = new Date();
-    await app.save();
-    
-    res.json({ 
-      success: true, 
-      message: 'Notification sent successfully',
-      notificationDetails: {
-        email: app.info.email,
-        teamPlacement,
-        includePlacement,
-        customMessage,
-        isAuto
-      }
-    });
+    // Send actual email notification using the new email service
+    try {
+      const finalTeamPlacement = includePlacement ? teamPlacement : null;
+      await sendApplicationStatusEmail(app, app.status, finalTeamPlacement, customMessage);
+      
+      // Mark notification as sent
+      app.notificationSent = true;
+      app.notificationSentAt = new Date();
+      await app.save();
+      
+      console.log('✅ Notification email sent successfully to:', app.info.email);
+      
+      res.json({ 
+        success: true, 
+        message: 'Notification sent successfully',
+        notificationDetails: {
+          email: app.info.email,
+          status: app.status,
+          teamPlacement: finalTeamPlacement,
+          includePlacement,
+          customMessage,
+          isAuto
+        }
+      });
+    } catch (emailError) {
+      console.error('❌ Error sending notification email:', emailError);
+      res.status(500).json({ 
+        error: 'Failed to send notification email',
+        details: emailError.message 
+      });
+    }
   } catch (err) {
-    console.error('Error sending notification:', err);
-    res.status(500).json({ error: 'Failed to send notification' });
+    console.error('Error in notification endpoint:', err);
+    res.status(500).json({ error: 'Failed to process notification request' });
   }
 });
 
@@ -191,33 +202,38 @@ router.post('/:id/correction', async (req, res) => {
     const app = await Application.findById(req.params.id);
     if (!app) return res.status(404).json({ error: 'Application not found' });
     
-    if (process.env.NODE_ENV === 'production' && email) {
-      const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS,
-        },
-      });
-      
-      const subject = 'Application Correction Required - Seattle Leopards FC';
-      const text = `Dear ${app.info.name},\n\nWe need to request a correction to your application.\n\nReason: ${reason}\n\nPlease review your application and make the necessary changes.\n\nThank you,\nSeattle Leopards FC`;
-      
-      await transporter.sendMail({
-        from: process.env.EMAIL_USER,
-        to: email,
-        subject,
-        text,
-      });
-      
-      // Log the correction email
-      if (!app.correctionEmails) app.correctionEmails = [];
-      app.correctionEmails.push({
-        sentAt: new Date(),
-        reason: reason,
-        email: email
-      });
-      await app.save();
+    if (email) {
+      try {
+        const subject = 'Application Correction Required - Seattle Leopards FC';
+        const message = `
+          <h2>Correction Required</h2>
+          <p>Dear ${app.info.name},</p>
+          <p>We need to request a correction to your application.</p>
+          <div style="background-color: #fff3cd; padding: 15px; border-radius: 5px; border-left: 4px solid #ffc107; margin: 20px 0;">
+            <strong>Reason:</strong><br>
+            ${reason}
+          </div>
+          <p>Please review your application and make the necessary changes at your earliest convenience.</p>
+          <p>If you have any questions, please don't hesitate to contact us.</p>
+          <p>Thank you for your cooperation,<br>Seattle Leopards FC</p>
+        `;
+        
+        await sendCustomApplicationEmail(email, subject, message);
+        
+        // Log the correction email
+        if (!app.correctionEmails) app.correctionEmails = [];
+        app.correctionEmails.push({
+          sentAt: new Date(),
+          reason: reason,
+          email: email
+        });
+        await app.save();
+        
+        console.log('✅ Correction email sent to:', email);
+      } catch (emailError) {
+        console.error('❌ Failed to send correction email:', emailError);
+        return res.status(500).json({ error: 'Failed to send correction email', details: emailError.message });
+      }
     }
     
     res.json({ success: true, message: 'Correction email sent successfully' });
@@ -233,27 +249,27 @@ router.post('/bulk-correction', async (req, res) => {
     const { ids, reason } = req.body;
     const apps = await Application.find({ _id: { $in: ids } });
     
-    if (process.env.NODE_ENV === 'production') {
-      const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS,
-        },
-      });
-      
-      const subject = 'Application Correction Required - Seattle Leopards FC';
-      
-      for (const app of apps) {
-        if (app.info && app.info.email) {
-          const text = `Dear ${app.info.name},\n\nWe need to request a correction to your application.\n\nReason: ${reason}\n\nPlease review your application and make the necessary changes.\n\nThank you,\nSeattle Leopards FC`;
+    const subject = 'Application Correction Required - Seattle Leopards FC';
+    let successCount = 0;
+    let failCount = 0;
+    
+    for (const app of apps) {
+      if (app.info && app.info.email) {
+        try {
+          const message = `
+            <h2>Correction Required</h2>
+            <p>Dear ${app.info.name},</p>
+            <p>We need to request a correction to your application.</p>
+            <div style="background-color: #fff3cd; padding: 15px; border-radius: 5px; border-left: 4px solid #ffc107; margin: 20px 0;">
+              <strong>Reason:</strong><br>
+              ${reason}
+            </div>
+            <p>Please review your application and make the necessary changes at your earliest convenience.</p>
+            <p>If you have any questions, please don't hesitate to contact us.</p>
+            <p>Thank you for your cooperation,<br>Seattle Leopards FC</p>
+          `;
           
-          await transporter.sendMail({
-            from: process.env.EMAIL_USER,
-            to: app.info.email,
-            subject,
-            text,
-          });
+          await sendCustomApplicationEmail(app.info.email, subject, message);
           
           // Log the correction email
           if (!app.correctionEmails) app.correctionEmails = [];
@@ -263,11 +279,25 @@ router.post('/bulk-correction', async (req, res) => {
             email: app.info.email
           });
           await app.save();
+          
+          successCount++;
+          console.log('✅ Bulk correction email sent to:', app.info.email);
+          
+          // Add small delay between emails to avoid rate limiting
+          await new Promise(resolve => setTimeout(resolve, 500));
+        } catch (emailError) {
+          failCount++;
+          console.error('❌ Failed to send bulk correction email to:', app.info.email, emailError);
         }
       }
     }
     
-    res.json({ success: true, message: `Bulk correction emails sent to ${apps.length} applicants` });
+    res.json({ 
+      success: true, 
+      message: `Bulk correction emails sent to ${successCount} of ${apps.length} applicants`,
+      successCount,
+      failCount
+    });
   } catch (err) {
     console.error('Error sending bulk correction emails:', err);
     res.status(500).json({ error: 'Failed to send bulk correction emails' });
@@ -284,14 +314,4 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// Get applications for a specific user by email (alternative route for frontend compatibility)
-router.get('/user/:email', async (req, res) => {
-  try {
-    const apps = await Application.find({ 'info.email': req.params.email }).sort({ createdAt: -1 });
-    res.json(apps);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
-
-module.exports = router; 
+module.exports = router;
