@@ -273,6 +273,28 @@ router.put('/fees', superAdminAuth, async (req, res) => {
   }
 });
 
+// Get public settings (logo, etc.) - NO AUTH REQUIRED
+router.get('/public', async (req, res) => {
+  try {
+    let settings = await Settings.findOne();
+    
+    if (!settings) {
+      settings = new Settings();
+      await settings.save();
+    }
+    
+    // Return only public information
+    res.json({
+      logoUrl: settings.logoUrl || null,
+      clubName: settings.clubName || 'Seattle Leopards FC',
+      // Add other public settings here as needed
+    });
+  } catch (error) {
+    console.error('Error fetching public settings:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // Get all settings (admin only)
 router.get('/', superAdminAuth, async (req, res) => {
   try {

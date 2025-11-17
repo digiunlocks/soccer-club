@@ -101,11 +101,11 @@ export default function App() {
     setIsLoggedIn(!!token);
   }, [location]);
 
-  // Fetch logo URL from settings
+  // Fetch logo URL from public settings (no auth required)
   useEffect(() => {
     const fetchLogoUrl = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/settings');
+        const response = await fetch('http://localhost:5000/api/settings/public');
         if (response.ok) {
           const data = await response.json();
           if (data.logoUrl) {

@@ -61,7 +61,7 @@ export default function BrandingManager() {
 
   const fetchCurrentLogo = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/settings');
+      const response = await fetch('http://localhost:5000/api/settings/public');
       if (response.ok) {
         const data = await response.json();
         if (data.logoUrl) {
