@@ -3,10 +3,15 @@ import React from 'react';
 const Logo = ({ className = "w-8 h-8", customLogoUrl = null }) => {
   // If custom logo URL is provided, use it
   if (customLogoUrl) {
+    // Convert relative URL to absolute if needed
+    const fullLogoUrl = customLogoUrl.startsWith('http') 
+      ? customLogoUrl 
+      : `http://localhost:5000${customLogoUrl}`;
+    
     return (
       <div className={`${className} flex-shrink-0`}>
         <img 
-          src={customLogoUrl} 
+          src={fullLogoUrl} 
           alt="Club Logo" 
           className="w-full h-full object-contain"
           crossOrigin="anonymous"

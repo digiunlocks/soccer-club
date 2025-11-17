@@ -101,6 +101,30 @@ export default function App() {
     setIsLoggedIn(!!token);
   }, [location]);
 
+  // Fetch logo URL from settings
+  useEffect(() => {
+    const fetchLogoUrl = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/settings');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.logoUrl) {
+            setLogoUrl(data.logoUrl);
+            console.log('Logo URL fetched:', data.logoUrl);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching logo URL:', error);
+      }
+    };
+
+    fetchLogoUrl();
+    
+    // Refresh logo every 10 seconds to catch updates
+    const interval = setInterval(fetchLogoUrl, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -169,7 +193,7 @@ export default function App() {
             {/* Logo and main nav */}
             <div className="flex items-center space-x-8">
               <Link to="/" className="flex items-center space-x-2">
-                <Logo />
+                <Logo customLogoUrl={logoUrl} />
               </Link>
               
               {/* Donate button next to logo */}
