@@ -25,7 +25,7 @@ import ClubManager from "./ClubManager";
 import ContactManager from "./ContactManager";
 import ContentManager from "./ContentManager";
 import PlaceholderManager from "./PlaceholderManager";
-import AdminDashboard from "./AdminDashboard";
+import AdminDashboard from "./EnhancedAdminDashboard";
 import ProgramManager from "./ProgramManager";
 import AdminTeamManager from "./AdminTeamManager";
 import UserManager from "./UserManager";
