@@ -31,6 +31,10 @@ export default function BrandingManager() {
     showControls: true
   });
   const [editing, setEditing] = useState(null);
+  const [logoFile, setLogoFile] = useState(null);
+  const [logoPreview, setLogoPreview] = useState(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [currentLogo, setCurrentLogo] = useState(null);
 
   const fetchHeroItems = async () => {
     setLoading(true);
@@ -51,8 +55,114 @@ export default function BrandingManager() {
   };
 
   useEffect(() => { 
-    fetchHeroItems(); 
+    fetchHeroItems();
+    fetchCurrentLogo();
   }, []);
+
+  const fetchCurrentLogo = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/settings');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.logoUrl) {
+          const fullUrl = data.logoUrl.startsWith('http') 
+            ? data.logoUrl 
+            : `http://localhost:5000${data.logoUrl}`;
+          setCurrentLogo(fullUrl);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching logo:', error);
+    }
+  };
+
+  const handleLogoChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate file size (2MB limit)
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("File size must be less than 2MB");
+      return;
+    }
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/svg+xml'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error("Please upload a PNG, JPG, or SVG file");
+      return;
+    }
+
+    setLogoFile(file);
+    
+    // Create preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setLogoPreview(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleLogoUpload = async () => {
+    if (!logoFile) {
+      toast.error("Please select a logo file");
+      return;
+    }
+
+    try {
+      setUploadingLogo(true);
+      const formData = new FormData();
+      formData.append('logo', logoFile);
+
+      const token = localStorage.getItem("token");
+      if (!token) {
+        toast.error("Authentication required. Please log in.");
+        navigate("/login");
+        return;
+      }
+
+      const response = await fetch("http://localhost:5000/api/settings/upload-logo", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (response.status === 401) {
+        toast.error("Invalid token. Please log in again.");
+        localStorage.removeItem("token");
+        navigate("/login");
+        return;
+      }
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || data.message || "Failed to upload logo");
+      }
+
+      const data = await response.json();
+      const fullLogoUrl = data.logoUrl.startsWith('http') 
+        ? data.logoUrl 
+        : `http://localhost:5000${data.logoUrl}`;
+      
+      setCurrentLogo(fullLogoUrl);
+      setLogoFile(null);
+      setLogoPreview(null);
+      
+      toast.success("Logo uploaded successfully! It will appear on your site shortly.");
+      
+      // Refresh the page after 2 seconds to show the new logo
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+    } catch (error) {
+      console.error("Logo upload error:", error);
+      toast.error(error.message || "Failed to upload logo");
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -680,12 +790,54 @@ export default function BrandingManager() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Logo Upload</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                />
+                <label className="block text-sm font-medium text-gray-700 mb-2">Site Logo Upload</label>
+                
+                {/* Current Logo Preview */}
+                {currentLogo && (
+                  <div className="mb-3">
+                    <p className="text-sm text-gray-600 mb-2">Current Logo:</p>
+                    <div className="w-32 h-32 border-2 border-gray-300 rounded-lg p-2 bg-gray-50">
+                      <img 
+                        src={currentLogo} 
+                        alt="Current Logo" 
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                  </div>
+                )}
+                
+                {/* New Logo Preview */}
+                {logoPreview && (
+                  <div className="mb-3">
+                    <p className="text-sm text-green-600 font-medium mb-2">New Logo Preview:</p>
+                    <div className="w-32 h-32 border-2 border-green-500 rounded-lg p-2 bg-green-50">
+                      <img 
+                        src={logoPreview} 
+                        alt="Logo Preview" 
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                  </div>
+                )}
+                
+                {/* File Input */}
+                <div className="flex items-center gap-3">
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/jpg,image/svg+xml"
+                    onChange={handleLogoChange}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleLogoUpload}
+                    disabled={!logoFile || uploadingLogo}
+                    className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed whitespace-nowrap"
+                  >
+                    {uploadingLogo ? "Uploading..." : "Upload Logo"}
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">PNG, JPG, or SVG • Max 2MB • Will be resized to 200x200px</p>
               </div>
             </div>
             
@@ -901,15 +1053,54 @@ export default function BrandingManager() {
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Logo Upload</label>
-              <div className="flex items-center space-x-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Site Logo Upload</label>
+              
+              {/* Current Logo Preview */}
+              {currentLogo && (
+                <div className="mb-3">
+                  <p className="text-sm text-gray-600 mb-2">Current Logo:</p>
+                  <div className="w-32 h-32 border-2 border-gray-300 rounded-lg p-2 bg-gray-50">
+                    <img 
+                      src={currentLogo} 
+                      alt="Current Logo" 
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                </div>
+              )}
+              
+              {/* New Logo Preview */}
+              {logoPreview && (
+                <div className="mb-3">
+                  <p className="text-sm text-green-600 font-medium mb-2">New Logo Preview:</p>
+                  <div className="w-32 h-32 border-2 border-green-500 rounded-lg p-2 bg-green-50">
+                    <img 
+                      src={logoPreview} 
+                      alt="Logo Preview" 
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                </div>
+              )}
+              
+              {/* File Input */}
+              <div className="flex items-center gap-3">
                 <input
                   type="file"
-                  accept="image/*"
+                  accept="image/png,image/jpeg,image/jpg,image/svg+xml"
+                  onChange={handleLogoChange}
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
-                <span className="text-sm text-gray-500">No file chosen</span>
+                <button
+                  type="button"
+                  onClick={handleLogoUpload}
+                  disabled={!logoFile || uploadingLogo}
+                  className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed whitespace-nowrap"
+                >
+                  {uploadingLogo ? "Uploading..." : "Upload Logo"}
+                </button>
               </div>
+              <p className="text-xs text-gray-500 mt-1">PNG, JPG, or SVG • Max 2MB • Will be resized to 200x200px</p>
             </div>
             
             <button
