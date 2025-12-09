@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from 'react-toastify';
+import { API_BASE_URL } from './config/api';
 
 const USER_ROLES = ["parent"];
 const USER_STATUSES = ["active", "inactive", "pending"];
@@ -84,7 +85,7 @@ export default function ParentsManager() {
       const token = localStorage.getItem("token");
       console.log('🔍 Fetching parents with token:', token ? 'Present' : 'Missing');
       
-      const response = await fetch('http://localhost:5000/api/users?role=parent', {
+      const response = await fetch(`${API_BASE_URL}/users?role=parent`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -150,7 +151,7 @@ export default function ParentsManager() {
     
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch('http://localhost:5000/api/users', {
+      const response = await fetch(`${API_BASE_URL}/users`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -191,7 +192,7 @@ export default function ParentsManager() {
     
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/users/${selectedParent._id}`, {
+      const response = await fetch(`${API_BASE_URL}/users/${selectedParent._id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -228,7 +229,7 @@ export default function ParentsManager() {
     
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/users/${parentId}`, {
+      const response = await fetch(`${API_BASE_URL}/users/${parentId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -288,7 +289,7 @@ export default function ParentsManager() {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch('http://localhost:5000/api/users/bulk', {
+      const response = await fetch(`${API_BASE_URL}/users/bulk`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -359,7 +360,7 @@ export default function ParentsManager() {
     
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/users/${parentId}/reset-password`, {
+      const response = await fetch(`${API_BASE_URL}/users/${parentId}/reset-password`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -403,7 +404,7 @@ export default function ParentsManager() {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/users/${selectedParent._id}/set-password`, {
+      const response = await fetch(`${API_BASE_URL}/users/${selectedParent._id}/set-password`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

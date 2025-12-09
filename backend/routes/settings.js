@@ -205,48 +205,200 @@ router.get('/features', async (req, res) => {
   }
 });
 
-// Get fee settings (admin only)
+// Get all fee settings (admin only)
 router.get('/fees/admin', superAdminAuth, async (req, res) => {
   try {
     let settings = await Settings.findOne();
     
     if (!settings) {
-      // Create default settings if none exist
       settings = new Settings();
       await settings.save();
     }
     
-    res.json(settings);
+    // Return comprehensive fee structure
+    res.json({
+      feesEnabled: settings.feesEnabled,
+      currency: settings.currency,
+      taxEnabled: settings.taxEnabled,
+      taxRate: settings.taxRate,
+      taxName: settings.taxName,
+      registrationFees: settings.registrationFees,
+      monthlyFees: settings.monthlyFees,
+      seasonalFees: settings.seasonalFees,
+      programFees: settings.programFees,
+      campFees: settings.campFees,
+      trainingFees: settings.trainingFees,
+      equipmentFees: settings.equipmentFees,
+      tournamentFees: settings.tournamentFees,
+      facilityFees: settings.facilityFees,
+      adminFees: settings.adminFees,
+      discounts: settings.discounts,
+      paymentPlans: settings.paymentPlans,
+      donationMin: settings.donationMin,
+      donationOptions: settings.donationOptions,
+      // Legacy fields
+      playerFee: settings.playerFee,
+      coachFee: settings.coachFee,
+      refereeFee: settings.refereeFee,
+      volunteerFee: settings.volunteerFee
+    });
   } catch (error) {
     console.error('Error fetching fee settings:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-// Update fee settings (admin only)
+// Get public fee settings (for registration forms, etc.)
+router.get('/fees/public', async (req, res) => {
+  try {
+    let settings = await Settings.findOne();
+    
+    if (!settings) {
+      settings = new Settings();
+      await settings.save();
+    }
+    
+    if (!settings.feesEnabled) {
+      return res.json({ feesEnabled: false, message: 'Fees are currently disabled' });
+    }
+    
+    // Return only public-facing fee information
+    res.json({
+      feesEnabled: settings.feesEnabled,
+      currency: settings.currency,
+      taxEnabled: settings.taxEnabled,
+      taxRate: settings.taxRate,
+      registrationFees: settings.registrationFees,
+      monthlyFees: settings.monthlyFees,
+      seasonalFees: settings.seasonalFees,
+      programFees: settings.programFees,
+      campFees: settings.campFees,
+      equipmentFees: settings.equipmentFees,
+      discounts: {
+        siblingDiscount: settings.discounts?.siblingDiscount,
+        multiChildDiscount: settings.discounts?.multiChildDiscount,
+        militaryDiscount: settings.discounts?.militaryDiscount,
+        firstResponderDiscount: settings.discounts?.firstResponderDiscount,
+        scholarshipAvailable: settings.discounts?.scholarshipAvailable
+      },
+      paymentPlans: {
+        enablePaymentPlans: settings.paymentPlans?.enablePaymentPlans,
+        maxInstallments: settings.paymentPlans?.maxInstallments
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching public fee settings:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Update all fee settings (admin only)
 router.put('/fees', superAdminAuth, async (req, res) => {
   try {
-    const {
-      playerFee,
-      coachFee,
-      refereeFee,
-      volunteerFee,
-      feesEnabled,
-      donationMin,
-      donationOptions
-    } = req.body;
-
-    // Validate input
-    if (playerFee < 0 || coachFee < 0 || refereeFee < 0 || volunteerFee < 0) {
-      return res.status(400).json({ message: 'Fees cannot be negative' });
+    let settings = await Settings.findOne();
+    
+    if (!settings) {
+      settings = new Settings();
     }
 
-    if (donationMin < 0) {
-      return res.status(400).json({ message: 'Minimum donation cannot be negative' });
+    // Update global fee settings
+    if (req.body.feesEnabled !== undefined) settings.feesEnabled = req.body.feesEnabled;
+    if (req.body.currency) settings.currency = req.body.currency;
+    if (req.body.taxEnabled !== undefined) settings.taxEnabled = req.body.taxEnabled;
+    if (req.body.taxRate !== undefined) settings.taxRate = req.body.taxRate;
+    if (req.body.taxName) settings.taxName = req.body.taxName;
+
+    // Update registration fees
+    if (req.body.registrationFees) {
+      settings.registrationFees = { ...settings.registrationFees, ...req.body.registrationFees };
     }
 
-    if (!Array.isArray(donationOptions) || donationOptions.some(opt => opt < 0)) {
-      return res.status(400).json({ message: 'Donation options must be an array of non-negative numbers' });
+    // Update monthly fees
+    if (req.body.monthlyFees) {
+      settings.monthlyFees = { ...settings.monthlyFees, ...req.body.monthlyFees };
+    }
+
+    // Update seasonal fees
+    if (req.body.seasonalFees) {
+      settings.seasonalFees = { ...settings.seasonalFees, ...req.body.seasonalFees };
+    }
+
+    // Update program fees
+    if (req.body.programFees) {
+      settings.programFees = { ...settings.programFees, ...req.body.programFees };
+    }
+
+    // Update camp fees
+    if (req.body.campFees) {
+      settings.campFees = { ...settings.campFees, ...req.body.campFees };
+    }
+
+    // Update training fees
+    if (req.body.trainingFees) {
+      settings.trainingFees = { ...settings.trainingFees, ...req.body.trainingFees };
+    }
+
+    // Update equipment fees
+    if (req.body.equipmentFees) {
+      settings.equipmentFees = { ...settings.equipmentFees, ...req.body.equipmentFees };
+    }
+
+    // Update tournament fees
+    if (req.body.tournamentFees) {
+      settings.tournamentFees = { ...settings.tournamentFees, ...req.body.tournamentFees };
+    }
+
+    // Update facility fees
+    if (req.body.facilityFees) {
+      settings.facilityFees = { ...settings.facilityFees, ...req.body.facilityFees };
+    }
+
+    // Update admin fees
+    if (req.body.adminFees) {
+      settings.adminFees = { ...settings.adminFees, ...req.body.adminFees };
+    }
+
+    // Update discounts
+    if (req.body.discounts) {
+      settings.discounts = { ...settings.discounts, ...req.body.discounts };
+    }
+
+    // Update payment plans
+    if (req.body.paymentPlans) {
+      settings.paymentPlans = { ...settings.paymentPlans, ...req.body.paymentPlans };
+    }
+
+    // Update donation settings
+    if (req.body.donationMin !== undefined) settings.donationMin = req.body.donationMin;
+    if (req.body.donationOptions) settings.donationOptions = req.body.donationOptions;
+
+    // Update legacy fields for backward compatibility
+    if (req.body.playerFee !== undefined) settings.playerFee = req.body.playerFee;
+    if (req.body.coachFee !== undefined) settings.coachFee = req.body.coachFee;
+    if (req.body.refereeFee !== undefined) settings.refereeFee = req.body.refereeFee;
+    if (req.body.volunteerFee !== undefined) settings.volunteerFee = req.body.volunteerFee;
+
+    await settings.save();
+    
+    res.json({ message: 'Fee settings updated successfully', settings });
+  } catch (error) {
+    console.error('Error updating fee settings:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Update specific fee category (admin only)
+router.put('/fees/:category', superAdminAuth, async (req, res) => {
+  try {
+    const { category } = req.params;
+    const validCategories = [
+      'registrationFees', 'monthlyFees', 'seasonalFees', 'programFees',
+      'campFees', 'trainingFees', 'equipmentFees', 'tournamentFees',
+      'facilityFees', 'adminFees', 'discounts', 'paymentPlans'
+    ];
+
+    if (!validCategories.includes(category)) {
+      return res.status(400).json({ message: 'Invalid fee category' });
     }
 
     let settings = await Settings.findOne();
@@ -255,20 +407,13 @@ router.put('/fees', superAdminAuth, async (req, res) => {
       settings = new Settings();
     }
 
-    // Update settings
-    settings.playerFee = playerFee || 0;
-    settings.coachFee = coachFee || 0;
-    settings.refereeFee = refereeFee || 0;
-    settings.volunteerFee = volunteerFee || 0;
-    settings.feesEnabled = feesEnabled !== undefined ? feesEnabled : true;
-    settings.donationMin = donationMin || 0;
-    settings.donationOptions = donationOptions || [0, 5, 10, 25, 50, 100];
-
+    // Update the specific category
+    settings[category] = { ...settings[category], ...req.body };
     await settings.save();
-    
-    res.json(settings);
+
+    res.json({ message: `${category} updated successfully`, [category]: settings[category] });
   } catch (error) {
-    console.error('Error updating fee settings:', error);
+    console.error(`Error updating ${req.params.category}:`, error);
     res.status(500).json({ message: 'Server error' });
   }
 });

@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
+import { API_BASE_URL } from './config/api';
 
-const API_URL = "http://localhost:5000/api/gallery";
+const API_URL = `${API_BASE_URL}/gallery`;
+const SERVER_URL = API_BASE_URL.replace('/api', '');
 
 export default function PublicGallery() {
   const [media, setMedia] = useState([]);
@@ -63,7 +65,7 @@ export default function PublicGallery() {
               </div>
             ) : isPhoto ? (
               <img
-                src={item.url.startsWith('http') ? item.url : `http://localhost:5000${item.url}`}
+                src={item.url.startsWith('http') ? item.url : `${SERVER_URL}${item.url}`}
                 alt="Gallery image"
                 className="w-full h-full object-cover"
                 onError={(e) => {
@@ -182,7 +184,7 @@ export default function PublicGallery() {
               <div className="mb-6">
                 {selectedMedia.type === 'photos' ? (
                   <img
-                    src={selectedMedia.url.startsWith('http') ? selectedMedia.url : `http://localhost:5000${selectedMedia.url}`}
+                    src={selectedMedia.url.startsWith('http') ? selectedMedia.url : `${SERVER_URL}${selectedMedia.url}`}
                     alt="Gallery image"
                     className="w-full max-h-96 object-contain rounded-lg"
                     onError={(e) => {
@@ -191,7 +193,7 @@ export default function PublicGallery() {
                   />
                 ) : selectedMedia.type === 'videos' ? (
                   <video
-                    src={selectedMedia.url.startsWith('http') ? selectedMedia.url : `http://localhost:5000${selectedMedia.url}`}
+                    src={selectedMedia.url.startsWith('http') ? selectedMedia.url : `${SERVER_URL}${selectedMedia.url}`}
                     controls
                     className="w-full max-h-96 rounded-lg"
                   />
@@ -203,7 +205,7 @@ export default function PublicGallery() {
                       </svg>
                       <p className="text-gray-500">Document Preview</p>
                       <a
-                        href={selectedMedia.url.startsWith('http') ? selectedMedia.url : `http://localhost:5000${selectedMedia.url}`}
+                        href={selectedMedia.url.startsWith('http') ? selectedMedia.url : `${SERVER_URL}${selectedMedia.url}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="mt-2 inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"

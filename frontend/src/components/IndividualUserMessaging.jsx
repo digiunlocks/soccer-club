@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
+import { API_BASE_URL } from '../config/api';
 
 const IndividualUserMessaging = () => {
   const [users, setUsers] = useState([]);
@@ -28,7 +29,7 @@ const IndividualUserMessaging = () => {
         return;
       }
 
-      let url = 'http://localhost:5000/api/users?';
+      let url = `${API_BASE_URL}/users?`;
       if (userSearch) url += `search=${encodeURIComponent(userSearch)}&`;
       if (userFilter.role) url += `role=${userFilter.role}&`;
       if (userFilter.team) url += `team=${encodeURIComponent(userFilter.team)}&`;
@@ -69,7 +70,7 @@ const IndividualUserMessaging = () => {
     setSending(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/broadcasts', {
+      const response = await fetch(`${API_BASE_URL}/broadcasts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

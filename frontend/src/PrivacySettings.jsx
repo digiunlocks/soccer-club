@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
+import { API_BASE_URL } from './config/api';
 
 const PrivacySettings = () => {
   const [privacySettings, setPrivacySettings] = useState({
@@ -21,7 +22,7 @@ const PrivacySettings = () => {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      const response = await fetch('http://localhost:5000/api/auth/privacy-settings', {
+      const response = await fetch(`${API_BASE_URL}/auth/privacy-settings`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -55,7 +56,7 @@ const PrivacySettings = () => {
     setSaving(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/auth/privacy-settings', {
+      const response = await fetch(`${API_BASE_URL}/auth/privacy-settings`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

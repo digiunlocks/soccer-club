@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import HomepageContentManager from './components/HomepageContentManager';
 import PasswordResetManager from './components/PasswordResetManager';
 import BroadcastManager from './components/BroadcastManager';
+import { API_BASE_URL } from './config/api';
 
 export default function EnhancedAdminDashboard() {
   const [stats, setStats] = useState({
@@ -61,16 +62,16 @@ export default function EnhancedAdminDashboard() {
     try {
       const token = localStorage.getItem("token");
       const [applicationsRes, paymentsRes, usersRes, marketplaceRes] = await Promise.all([
-        fetch("http://localhost:5000/api/applications", {
+        fetch(`${API_BASE_URL}/applications", {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch("http://localhost:5000/api/payments", {
+        fetch(`${API_BASE_URL}/payments", {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch("http://localhost:5000/api/auth/users", {
+        fetch(`${API_BASE_URL}/auth/users", {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch("http://localhost:5000/api/marketplace/public", {
+        fetch(`${API_BASE_URL}/marketplace/public", {
           headers: { Authorization: `Bearer ${token}` },
         })
       ]);

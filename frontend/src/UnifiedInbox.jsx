@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import { 
   FaBell, FaEnvelope, FaTrash, FaFilter, FaSearch, FaInbox
 } from 'react-icons/fa';
+import { API_BASE_URL } from './config/api';
 
 export default function UnifiedInbox() {
   const navigate = useNavigate();
@@ -36,12 +37,12 @@ export default function UnifiedInbox() {
       console.log('📬 Fetching unified inbox items...');
 
       // Fetch notifications
-      const notifResponse = await fetch('http://localhost:5000/api/notifications', {
+      const notifResponse = await fetch(`${API_BASE_URL}/notifications`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
       // Fetch conversations
-      const convResponse = await fetch('http://localhost:5000/api/messages/conversations', {
+      const convResponse = await fetch(`${API_BASE_URL}/messages/conversations`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -135,7 +136,7 @@ export default function UnifiedInbox() {
       
       // Only mark notifications as read (conversations are marked read when opened)
       if (item.type === 'notification') {
-        const response = await fetch(`http://localhost:5000/api/notifications/${item.originalId}/read`, {
+        const response = await fetch(`${API_BASE_URL}/notifications/${item.originalId}/read`, {
           method: 'PUT',
           headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -169,7 +170,7 @@ export default function UnifiedInbox() {
   const markAllAsRead = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/notifications/mark-all-read', {
+      const response = await fetch(`${API_BASE_URL}/notifications/mark-all-read`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -194,7 +195,7 @@ export default function UnifiedInbox() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/notifications/${item.originalId}`, {
+      const response = await fetch(`${API_BASE_URL}/notifications/${item.originalId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });

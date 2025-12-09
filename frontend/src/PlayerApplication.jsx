@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { api, API_ENDPOINTS } from "./config/api";
+import { api, API_ENDPOINTS, API_BASE_URL } from "./config/api";
 
 const WAIVER_TEXT = `
 WAIVER AND RELEASE OF LIABILITY
@@ -60,7 +60,7 @@ export default function PlayerApplication() {
   useEffect(() => {
     const fetchFeeSettings = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/settings/fees');
+        const response = await fetch(`${API_BASE_URL}/settings/fees`);
         if (response.ok) {
           const data = await response.json();
           // Merge with enhanced structure to ensure all fields exist

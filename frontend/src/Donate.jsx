@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { API_BASE_URL } from './config/api';
 
 export default function Donate() {
   const [amount, setAmount] = useState("");
@@ -9,7 +10,7 @@ export default function Donate() {
   useEffect(() => {
     const fetchFeeSettings = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/settings/fees');
+        const response = await fetch(`${API_BASE_URL}/settings/fees`);
         if (response.ok) {
           const data = await response.json();
           setFeeSettings(data);

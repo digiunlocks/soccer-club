@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { FaEdit, FaTrash, FaCheck, FaTimes, FaEye, FaHeart, FaDollarSign } from 'react-icons/fa';
+import { API_BASE_URL } from './config/api';
+
+const SERVER_URL = API_BASE_URL.replace('/api', '');
 
 const MyMarketplaceItems = () => {
   const navigate = useNavigate();
@@ -33,7 +36,7 @@ const MyMarketplaceItems = () => {
       }
 
       const status = activeTab === 'all' ? '' : activeTab;
-      const response = await fetch(`http://localhost:5000/api/marketplace/my-items?status=${status}&page=${currentPage}`, {
+      const response = await fetch(`${API_BASE_URL}/marketplace/my-items?status=${status}&page=${currentPage}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -60,7 +63,7 @@ const MyMarketplaceItems = () => {
   const fetchStats = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/marketplace/my-items/stats', {
+      const response = await fetch(`${API_BASE_URL}/marketplace/my-items/stats`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -82,7 +85,7 @@ const MyMarketplaceItems = () => {
   const fetchAllItems = async () => {
     try {
       setAllItemsLoading(true);
-      const response = await fetch('http://localhost:5000/api/marketplace/public?page=1&limit=12');
+      const response = await fetch(`${API_BASE_URL}/marketplace/public?page=1&limit=12`);
       
       if (response.ok) {
         const data = await response.json();
@@ -112,7 +115,7 @@ const MyMarketplaceItems = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/marketplace/my-items/${selectedItem._id}`, {
+      const response = await fetch(`${API_BASE_URL}/marketplace/my-items/${selectedItem._id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -140,7 +143,7 @@ const MyMarketplaceItems = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/marketplace/my-items/${selectedItem._id}/status`, {
+      const response = await fetch(`${API_BASE_URL}/marketplace/my-items/${selectedItem._id}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -172,7 +175,7 @@ const MyMarketplaceItems = () => {
   const handleStatusChange = async (item, newStatus) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/marketplace/my-items/${item._id}/status`, {
+      const response = await fetch(`${API_BASE_URL}/marketplace/my-items/${item._id}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -379,7 +382,7 @@ const MyMarketplaceItems = () => {
                 <div className="relative h-48 bg-gray-200">
                   {item.images && item.images.length > 0 ? (
                     <img
-                      src={`http://localhost:5000/${item.images[0]}`}
+                      src={`${SERVER_URL}/${item.images[0]}`}
                       alt={item.title}
                       className="w-full h-full object-cover"
                     />
@@ -438,7 +441,7 @@ const MyMarketplaceItems = () => {
                     <img
                       src={item.images[0].startsWith('http') ? 
                         item.images[0] : 
-                        `http://localhost:5000${item.images[0]}`}
+                        `${SERVER_URL}${item.images[0]}`}
                       alt={item.title}
                       className="w-full h-full object-cover"
                       onError={(e) => {

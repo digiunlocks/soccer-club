@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { toast } from 'react-toastify';
+import { API_BASE_URL } from '../config/api';
 
 export default function ContactSellerModal({ item, user, onClose }) {
   const [message, setMessage] = useState('');
@@ -28,7 +29,7 @@ export default function ContactSellerModal({ item, user, onClose }) {
 
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:5000/api/marketplace/${item._id}/contact-seller`, {
+      const response = await fetch(`${API_BASE_URL}/marketplace/${item._id}/contact-seller`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

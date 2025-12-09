@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import IndividualUserMessaging from './IndividualUserMessaging';
+import { API_BASE_URL } from '../config/api';
 
 const BroadcastManager = () => {
   const [broadcasts, setBroadcasts] = useState([]);
@@ -52,7 +53,7 @@ const BroadcastManager = () => {
         return;
       }
 
-      const response = await fetch('http://localhost:5000/api/broadcasts', {
+      const response = await fetch(`${API_BASE_URL}/broadcasts`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -92,7 +93,7 @@ const BroadcastManager = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/broadcasts', {
+      const response = await fetch(`${API_BASE_URL}/broadcasts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -133,7 +134,7 @@ const BroadcastManager = () => {
   const handleSendBroadcast = async (broadcastId) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/broadcasts/${broadcastId}/send`, {
+      const response = await fetch(`${API_BASE_URL}/broadcasts/${broadcastId}/send`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -156,7 +157,7 @@ const BroadcastManager = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/broadcasts/${broadcastId}`, {
+      const response = await fetch(`${API_BASE_URL}/broadcasts/${broadcastId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -216,7 +217,7 @@ const BroadcastManager = () => {
 
       for (const broadcastId of selectedBroadcasts) {
         try {
-          const response = await fetch(`http://localhost:5000/api/broadcasts/${broadcastId}`, {
+          const response = await fetch(`${API_BASE_URL}/broadcasts/${broadcastId}`, {
             method: 'DELETE',
             headers: { Authorization: `Bearer ${token}` }
           });

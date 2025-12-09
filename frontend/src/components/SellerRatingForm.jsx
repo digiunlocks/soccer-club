@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { FaStar } from 'react-icons/fa';
+import { API_BASE_URL } from '../config/api';
 
 export default function SellerRatingForm({ sellerId, itemId, onReviewSubmitted }) {
   const [rating, setRating] = useState(0);
@@ -22,7 +23,7 @@ export default function SellerRatingForm({ sellerId, itemId, onReviewSubmitted }
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/seller-ratings', {
+      const response = await fetch(`${API_BASE_URL}/seller-ratings`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

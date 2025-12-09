@@ -8,8 +8,7 @@ import {
   FaFileCsv, FaFileExcel, FaFilePdf, FaFileAlt, FaCaretDown, FaMoneyCheckAlt, FaUser,
   FaSyncAlt
 } from 'react-icons/fa';
-
-const API_BASE_URL = 'http://localhost:5000/api';
+import { API_BASE_URL } from '../config/api';
 
 export default function UnifiedPaymentManager() {
   const [activeTab, setActiveTab] = useState('overview');
@@ -73,13 +72,17 @@ export default function UnifiedPaymentManager() {
   const [showIssueRefundModal, setShowIssueRefundModal] = useState(false);
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [userPaymentHistory, setUserPaymentHistory] = useState([]);
+  const [loadingUserDetails, setLoadingUserDetails] = useState(false);
   const [issueRefundForm, setIssueRefundForm] = useState({
     userId: '',
     amount: 0,
     reason: '',
     paymentMethod: 'credit_card',
     notes: '',
-    paymentType: 'Refund'
+    paymentType: 'Refund',
+    cardLastFour: '',
+    cardType: ''
   });
 
   const paymentTypes = [
@@ -431,6 +434,50 @@ export default function UnifiedPaymentManager() {
     } catch (error) {
       console.error('Error loading users:', error);
       toast.error('Failed to load users');
+    }
+  };
+
+  // Load user payment history for card details
+  const loadUserPaymentHistory = async (userId) => {
+    if (!userId) {
+      setUserPaymentHistory([]);
+      return;
+    }
+    
+    setLoadingUserDetails(true);
+    try {
+      const token = localStorage.getItem('token');
+      // Fetch payments filtered by user email
+      const response = await fetch(`${API_BASE_URL}/payments?search=${userId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const userPayments = Array.isArray(data.payments) ? data.payments : Array.isArray(data) ? data : [];
+        // Filter to get payments with card information
+        const paymentsWithCards = userPayments.filter(p => 
+          p.cardLastFour && ['credit_card', 'debit_card'].includes(p.paymentMethod)
+        );
+        setUserPaymentHistory(paymentsWithCards);
+      }
+    } catch (error) {
+      console.error('Error loading user payment history:', error);
+    } finally {
+      setLoadingUserDetails(false);
+    }
+  };
+
+  // Handle user selection for refund
+  const handleUserSelectForRefund = (userId) => {
+    const user = users.find(u => u._id === userId);
+    setSelectedUser(user);
+    if (user) {
+      loadUserPaymentHistory(user.email);
+    } else {
+      setUserPaymentHistory([]);
     }
   };
 
@@ -1393,6 +1440,17 @@ export default function UnifiedPaymentManager() {
                     onClick={() => {
                       setShowIssueRefundModal(false);
                       setSelectedUser(null);
+                      setUserPaymentHistory([]);
+                      setIssueRefundForm({
+                        userId: '',
+                        amount: 0,
+                        reason: '',
+                        paymentMethod: 'credit_card',
+                        notes: '',
+                        paymentType: 'Refund',
+                        cardLastFour: '',
+                        cardType: ''
+                      });
                     }}
                   />
                 </div>
@@ -1414,10 +1472,7 @@ export default function UnifiedPaymentManager() {
                       <select
                         className="form-select"
                         value={selectedUser?._id || ''}
-                        onChange={(e) => {
-                          const user = users.find(u => u._id === e.target.value);
-                          setSelectedUser(user);
-                        }}
+                        onChange={(e) => handleUserSelectForRefund(e.target.value)}
                         required
                       >
                         <option value="">-- Select a user --</option>
@@ -1428,6 +1483,83 @@ export default function UnifiedPaymentManager() {
                         ))}
                       </select>
                     </div>
+
+                    {/* User Information Display */}
+                    {selectedUser && (
+                      <div className="col-12">
+                        <div className="card bg-light border">
+                          <div className="card-body py-3">
+                            <h6 className="card-title mb-3">
+                              <FaUser className="me-2 text-primary" />
+                              User Information
+                            </h6>
+                            {loadingUserDetails ? (
+                              <div className="text-center py-2">
+                                <div className="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+                                Loading user details...
+                              </div>
+                            ) : (
+                              <div className="row g-2">
+                                <div className="col-md-6">
+                                  <small className="text-muted d-block">Full Name</small>
+                                  <strong>{selectedUser.name || 'N/A'}</strong>
+                                </div>
+                                <div className="col-md-6">
+                                  <small className="text-muted d-block">Email</small>
+                                  <strong>{selectedUser.email || 'N/A'}</strong>
+                                </div>
+                                <div className="col-md-6">
+                                  <small className="text-muted d-block">Phone</small>
+                                  <strong>{selectedUser.phone || 'N/A'}</strong>
+                                </div>
+                                <div className="col-md-6">
+                                  <small className="text-muted d-block">Username</small>
+                                  <strong>@{selectedUser.username || 'N/A'}</strong>
+                                </div>
+                                {(selectedUser.address || selectedUser.city || selectedUser.state || selectedUser.zipCode) && (
+                                  <div className="col-12">
+                                    <small className="text-muted d-block">Address</small>
+                                    <strong>
+                                      {[
+                                        selectedUser.address,
+                                        selectedUser.city,
+                                        selectedUser.state,
+                                        selectedUser.zipCode,
+                                        selectedUser.country
+                                      ].filter(Boolean).join(', ') || 'No address on file'}
+                                    </strong>
+                                  </div>
+                                )}
+                                {userPaymentHistory.length > 0 && (
+                                  <div className="col-12 mt-2">
+                                    <small className="text-muted d-block mb-1">Cards on File</small>
+                                    <div className="d-flex flex-wrap gap-2">
+                                      {userPaymentHistory.map((payment, idx) => (
+                                        <span 
+                                          key={idx} 
+                                          className="badge bg-secondary d-flex align-items-center"
+                                          style={{cursor: 'pointer'}}
+                                          onClick={() => setIssueRefundForm(prev => ({
+                                            ...prev, 
+                                            paymentMethod: payment.paymentMethod,
+                                            notes: prev.notes + (prev.notes ? '\n' : '') + `Card: ${payment.cardType || 'Card'} ****${payment.cardLastFour}`
+                                          }))}
+                                          title="Click to use this card for refund"
+                                        >
+                                          <FaCreditCard className="me-1" />
+                                          {payment.cardType || (payment.paymentMethod === 'credit_card' ? 'Credit' : 'Debit')} ****{payment.cardLastFour}
+                                        </span>
+                                      ))}
+                                    </div>
+                                    <small className="text-muted">Click a card to select it for refund</small>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Refund Amount */}
                     <div className="col-md-6">
@@ -1468,6 +1600,45 @@ export default function UnifiedPaymentManager() {
                         ))}
                       </select>
                     </div>
+
+                    {/* Card Last 4 Display for Credit/Debit */}
+                    {['credit_card', 'debit_card'].includes(issueRefundForm.paymentMethod) && userPaymentHistory.length > 0 && (
+                      <div className="col-12">
+                        <label className="form-label">
+                          <FaCreditCard className="me-1" />
+                          Select Card to Refund
+                        </label>
+                        <div className="d-flex flex-wrap gap-2">
+                          {userPaymentHistory
+                            .filter(p => p.paymentMethod === issueRefundForm.paymentMethod)
+                            .map((payment, idx) => (
+                              <div 
+                                key={idx}
+                                className={`card p-2 ${issueRefundForm.cardLastFour === payment.cardLastFour ? 'border-primary bg-primary bg-opacity-10' : 'border'}`}
+                                style={{cursor: 'pointer', minWidth: '150px'}}
+                                onClick={() => setIssueRefundForm(prev => ({
+                                  ...prev,
+                                  cardLastFour: payment.cardLastFour,
+                                  cardType: payment.cardType
+                                }))}
+                              >
+                                <div className="d-flex align-items-center">
+                                  <FaCreditCard className={`me-2 ${issueRefundForm.cardLastFour === payment.cardLastFour ? 'text-primary' : 'text-muted'}`} />
+                                  <div>
+                                    <small className="text-muted d-block">{payment.cardType || 'Card'}</small>
+                                    <strong>**** **** **** {payment.cardLastFour}</strong>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          {userPaymentHistory.filter(p => p.paymentMethod === issueRefundForm.paymentMethod).length === 0 && (
+                            <div className="alert alert-warning py-2 mb-0 w-100">
+                              <small>No {issueRefundForm.paymentMethod === 'credit_card' ? 'credit' : 'debit'} card payments found for this user.</small>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
 
                     {/* Refund Reason */}
                     <div className="col-12">
@@ -1512,6 +1683,17 @@ export default function UnifiedPaymentManager() {
                     onClick={() => {
                       setShowIssueRefundModal(false);
                       setSelectedUser(null);
+                      setUserPaymentHistory([]);
+                      setIssueRefundForm({
+                        userId: '',
+                        amount: 0,
+                        reason: '',
+                        paymentMethod: 'credit_card',
+                        notes: '',
+                        paymentType: 'Refund',
+                        cardLastFour: '',
+                        cardType: ''
+                      });
                     }}
                   >
                     Cancel

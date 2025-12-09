@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { FaEye, FaCheck, FaTimes, FaRedo, FaUser, FaDollarSign, FaTag } from 'react-icons/fa';
+import { API_BASE_URL } from './config/api';
 
 export default function SimpleMarketplaceAdmin() {
   const [items, setItems] = useState([]);
@@ -20,7 +21,7 @@ export default function SimpleMarketplaceAdmin() {
         return;
       }
 
-      const response = await fetch('http://localhost:5000/api/auth/me', {
+      const response = await fetch(`${API_BASE_URL}/auth/me`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -50,7 +51,7 @@ export default function SimpleMarketplaceAdmin() {
       const headers = { 'Authorization': `Bearer ${token}` };
 
       // Try the public endpoint first (works without auth)
-      const response = await fetch('http://localhost:5000/api/marketplace/public', { headers });
+      const response = await fetch(`${API_BASE_URL}/marketplace/public`, { headers });
       
       if (response.ok) {
         const data = await response.json();
@@ -93,7 +94,7 @@ export default function SimpleMarketplaceAdmin() {
   const handleStatusChange = async (itemId, newStatus) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/marketplace/admin/${itemId}/status`, {
+      const response = await fetch(`${API_BASE_URL}/marketplace/admin/${itemId}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

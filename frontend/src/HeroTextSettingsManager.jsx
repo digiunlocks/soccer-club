@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
+import { API_BASE_URL } from './config/api';
 
-const API_URL = "http://localhost:5000/api/hero-text-settings";
+const API_URL = `${API_BASE_URL}/hero-text-settings`;
 
 export default function HeroTextSettingsManager() {
   const [settings, setSettings] = useState({

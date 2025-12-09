@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { API_BASE_URL } from '../config/api';
+
+const SERVER_URL = API_BASE_URL.replace('/api', '');
 
 export default function AdvertisingSection() {
   const [advertisements, setAdvertisements] = useState([]);
@@ -12,7 +15,7 @@ export default function AdvertisingSection() {
   useEffect(() => {
     const checkAdvertisementsEnabled = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/settings/advertisements-enabled');
+        const response = await fetch(`${API_BASE_URL}/settings/advertisements-enabled`);
         
         if (response.ok) {
           const data = await response.json();
@@ -42,7 +45,7 @@ export default function AdvertisingSection() {
 
       try {
         setLoading(true);
-        const response = await fetch('http://localhost:5000/api/advertisements/public?limit=6');
+        const response = await fetch(`${API_BASE_URL}/advertisements/public?limit=6`);
         
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -77,7 +80,7 @@ export default function AdvertisingSection() {
 
   const handleClick = async (adId) => {
     try {
-      await fetch(`http://localhost:5000/api/advertisements/${adId}/click`, {
+      await fetch(`${API_BASE_URL}/advertisements/${adId}/click`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from 'react-toastify';
+import { API_BASE_URL } from './config/api';
 
-const API_URL = "http://localhost:5000/api/teams";
+const API_URL = `${API_BASE_URL}/teams`;
 
 const AGE_GROUPS = [
   "Under 6", "Under 8", "Under 10", "Under 12", "Under 14", 

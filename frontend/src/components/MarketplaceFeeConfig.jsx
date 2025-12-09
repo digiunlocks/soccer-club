@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
+import { API_BASE_URL } from '../config/api';
 
 export default function MarketplaceFeeConfig() {
   const [fees, setFees] = useState({
@@ -26,7 +27,7 @@ export default function MarketplaceFeeConfig() {
   const fetchCurrentFees = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/marketplace/fees/admin/config', {
+      const response = await fetch(`${API_BASE_URL}/marketplace/fees/admin/config`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -59,7 +60,7 @@ export default function MarketplaceFeeConfig() {
     setSaving(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/marketplace/fees/admin/config', {
+      const response = await fetch(`${API_BASE_URL}/marketplace/fees/admin/config`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

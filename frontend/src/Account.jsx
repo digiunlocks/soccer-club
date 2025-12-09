@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { toast } from 'react-toastify';
+import { API_BASE_URL } from './config/api';
+
+// Server URL for images (without /api)
+const SERVER_URL = API_BASE_URL.replace('/api', '');
 
 export default function Account() {
   const navigate = useNavigate();
@@ -71,7 +75,7 @@ export default function Account() {
       console.log('🔍 Starting data fetch with token:', token ? 'Present' : 'Missing');
       
       // First fetch user data
-      const userResponse = await fetch('http://localhost:5000/api/auth/me', {
+      const userResponse = await fetch(`${API_BASE_URL}/auth/me`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -87,12 +91,12 @@ export default function Account() {
       
       // Test the new routes
       console.log('🧪 Testing new API routes...');
-      const testOffersResponse = await fetch('http://localhost:5000/api/marketplace/offers/user', {
+      const testOffersResponse = await fetch(`${API_BASE_URL}/marketplace/offers/user`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       console.log('🧪 Test offers response status:', testOffersResponse.status);
       
-      const testReviewsResponse = await fetch('http://localhost:5000/api/marketplace/reviews/user', {
+      const testReviewsResponse = await fetch(`${API_BASE_URL}/marketplace/reviews/user`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       console.log('🧪 Test reviews response status:', testReviewsResponse.status);
@@ -114,25 +118,25 @@ export default function Account() {
 
       // Now fetch related data using the user's email
       const [applicationsResponse, marketplaceResponse, galleryResponse, notificationsResponse, offersResponse, reviewsResponse, messagesResponse] = await Promise.allSettled([
-        fetch(`http://localhost:5000/api/applications/user/${userData.email}`, {
+        fetch(`${API_BASE_URL}/applications/user/${userData.email}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         }),
-        fetch('http://localhost:5000/api/marketplace/user/my-items', {
+        fetch(`${API_BASE_URL}/marketplace/user/my-items`, {
           headers: { 'Authorization': `Bearer ${token}` }
         }),
-        fetch('http://localhost:5000/api/gallery/user/my-items', {
+        fetch(`${API_BASE_URL}/gallery/user/my-items`, {
           headers: { 'Authorization': `Bearer ${token}` }
         }),
-        fetch('http://localhost:5000/api/notifications', {
+        fetch(`${API_BASE_URL}/notifications`, {
           headers: { 'Authorization': `Bearer ${token}` }
         }),
-        fetch('http://localhost:5000/api/marketplace/offers/user', {
+        fetch(`${API_BASE_URL}/marketplace/offers/user`, {
           headers: { 'Authorization': `Bearer ${token}` }
         }),
-        fetch('http://localhost:5000/api/marketplace/reviews/user', {
+        fetch(`${API_BASE_URL}/marketplace/reviews/user`, {
           headers: { 'Authorization': `Bearer ${token}` }
         }),
-        fetch('http://localhost:5000/api/marketplace/messages/user', {
+        fetch(`${API_BASE_URL}/marketplace/messages/user`, {
           headers: { 'Authorization': `Bearer ${token}` }
         })
       ]);
@@ -215,7 +219,7 @@ export default function Account() {
   const handleProfileUpdate = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch('http://localhost:5000/api/auth/me', {
+      const response = await fetch(`${API_BASE_URL}/auth/me`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -254,7 +258,7 @@ export default function Account() {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch('http://localhost:5000/api/auth/change-password', {
+      const response = await fetch(`${API_BASE_URL}/auth/change-password`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -367,7 +371,7 @@ export default function Account() {
   const handleOfferAction = async (offerId, action) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/marketplace/offers/${offerId}/${action}`, {
+      const response = await fetch(`${API_BASE_URL}/marketplace/offers/${offerId}/${action}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -391,7 +395,7 @@ export default function Account() {
   const handleReviewResponse = async (reviewId, response) => {
     try {
       const token = localStorage.getItem("token");
-      const apiResponse = await fetch(`http://localhost:5000/api/marketplace/reviews/${reviewId}/respond`, {
+      const apiResponse = await fetch(`${API_BASE_URL}/marketplace/reviews/${reviewId}/respond`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -433,7 +437,7 @@ export default function Account() {
   const handleItemUpdate = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/marketplace/items/${selectedItem._id}`, {
+      const response = await fetch(`${API_BASE_URL}/marketplace/items/${selectedItem._id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -460,7 +464,7 @@ export default function Account() {
     if (window.confirm('Are you sure you want to delete this item?')) {
       try {
         const token = localStorage.getItem("token");
-        const response = await fetch(`http://localhost:5000/api/marketplace/items/${itemId}`, {
+        const response = await fetch(`${API_BASE_URL}/marketplace/items/${itemId}`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -483,7 +487,7 @@ export default function Account() {
   const handleItemStatusChange = async (itemId, newStatus) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/marketplace/items/${itemId}/status`, {
+      const response = await fetch(`${API_BASE_URL}/marketplace/items/${itemId}/status`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -535,7 +539,7 @@ export default function Account() {
   const handleRepostItem = async (itemId) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/marketplace/items/${itemId}/repost`, {
+      const response = await fetch(`${API_BASE_URL}/marketplace/items/${itemId}/repost`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -558,7 +562,7 @@ export default function Account() {
   const handleExtendItem = async (itemId, days = 30) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/marketplace/items/${itemId}/extend`, {
+      const response = await fetch(`${API_BASE_URL}/marketplace/items/${itemId}/extend`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -582,7 +586,7 @@ export default function Account() {
   const handleUnflagItem = async (itemId) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/marketplace/items/${itemId}/unflag`, {
+      const response = await fetch(`${API_BASE_URL}/marketplace/items/${itemId}/unflag`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -1264,7 +1268,7 @@ export default function Account() {
                 <div className="text-center py-8 text-gray-500">
                   <div className="text-4xl mb-4">📝</div>
                   <p>No applications submitted yet</p>
-                  <Link to="/application" className="text-green-600 hover:text-green-700 mt-2 inline-block">
+                  <Link to="/join" className="text-green-600 hover:text-green-700 mt-2 inline-block">
                     Submit an application
                   </Link>
                 </div>
@@ -1462,7 +1466,7 @@ export default function Account() {
                                   {item.images && item.images.length > 0 ? (
                                     <div className="relative">
                                       <img
-                                        src={`http://localhost:5000/uploads/marketplace/${item.images[0]}`}
+                                        src={`${SERVER_URL}/uploads/marketplace/${item.images[0]}`}
                                         alt={item.title}
                                         className="w-24 h-24 object-cover rounded-lg"
                                       />
@@ -2100,7 +2104,7 @@ export default function Account() {
                                   <div className="flex items-center gap-3">
                                     {item.images && item.images.length > 0 ? (
                                       <img
-                                        src={`http://localhost:5000/uploads/marketplace/${item.images[0]}`}
+                                        src={`${SERVER_URL}/uploads/marketplace/${item.images[0]}`}
                                         alt={item.title}
                                         className="w-12 h-12 object-cover rounded-lg"
                                       />
@@ -2206,7 +2210,7 @@ export default function Account() {
                     <div key={item._id} className="border border-gray-200 rounded-lg overflow-hidden">
                       {item.image && (
                         <img
-                          src={`http://localhost:5000/uploads/gallery/${item.image}`}
+                          src={`${SERVER_URL}/uploads/gallery/${item.image}`}
                           alt={item.title}
                           className="w-full h-48 object-cover"
                         />

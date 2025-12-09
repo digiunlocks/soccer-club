@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
+import { API_BASE_URL } from '../config/api';
 
 const BroadcastMessages = ({ onBroadcastRead }) => {
   const [broadcasts, setBroadcasts] = useState([]);
@@ -52,7 +53,7 @@ const BroadcastMessages = ({ onBroadcastRead }) => {
         return;
       }
 
-      const response = await fetch('http://localhost:5000/api/broadcasts/my-broadcasts', {
+      const response = await fetch(`${API_BASE_URL}/broadcasts/my-broadcasts`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -74,7 +75,7 @@ const BroadcastMessages = ({ onBroadcastRead }) => {
   const markAsRead = async (broadcastId) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/broadcasts/${broadcastId}/read`, {
+      const response = await fetch(`${API_BASE_URL}/broadcasts/${broadcastId}/read`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -113,7 +114,7 @@ const BroadcastMessages = ({ onBroadcastRead }) => {
 
       // Mark each unread broadcast as read
       const promises = unreadBroadcasts.map(broadcast =>
-        fetch(`http://localhost:5000/api/broadcasts/${broadcast.id}/read`, {
+        fetch(`${API_BASE_URL}/broadcasts/${broadcast.id}/read`, {
           method: 'POST',
           headers: { Authorization: `Bearer ${token}` }
         })

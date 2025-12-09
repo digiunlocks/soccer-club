@@ -1,11 +1,14 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from 'react-toastify';
+import { API_BASE_URL } from './config/api';
 
-const API_URL = "http://localhost:5000/api/homepage-content";
+const API_URL = `${API_BASE_URL}/homepage-content`;
+const SERVER_URL = API_BASE_URL.replace('/api', '');
 
 export default function ContentManager() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [content, setContent] = useState(null);
@@ -69,7 +72,7 @@ export default function ContentManager() {
     try {
       setAboutLoading(true);
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/about/admin', {
+      const response = await fetch(`${API_BASE_URL}/about/admin`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -101,7 +104,7 @@ export default function ContentManager() {
     setAboutSaving(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/about', {
+      const response = await fetch(`${API_BASE_URL}/about`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -165,7 +168,7 @@ export default function ContentManager() {
       formData.append('captions', JSON.stringify(imageCaptions));
       formData.append('alts', JSON.stringify(imageAlts));
 
-      const response = await fetch('http://localhost:5000/api/about/gallery', {
+      const response = await fetch(`${API_BASE_URL}/about/gallery`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -199,7 +202,7 @@ export default function ContentManager() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/about/gallery/${imageId}`, {
+      const response = await fetch(`${API_BASE_URL}/about/gallery/${imageId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -231,7 +234,7 @@ export default function ContentManager() {
     try {
       const token = localStorage.getItem('token');
       const deletePromises = selectedImages.map(imageId =>
-        fetch(`http://localhost:5000/api/about/gallery/${imageId}`, {
+        fetch(`${API_BASE_URL}/about/gallery/${imageId}`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -252,7 +255,7 @@ export default function ContentManager() {
   const handleUpdateImage = async (imageId, updates) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/about/gallery/${imageId}`, {
+      const response = await fetch(`${API_BASE_URL}/about/gallery/${imageId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -277,7 +280,7 @@ export default function ContentManager() {
   const handleReorderGallery = async (newOrder) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/about/gallery/reorder', {
+      const response = await fetch(`${API_BASE_URL}/about/gallery/reorder`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -492,7 +495,13 @@ export default function ContentManager() {
             Preview Homepage
           </button>
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => {
+              if (location.state?.from) {
+                navigate('/admin', { state: { section: location.state.from } });
+              } else {
+                navigate(-1);
+              }
+            }}
             className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition-colors"
           >
             Back
@@ -1407,7 +1416,7 @@ export default function ContentManager() {
                                 <>
                                   <div className="relative">
                                     <img
-                                      src={`http://localhost:5000${image.url}`}
+                                      src={`${SERVER_URL}${image.url}`}
                                       alt={image.alt || 'Gallery image'}
                                       className="w-full h-48 object-cover"
                                     />
@@ -1439,7 +1448,7 @@ export default function ContentManager() {
                               ) : (
                                 <>
                                   <img
-                                    src={`http://localhost:5000${image.url}`}
+                                    src={`${SERVER_URL}${image.url}`}
                                     alt={image.alt || 'Gallery image'}
                                     className="w-20 h-20 object-cover rounded-lg"
                                   />

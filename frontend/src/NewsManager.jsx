@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from 'react-toastify';
 
 export default function NewsManager() {
   const navigate = useNavigate();
+  const location = useLocation();
   
   // Check if user is authenticated (admin)
   useEffect(() => {
@@ -19,13 +20,19 @@ export default function NewsManager() {
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-4">
           <button 
-            onClick={() => navigate('/admin')}
+            onClick={() => {
+              if (location.state?.from) {
+                navigate('/admin', { state: { section: location.state.from } });
+              } else {
+                navigate('/admin');
+              }
+            }}
             className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
-            Back to Dashboard
+            Back
           </button>
           <h2 className="text-2xl font-bold text-green-900">News & Blog Manager</h2>
         </div>

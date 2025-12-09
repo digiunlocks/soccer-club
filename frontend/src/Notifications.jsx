@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { API_BASE_URL } from './config/api';
 
 const Notifications = () => {
   const [notifications, setNotifications] = useState([]);
@@ -20,7 +21,7 @@ const Notifications = () => {
         return;
       }
 
-      const response = await fetch('http://localhost:5000/api/notifications', {
+      const response = await fetch(`${API_BASE_URL}/notifications`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -44,7 +45,7 @@ const Notifications = () => {
   const markAsRead = async (notificationId) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/notifications/${notificationId}/read`, {
+      const response = await fetch(`${API_BASE_URL}/notifications/${notificationId}/read`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -67,7 +68,7 @@ const Notifications = () => {
   const markAllAsRead = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/notifications/mark-all-read', {
+      const response = await fetch(`${API_BASE_URL}/notifications/mark-all-read`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`

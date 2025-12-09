@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FaPaperPlane, FaArrowLeft, FaShoppingCart, FaUser } from 'react-icons/fa';
+import { API_BASE_URL } from '../config/api';
 
 export default function ConversationView({ otherUserId, onBack, messageType = 'general_inquiry' }) {
   const [messages, setMessages] = useState([]);
@@ -28,7 +29,7 @@ export default function ConversationView({ otherUserId, onBack, messageType = 'g
     try {
       const token = localStorage.getItem('token');
       const user = JSON.parse(localStorage.getItem('user') || '{}');
-      const response = await fetch(`http://localhost:5000/api/messages/conversation/${user._id}/${otherUserId}`, {
+      const response = await fetch(`${API_BASE_URL}/messages/conversation/${user._id}/${otherUserId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -55,7 +56,7 @@ export default function ConversationView({ otherUserId, onBack, messageType = 'g
   const fetchOtherUser = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/users/${otherUserId}`, {
+      const response = await fetch(`${API_BASE_URL}/users/${otherUserId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -71,7 +72,7 @@ export default function ConversationView({ otherUserId, onBack, messageType = 'g
   const markMessagesAsRead = async (messageIds) => {
     try {
       const token = localStorage.getItem('token');
-      await fetch('http://localhost:5000/api/messages/mark-read', {
+      await fetch(`${API_BASE_URL}/messages/mark-read`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -91,8 +92,8 @@ export default function ConversationView({ otherUserId, onBack, messageType = 'g
     try {
       const token = localStorage.getItem('token');
       const endpoint = messageType === 'marketplace_inquiry' 
-        ? 'http://localhost:5000/api/messages/marketplace-inquiry'
-        : 'http://localhost:5000/api/messages/general-message';
+        ? `${API_BASE_URL}/messages/marketplace-inquiry`
+        : `${API_BASE_URL}/messages/general-message`;
 
       const response = await fetch(endpoint, {
         method: 'POST',

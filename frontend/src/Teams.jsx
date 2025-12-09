@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from './config/api';
 
 const AGE_GROUPS = [
   "Under 6", "Under 8", "Under 10", "Under 12", "Under 14", 
@@ -8,7 +9,7 @@ const AGE_GROUPS = [
 
 const TEAM_LEVELS = ["Recreational", "Competitive", "Elite", "Development", "All-Star"];
 
-const API_URL = "http://localhost:5000/api/teams";
+const API_URL = `${API_BASE_URL}/teams`;
 
 export default function Teams() {
   const navigate = useNavigate();

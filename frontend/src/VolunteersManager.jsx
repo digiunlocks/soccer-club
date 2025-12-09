@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from 'react-toastify';
+import { API_BASE_URL } from './config/api';
 
 const VOLUNTEER_ROLES = ["volunteer"];
 const VOLUNTEER_STATUSES = ["active", "inactive", "pending", "approved", "rejected"];
@@ -95,7 +96,7 @@ export default function VolunteersManager() {
       const token = localStorage.getItem("token");
       console.log('🔍 Fetching volunteers with token:', token ? 'Present' : 'Missing');
       
-      const response = await fetch('http://localhost:5000/api/users?role=volunteer', {
+      const response = await fetch(`${API_BASE_URL}/users?role=volunteer`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -171,7 +172,7 @@ export default function VolunteersManager() {
     
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch('http://localhost:5000/api/users', {
+      const response = await fetch(`${API_BASE_URL}/users`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -201,7 +202,7 @@ export default function VolunteersManager() {
     
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/users/${selectedVolunteer._id}`, {
+      const response = await fetch(`${API_BASE_URL}/users/${selectedVolunteer._id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -269,7 +270,7 @@ export default function VolunteersManager() {
     
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/users/${volunteerId}`, {
+      const response = await fetch(`${API_BASE_URL}/users/${volunteerId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -336,7 +337,7 @@ export default function VolunteersManager() {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch('http://localhost:5000/api/users/bulk', {
+      const response = await fetch(`${API_BASE_URL}/users/bulk`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -409,7 +410,7 @@ export default function VolunteersManager() {
     
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/users/${volunteerId}/reset-password`, {
+      const response = await fetch(`${API_BASE_URL}/users/${volunteerId}/reset-password`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -453,7 +454,7 @@ export default function VolunteersManager() {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/users/${selectedVolunteer._id}/set-password`, {
+      const response = await fetch(`${API_BASE_URL}/users/${selectedVolunteer._id}/set-password`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

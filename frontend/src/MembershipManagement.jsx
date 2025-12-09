@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { FaUsers, FaCrown, FaDollarSign, FaChartLine, FaPlus, FaEdit, FaTrash, FaEye, FaPause, FaPlay, FaClock, FaDownload, FaFilter, FaSearch, FaArrowLeft, FaCheck, FaTimes, FaExclamationTriangle } from 'react-icons/fa';
+import { API_BASE_URL } from './config/api';
 
 const MembershipManagement = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -93,7 +94,7 @@ const MembershipManagement = () => {
   };
 
   const fetchStats = async (headers) => {
-    const response = await fetch('http://localhost:5000/api/memberships/admin/stats', { headers });
+    const response = await fetch(`${API_BASE_URL}/memberships/admin/stats`, { headers });
     if (response.ok) {
       const data = await response.json();
       setStats(data);
@@ -107,7 +108,7 @@ const MembershipManagement = () => {
       ...filters
     });
     
-    const response = await fetch(`http://localhost:5000/api/memberships/admin/all?${params}`, { headers });
+    const response = await fetch(`${API_BASE_URL}/memberships/admin/all?${params}`, { headers });
     if (response.ok) {
       const data = await response.json();
       setMemberships(data.memberships);
@@ -116,7 +117,7 @@ const MembershipManagement = () => {
   };
 
   const fetchTiers = async (headers) => {
-    const response = await fetch('http://localhost:5000/api/memberships/tiers', { headers });
+    const response = await fetch(`${API_BASE_URL}/memberships/tiers`, { headers });
     if (response.ok) {
       const data = await response.json();
       setTiers(data);
@@ -124,7 +125,7 @@ const MembershipManagement = () => {
   };
 
   const fetchExpiringMemberships = async (headers) => {
-    const response = await fetch('http://localhost:5000/api/memberships/admin/expiring?days=30', { headers });
+    const response = await fetch(`${API_BASE_URL}/memberships/admin/expiring?days=30`, { headers });
     if (response.ok) {
       const data = await response.json();
       setExpiringMemberships(data);
@@ -138,8 +139,8 @@ const MembershipManagement = () => {
     try {
       const token = localStorage.getItem('token');
       const url = editingTier 
-        ? `http://localhost:5000/api/memberships/tiers/${editingTier._id}`
-        : 'http://localhost:5000/api/memberships/tiers';
+        ? `${API_BASE_URL}/memberships/tiers/${editingTier._id}`
+        : `${API_BASE_URL}/memberships/tiers`;
       
       const method = editingTier ? 'PUT' : 'POST';
       
@@ -175,8 +176,8 @@ const MembershipManagement = () => {
     try {
       const token = localStorage.getItem('token');
       const url = editingMembership 
-        ? `http://localhost:5000/api/memberships/${editingMembership._id}`
-        : 'http://localhost:5000/api/memberships';
+        ? `${API_BASE_URL}/memberships/${editingMembership._id}`
+        : `${API_BASE_URL}/memberships`;
       
       const method = editingMembership ? 'PUT' : 'POST';
       
@@ -210,7 +211,7 @@ const MembershipManagement = () => {
     
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/memberships/${membershipId}/suspend`, {
+      const response = await fetch(`${API_BASE_URL}/memberships/${membershipId}/suspend`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -238,7 +239,7 @@ const MembershipManagement = () => {
   const handleUnsuspendMembership = async (membershipId) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/memberships/${membershipId}/unsuspend`, {
+      const response = await fetch(`${API_BASE_URL}/memberships/${membershipId}/unsuspend`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -262,7 +263,7 @@ const MembershipManagement = () => {
     
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/memberships/${membershipId}/renew`, {
+      const response = await fetch(`${API_BASE_URL}/memberships/${membershipId}/renew`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -542,7 +543,7 @@ const MembershipManagement = () => {
                   <option value="pending">Pending</option>
                 </select>
                 <button
-                  onClick={() => window.open('http://localhost:5000/api/memberships/admin/export', '_blank')}
+                  onClick={() => window.open(`${API_BASE_URL}/memberships/admin/export`, '_blank')}
                   className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
                 >
                   <FaDownload />

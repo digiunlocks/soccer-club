@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import AdvertisingSection from "./components/AdvertisingSection";
+import { API_BASE_URL } from './config/api';
 
-const API_URL = "http://localhost:5000/api/hero-content";
-const HERO_TEXT_URL = "http://localhost:5000/api/hero-text-settings";
-const HOMEPAGE_CONTENT_URL = "http://localhost:5000/api/homepage-content";
+const API_URL = `${API_BASE_URL}/hero-content`;
+const HERO_TEXT_URL = `${API_BASE_URL}/hero-text-settings`;
+const HOMEPAGE_CONTENT_URL = `${API_BASE_URL}/homepage-content`;
 
 export default function Home() {
   const [heroItems, setHeroItems] = useState([]);

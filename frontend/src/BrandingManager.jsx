@@ -2,10 +2,11 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from 'react-toastify';
 import HeroTextSettingsManager from './HeroTextSettingsManager';
+import { API_BASE_URL } from './config/api';
 
-const API_URL = "http://localhost:5000/api/hero-content";
+const API_URL = `${API_BASE_URL}/hero-content`;
 const UPLOAD_URL = `${API_URL}/upload`;
-const BASE_URL = "http://localhost:5000";
+const BASE_URL = API_BASE_URL.replace('/api', '');
 
 export default function BrandingManager() {
   const navigate = useNavigate();
@@ -61,13 +62,13 @@ export default function BrandingManager() {
 
   const fetchCurrentLogo = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/settings/public');
+      const response = await fetch('${BASE_URL}/api/settings/public');
       if (response.ok) {
         const data = await response.json();
         if (data.logoUrl) {
           const fullUrl = data.logoUrl.startsWith('http') 
             ? data.logoUrl 
-            : `http://localhost:5000${data.logoUrl}`;
+            : `${BASE_URL}${data.logoUrl}`;
           setCurrentLogo(fullUrl);
         }
       }
@@ -121,7 +122,7 @@ export default function BrandingManager() {
         return;
       }
 
-      const response = await fetch("http://localhost:5000/api/settings/upload-logo", {
+      const response = await fetch("${BASE_URL}/api/settings/upload-logo", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -144,7 +145,7 @@ export default function BrandingManager() {
       const data = await response.json();
       const fullLogoUrl = data.logoUrl.startsWith('http') 
         ? data.logoUrl 
-        : `http://localhost:5000${data.logoUrl}`;
+        : `${BASE_URL}${data.logoUrl}`;
       
       setCurrentLogo(fullLogoUrl);
       setLogoFile(null);

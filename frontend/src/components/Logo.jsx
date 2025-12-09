@@ -1,4 +1,7 @@
 import React from 'react';
+import { API_BASE_URL } from '../config/api';
+
+const SERVER_URL = API_BASE_URL.replace('/api', '');
 
 const Logo = ({ className = "w-8 h-8", customLogoUrl = null }) => {
   // If custom logo URL is provided, use it
@@ -6,7 +9,7 @@ const Logo = ({ className = "w-8 h-8", customLogoUrl = null }) => {
     // Convert relative URL to absolute if needed
     const fullLogoUrl = customLogoUrl.startsWith('http') 
       ? customLogoUrl 
-      : `http://localhost:5000${customLogoUrl}`;
+      : `${SERVER_URL}${customLogoUrl}`;
     
     return (
       <div className={`${className} flex-shrink-0`}>

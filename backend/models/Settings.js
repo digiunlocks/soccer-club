@@ -1,7 +1,177 @@
 const mongoose = require('mongoose');
 
 const settingsSchema = new mongoose.Schema({
-  // Fee Settings
+  // ===========================================
+  // COMPREHENSIVE FEE STRUCTURE
+  // ===========================================
+  
+  // Global Fee Settings
+  feesEnabled: {
+    type: Boolean,
+    default: true
+  },
+  currency: {
+    type: String,
+    default: 'USD',
+    enum: ['USD', 'EUR', 'GBP', 'CAD', 'AUD']
+  },
+  taxEnabled: {
+    type: Boolean,
+    default: false
+  },
+  taxRate: {
+    type: Number,
+    default: 0,
+    min: 0,
+    max: 100
+  },
+  taxName: {
+    type: String,
+    default: 'Sales Tax'
+  },
+  
+  // Registration Fees (One-time)
+  registrationFees: {
+    playerRegistration: { type: Number, default: 50, min: 0 },
+    coachRegistration: { type: Number, default: 0, min: 0 },
+    refereeRegistration: { type: Number, default: 25, min: 0 },
+    volunteerRegistration: { type: Number, default: 0, min: 0 },
+    familyRegistration: { type: Number, default: 75, min: 0 },
+    lateRegistrationFee: { type: Number, default: 25, min: 0 },
+    earlyBirdDiscount: { type: Number, default: 10, min: 0, max: 100 }, // percentage
+    earlyBirdDeadline: { type: Date, default: null },
+    registrationDeadline: { type: Date, default: null }
+  },
+  
+  // Monthly Fees (Recurring)
+  monthlyFees: {
+    youthMonthly: { type: Number, default: 75, min: 0 },
+    teenMonthly: { type: Number, default: 95, min: 0 },
+    adultMonthly: { type: Number, default: 85, min: 0 },
+    familyMonthly: { type: Number, default: 150, min: 0 },
+    eliteMonthly: { type: Number, default: 150, min: 0 },
+    autoPayDiscount: { type: Number, default: 5, min: 0, max: 100 } // percentage
+  },
+  
+  // Seasonal Fees (Per Season)
+  seasonalFees: {
+    springSeasonFee: { type: Number, default: 250, min: 0 },
+    summerSeasonFee: { type: Number, default: 200, min: 0 },
+    fallSeasonFee: { type: Number, default: 275, min: 0 },
+    winterSeasonFee: { type: Number, default: 225, min: 0 },
+    fullYearFee: { type: Number, default: 850, min: 0 },
+    fullYearDiscount: { type: Number, default: 10, min: 0, max: 100 } // percentage off sum of all seasons
+  },
+  
+  // Program-Specific Fees
+  programFees: {
+    youthDevelopment: { type: Number, default: 200, min: 0 },
+    competitive: { type: Number, default: 350, min: 0 },
+    eliteAcademy: { type: Number, default: 500, min: 0 },
+    adultRecreational: { type: Number, default: 150, min: 0 },
+    adultCompetitive: { type: Number, default: 250, min: 0 },
+    seniorProgram: { type: Number, default: 100, min: 0 },
+    specialNeeds: { type: Number, default: 75, min: 0 },
+    goalkeeperTraining: { type: Number, default: 125, min: 0 }
+  },
+  
+  // Camp & Clinic Fees
+  campFees: {
+    summerCampWeekly: { type: Number, default: 250, min: 0 },
+    summerCampDaily: { type: Number, default: 60, min: 0 },
+    winterCamp: { type: Number, default: 175, min: 0 },
+    springBreakCamp: { type: Number, default: 200, min: 0 },
+    holidayCamp: { type: Number, default: 150, min: 0 },
+    bootcampIntensive: { type: Number, default: 400, min: 0 },
+    skillsClinic: { type: Number, default: 75, min: 0 },
+    goalkeeperClinic: { type: Number, default: 100, min: 0 },
+    strikerClinic: { type: Number, default: 85, min: 0 },
+    defenderClinic: { type: Number, default: 85, min: 0 }
+  },
+  
+  // Training & Coaching Fees
+  trainingFees: {
+    privateSession: { type: Number, default: 75, min: 0 },
+    semiPrivateSession: { type: Number, default: 50, min: 0 }, // 2-3 players
+    groupSession: { type: Number, default: 25, min: 0 }, // 4+ players
+    videoAnalysis: { type: Number, default: 50, min: 0 },
+    fitnessAssessment: { type: Number, default: 40, min: 0 },
+    mentalCoaching: { type: Number, default: 60, min: 0 },
+    nutritionConsultation: { type: Number, default: 45, min: 0 }
+  },
+  
+  // Equipment & Uniform Fees
+  equipmentFees: {
+    uniformKit: { type: Number, default: 85, min: 0 },
+    practiceJersey: { type: Number, default: 25, min: 0 },
+    shorts: { type: Number, default: 20, min: 0 },
+    socks: { type: Number, default: 10, min: 0 },
+    trainingBall: { type: Number, default: 30, min: 0 },
+    matchBall: { type: Number, default: 45, min: 0 },
+    shinguards: { type: Number, default: 15, min: 0 },
+    goalkeeperGloves: { type: Number, default: 35, min: 0 },
+    teamBag: { type: Number, default: 40, min: 0 },
+    warmupSuit: { type: Number, default: 65, min: 0 }
+  },
+  
+  // Tournament & Competition Fees
+  tournamentFees: {
+    localTournament: { type: Number, default: 50, min: 0 },
+    regionalTournament: { type: Number, default: 100, min: 0 },
+    stateTournament: { type: Number, default: 150, min: 0 },
+    nationalTournament: { type: Number, default: 250, min: 0 },
+    internationalTournament: { type: Number, default: 500, min: 0 },
+    friendlyMatch: { type: Number, default: 15, min: 0 },
+    leagueMatch: { type: Number, default: 25, min: 0 }
+  },
+  
+  // Facility & Field Fees
+  facilityFees: {
+    fieldRentalHourly: { type: Number, default: 100, min: 0 },
+    fieldRentalDaily: { type: Number, default: 500, min: 0 },
+    indoorFacilityHourly: { type: Number, default: 150, min: 0 },
+    lightingFee: { type: Number, default: 25, min: 0 },
+    equipmentRental: { type: Number, default: 20, min: 0 }
+  },
+  
+  // Administrative Fees
+  adminFees: {
+    transferFee: { type: Number, default: 50, min: 0 },
+    documentProcessing: { type: Number, default: 15, min: 0 },
+    idCardReplacement: { type: Number, default: 10, min: 0 },
+    uniformReplacement: { type: Number, default: 45, min: 0 },
+    backgroundCheck: { type: Number, default: 25, min: 0 },
+    coachCertification: { type: Number, default: 75, min: 0 },
+    refereeCertification: { type: Number, default: 50, min: 0 },
+    insuranceFee: { type: Number, default: 35, min: 0 },
+    returnedCheckFee: { type: Number, default: 35, min: 0 },
+    latePaymentFee: { type: Number, default: 25, min: 0 },
+    cancellationFee: { type: Number, default: 50, min: 0 }
+  },
+  
+  // Sibling & Family Discounts
+  discounts: {
+    siblingDiscount: { type: Number, default: 10, min: 0, max: 100 }, // percentage
+    multiChildDiscount: { type: Number, default: 15, min: 0, max: 100 }, // 3+ children
+    referralDiscount: { type: Number, default: 25, min: 0 }, // flat amount
+    militaryDiscount: { type: Number, default: 10, min: 0, max: 100 },
+    firstResponderDiscount: { type: Number, default: 10, min: 0, max: 100 },
+    scholarshipAvailable: { type: Boolean, default: true },
+    maxScholarshipPercent: { type: Number, default: 100, min: 0, max: 100 },
+    loyaltyDiscount: { type: Number, default: 5, min: 0, max: 100 }, // returning players
+    seniorCitizenDiscount: { type: Number, default: 15, min: 0, max: 100 }
+  },
+  
+  // Payment Plans
+  paymentPlans: {
+    enablePaymentPlans: { type: Boolean, default: true },
+    minimumDownPayment: { type: Number, default: 25, min: 0, max: 100 }, // percentage
+    maxInstallments: { type: Number, default: 6, min: 1, max: 12 },
+    installmentFee: { type: Number, default: 0, min: 0 }, // per installment
+    paymentPlanInterest: { type: Number, default: 0, min: 0, max: 100 } // annual percentage
+  },
+  
+  // Legacy Fee Fields (for backward compatibility)
   playerFee: {
     type: Number,
     default: 0,
@@ -21,10 +191,6 @@ const settingsSchema = new mongoose.Schema({
     type: Number,
     default: 0,
     min: 0
-  },
-  feesEnabled: {
-    type: Boolean,
-    default: true
   },
   
   // Donation Settings

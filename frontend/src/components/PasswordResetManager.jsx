@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
+import { API_BASE_URL } from '../config/api';
 
 export default function PasswordResetManager() {
   const [users, setUsers] = useState([]);
@@ -24,7 +25,7 @@ export default function PasswordResetManager() {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/auth/users', {
+      const response = await fetch(`${API_BASE_URL}/auth/users`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -47,7 +48,7 @@ export default function PasswordResetManager() {
   const fetchPasswordHistory = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/auth/admin/password-resets', {
+      const response = await fetch(`${API_BASE_URL}/auth/admin/password-resets`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -83,7 +84,7 @@ export default function PasswordResetManager() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/auth/admin/reset-password', {
+      const response = await fetch(`${API_BASE_URL}/auth/admin/reset-password`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,

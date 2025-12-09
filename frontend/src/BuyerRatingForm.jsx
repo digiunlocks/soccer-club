@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { FaTimes, FaStar } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import { API_BASE_URL } from './config/api';
 
 export default function BuyerRatingForm({ buyerId, itemId, onClose }) {
   const [rating, setRating] = useState(5);
@@ -15,7 +16,7 @@ export default function BuyerRatingForm({ buyerId, itemId, onClose }) {
     
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/buyer-ratings', {
+      const response = await fetch(`${API_BASE_URL}/buyer-ratings`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { API_BASE_URL } from './config/api';
 
 export default function Legal() {
   const [legalContent, setLegalContent] = useState('');
@@ -11,7 +12,7 @@ export default function Legal() {
     const fetchLegalContent = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch("http://localhost:5000/api/settings", {
+        const res = await fetch(`${API_BASE_URL}/settings`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { FaClock, FaDollarSign, FaPlus, FaTrash, FaSave, FaCog, FaArrowLeft } from 'react-icons/fa';
+import { API_BASE_URL } from './config/api';
 
 const MarketplaceSettings = () => {
   const [settings, setSettings] = useState(null);
@@ -39,7 +40,7 @@ const MarketplaceSettings = () => {
 
   const fetchSettings = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/marketplace/settings');
+      const response = await fetch(`${API_BASE_URL}/marketplace/settings`);
       if (response.ok) {
         const data = await response.json();
         setSettings(data);
@@ -81,7 +82,7 @@ const MarketplaceSettings = () => {
       
       console.log('🔧 [Frontend] Sending settings update:', formData);
       
-      const response = await fetch('http://localhost:5000/api/marketplace/settings', {
+      const response = await fetch(`${API_BASE_URL}/marketplace/settings`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -117,7 +118,7 @@ const MarketplaceSettings = () => {
     
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/marketplace/settings/pricing-tier', {
+      const response = await fetch(`${API_BASE_URL}/marketplace/settings/pricing-tier`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -145,7 +146,7 @@ const MarketplaceSettings = () => {
     
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/marketplace/settings/pricing-tier/${tierId}`, {
+      const response = await fetch(`${API_BASE_URL}/marketplace/settings/pricing-tier/${tierId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -168,7 +169,7 @@ const MarketplaceSettings = () => {
   const handleUpdateCategoryPricing = async (category, basePrice, extensionPrice) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/marketplace/settings/category-pricing/${category}`, {
+      const response = await fetch(`${API_BASE_URL}/marketplace/settings/category-pricing/${category}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

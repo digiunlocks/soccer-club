@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { API_BASE_URL } from './config/api';
 
 const UserTransactions = () => {
   const [transactions, setTransactions] = useState([]);
@@ -26,7 +27,7 @@ const UserTransactions = () => {
 
   const fetchTransactions = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/transactions/my-transactions', {
+      const response = await fetch(`${API_BASE_URL}/transactions/my-transactions`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -44,7 +45,7 @@ const UserTransactions = () => {
 
   const handleCompleteTransaction = async (transactionId) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/transactions/${transactionId}/complete`, {
+      const response = await fetch(`${API_BASE_URL}/transactions/${transactionId}/complete`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -70,7 +71,7 @@ const UserTransactions = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/transactions/${transactionId}/cancel`, {
+      const response = await fetch(`${API_BASE_URL}/transactions/${transactionId}/cancel`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`

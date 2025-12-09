@@ -5,6 +5,9 @@ import {
   FaFilter, FaSort, FaRedo, FaChartBar, FaClock, FaUser,
   FaDollarSign, FaTag, FaMapMarkerAlt, FaCalendarAlt, FaShieldAlt
 } from 'react-icons/fa';
+import { API_BASE_URL } from './config/api';
+
+const SERVER_URL = API_BASE_URL.replace('/api', '');
 
 export default function MarketplaceModerationManager() {
   const [activeTab, setActiveTab] = useState('all');
@@ -95,7 +98,7 @@ export default function MarketplaceModerationManager() {
       };
 
       // Use the public endpoint that works
-      let endpoint = 'http://localhost:5000/api/marketplace/public';
+      let endpoint = `${API_BASE_URL}/marketplace/public`;
 
       // Add query parameters
       const params = new URLSearchParams({
@@ -119,7 +122,7 @@ export default function MarketplaceModerationManager() {
       } else {
         // Fallback: try the public endpoint
         console.log('Trying fallback endpoint');
-        const fallbackResponse = await fetch('http://localhost:5000/api/marketplace/public', { headers });
+        const fallbackResponse = await fetch(`${API_BASE_URL}/marketplace/public`, { headers });
         
         if (fallbackResponse.ok) {
           const fallbackData = await fallbackResponse.json();
@@ -202,7 +205,7 @@ export default function MarketplaceModerationManager() {
       const token = localStorage.getItem('token');
       
       // Try admin endpoint first
-      let response = await fetch(`http://localhost:5000/api/marketplace/admin/${itemId}`, {
+      let response = await fetch(`${API_BASE_URL}/marketplace/admin/${itemId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -213,7 +216,7 @@ export default function MarketplaceModerationManager() {
       // If admin endpoint fails, try regular delete endpoint
       if (!response.ok && response.status === 404) {
         console.log('Admin endpoint not found, trying regular delete endpoint');
-        response = await fetch(`http://localhost:5000/api/marketplace/${itemId}`, {
+        response = await fetch(`${API_BASE_URL}/marketplace/${itemId}`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -253,7 +256,7 @@ export default function MarketplaceModerationManager() {
       const token = localStorage.getItem('token');
       
       // Try admin bulk delete endpoint first
-      let response = await fetch('http://localhost:5000/api/marketplace/admin/bulk-delete', {
+      let response = await fetch(`${API_BASE_URL}/marketplace/admin/bulk-delete`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -270,7 +273,7 @@ export default function MarketplaceModerationManager() {
         
         for (const itemId of selectedItems) {
           try {
-            const individualResponse = await fetch(`http://localhost:5000/api/marketplace/${itemId}`, {
+            const individualResponse = await fetch(`${API_BASE_URL}/marketplace/${itemId}`, {
               method: 'DELETE',
               headers: {
                 'Authorization': `Bearer ${token}`,

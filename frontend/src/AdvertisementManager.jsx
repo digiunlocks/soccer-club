@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from './config/api';
+
+const SERVER_URL = API_BASE_URL.replace('/api', '');
 
 export default function AdvertisementManager() {
   const navigate = useNavigate();
@@ -70,7 +73,7 @@ export default function AdvertisementManager() {
         if (value) queryParams.append(key, value);
       });
 
-      const response = await fetch(`http://localhost:5000/api/advertisements?${queryParams}`, {
+      const response = await fetch(`${API_BASE_URL}/advertisements?${queryParams}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -111,8 +114,8 @@ export default function AdvertisementManager() {
       };
 
       const url = editingAd 
-        ? `http://localhost:5000/api/advertisements/${editingAd._id}`
-        : 'http://localhost:5000/api/advertisements';
+        ? `${API_BASE_URL}/advertisements/${editingAd._id}`
+        : `${API_BASE_URL}/advertisements`;
       
       const method = editingAd ? 'PUT' : 'POST';
 
@@ -183,7 +186,7 @@ export default function AdvertisementManager() {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/advertisements/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/advertisements/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -209,7 +212,7 @@ export default function AdvertisementManager() {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/advertisements/bulk', {
+      const response = await fetch(`${API_BASE_URL}/advertisements/bulk`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

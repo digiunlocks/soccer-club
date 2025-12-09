@@ -3,7 +3,10 @@ import { Link, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import UnifiedMarketplaceManager from './components/UnifiedMarketplaceManager';
 import UnifiedPaymentManager from './components/UnifiedPaymentManager';
+import { API_BASE_URL } from './config/api';
 
+// Server URL for images (without /api)
+const SERVER_URL = API_BASE_URL.replace('/api', '');
 
 export default function AdminDashboard() {
   const location = useLocation();
@@ -779,10 +782,10 @@ export default function AdminDashboard() {
     };
   }, []);
 
-  // Handle URL parameters for section navigation
+  // Handle URL parameters and state for section navigation
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
-    const requestedSection = urlParams.get('section');
+    const requestedSection = urlParams.get('section') || location.state?.section;
     
     if (requestedSection) {
       setActiveSection(requestedSection);
@@ -803,7 +806,7 @@ export default function AdminDashboard() {
         }, 100);
       }
     }
-  }, [location.search]);
+  }, [location.search, location.state]);
 
   // Growth trends calculation function
   const calculateGrowthTrends = () => {
@@ -1107,7 +1110,7 @@ export default function AdminDashboard() {
     try {
       setClubInfoLoading(true);
       const token = localStorage.getItem("token");
-      const response = await fetch('http://localhost:5000/api/club-info', {
+      const response = await fetch(`${API_BASE_URL}/club-info`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -1130,7 +1133,7 @@ export default function AdminDashboard() {
     try {
       setClubInfoLoading(true);
       const token = localStorage.getItem("token");
-      const response = await fetch('http://localhost:5000/api/club-info', {
+      const response = await fetch(`${API_BASE_URL}/club-info`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -1193,7 +1196,7 @@ export default function AdminDashboard() {
     try {
       setPoliciesLoading(true);
       const token = localStorage.getItem("token");
-      const response = await fetch('http://localhost:5000/api/policies', {
+      const response = await fetch(`${API_BASE_URL}/policies`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -1214,7 +1217,7 @@ export default function AdminDashboard() {
     try {
       setPoliciesLoading(true);
       const token = localStorage.getItem("token");
-      const response = await fetch('http://localhost:5000/api/policies', {
+      const response = await fetch(`${API_BASE_URL}/policies`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -1259,7 +1262,7 @@ export default function AdminDashboard() {
     try {
       setDocumentsLoading(true);
       const token = localStorage.getItem("token");
-      const response = await fetch('http://localhost:5000/api/documents', {
+      const response = await fetch(`${API_BASE_URL}/documents`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -1300,7 +1303,7 @@ export default function AdminDashboard() {
       formData.append('version', newDocument.version);
       formData.append('status', newDocument.status);
 
-      const response = await fetch('http://localhost:5000/api/documents/upload', {
+      const response = await fetch(`${API_BASE_URL}/documents/upload`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -1337,7 +1340,7 @@ export default function AdminDashboard() {
     try {
       setDocumentsLoading(true);
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/documents/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/documents/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -1401,7 +1404,7 @@ export default function AdminDashboard() {
     try {
       setApplicationsLoading(true);
       const token = localStorage.getItem("token");
-      const response = await fetch('http://localhost:5000/api/applications', {
+      const response = await fetch(`${API_BASE_URL}/applications`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -1422,7 +1425,7 @@ export default function AdminDashboard() {
     try {
       setApplicationsLoading(true);
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/applications/${id}/status`, {
+      const response = await fetch(`${API_BASE_URL}/applications/${id}/status`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -1452,7 +1455,7 @@ export default function AdminDashboard() {
     try {
       setApplicationsLoading(true);
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/applications/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/applications/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -1508,7 +1511,7 @@ export default function AdminDashboard() {
     try {
       setFormsLoading(true);
       const token = localStorage.getItem("token");
-      const response = await fetch('http://localhost:5000/api/forms', {
+      const response = await fetch(`${API_BASE_URL}/forms`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -1531,7 +1534,7 @@ export default function AdminDashboard() {
     try {
       setFormsLoading(true);
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/forms/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/forms/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -1556,7 +1559,7 @@ export default function AdminDashboard() {
     try {
       setFormsLoading(true);
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/forms/${id}/status`, {
+      const response = await fetch(`${API_BASE_URL}/forms/${id}/status`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -1613,7 +1616,7 @@ export default function AdminDashboard() {
     try {
       setTeamsLoading(true);
       const token = localStorage.getItem("token");
-      const response = await fetch('http://localhost:5000/api/teams', {
+      const response = await fetch(`${API_BASE_URL}/teams`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -1644,8 +1647,8 @@ export default function AdminDashboard() {
       setTeamsLoading(true);
       const token = localStorage.getItem("token");
       const url = editingTeam 
-        ? `http://localhost:5000/api/teams/${editingTeam._id}` 
-        : 'http://localhost:5000/api/teams';
+        ? `${API_BASE_URL}/teams/${editingTeam._id}` 
+        : `${API_BASE_URL}/teams`;
       const method = editingTeam ? 'PUT' : 'POST';
 
       const response = await fetch(url, {
@@ -1712,7 +1715,7 @@ export default function AdminDashboard() {
     try {
       setTeamsLoading(true);
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/teams/${teamId}`, {
+      const response = await fetch(`${API_BASE_URL}/teams/${teamId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -1782,7 +1785,7 @@ export default function AdminDashboard() {
     try {
       setMatchesLoading(true);
       const token = localStorage.getItem("token");
-      const response = await fetch('http://localhost:5000/api/matches', {
+      const response = await fetch(`${API_BASE_URL}/matches`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (response.ok) {
@@ -1801,7 +1804,7 @@ export default function AdminDashboard() {
     try {
       setMatchesLoading(true);
       const token = localStorage.getItem("token");
-      const url = editingMatch ? `http://localhost:5000/api/matches/${editingMatch._id}` : 'http://localhost:5000/api/matches';
+      const url = editingMatch ? `${API_BASE_URL}/matches/${editingMatch._id}` : `${API_BASE_URL}/matches`;
       const method = editingMatch ? 'PUT' : 'POST';
       const response = await fetch(url, {
         method,
@@ -1834,7 +1837,7 @@ export default function AdminDashboard() {
     if (!window.confirm('Delete this match?')) return;
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/matches/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/matches/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -1856,7 +1859,7 @@ export default function AdminDashboard() {
     try {
       setTrainingsLoading(true);
       const token = localStorage.getItem("token");
-      const response = await fetch('http://localhost:5000/api/trainings', {
+      const response = await fetch(`${API_BASE_URL}/trainings`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (response.ok) {
@@ -1875,7 +1878,7 @@ export default function AdminDashboard() {
     try {
       setTrainingsLoading(true);
       const token = localStorage.getItem("token");
-      const url = editingTraining ? `http://localhost:5000/api/trainings/${editingTraining._id}` : 'http://localhost:5000/api/trainings';
+      const url = editingTraining ? `${API_BASE_URL}/trainings/${editingTraining._id}` : `${API_BASE_URL}/trainings`;
       const method = editingTraining ? 'PUT' : 'POST';
       const response = await fetch(url, {
         method,
@@ -1908,7 +1911,7 @@ export default function AdminDashboard() {
     if (!window.confirm('Delete this training?')) return;
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/trainings/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/trainings/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -1930,7 +1933,7 @@ export default function AdminDashboard() {
     try {
       setEventsLoading(true);
       const token = localStorage.getItem("token");
-      const response = await fetch('http://localhost:5000/api/events', {
+      const response = await fetch(`${API_BASE_URL}/events`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (response.ok) {
@@ -1949,7 +1952,7 @@ export default function AdminDashboard() {
     try {
       setEventsLoading(true);
       const token = localStorage.getItem("token");
-      const url = editingEvent ? `http://localhost:5000/api/events/${editingEvent._id}` : 'http://localhost:5000/api/events';
+      const url = editingEvent ? `${API_BASE_URL}/events/${editingEvent._id}` : `${API_BASE_URL}/events`;
       const method = editingEvent ? 'PUT' : 'POST';
       const response = await fetch(url, {
         method,
@@ -1982,7 +1985,7 @@ export default function AdminDashboard() {
     if (!window.confirm('Delete this event?')) return;
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/events/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/events/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -2004,7 +2007,7 @@ export default function AdminDashboard() {
     try {
       setSchedulesLoading(true);
       const token = localStorage.getItem("token");
-      const response = await fetch('http://localhost:5000/api/schedules', {
+      const response = await fetch(`${API_BASE_URL}/schedules`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (response.ok) {
@@ -2025,7 +2028,7 @@ export default function AdminDashboard() {
     try {
       setSchedulesLoading(true);
       const token = localStorage.getItem("token");
-      const url = editingSchedule ? `http://localhost:5000/api/schedules/${editingSchedule._id}` : 'http://localhost:5000/api/schedules';
+      const url = editingSchedule ? `${API_BASE_URL}/schedules/${editingSchedule._id}` : `${API_BASE_URL}/schedules`;
       const method = editingSchedule ? 'PUT' : 'POST';
       const response = await fetch(url, {
         method,
@@ -2072,7 +2075,7 @@ export default function AdminDashboard() {
     if (!window.confirm('Delete this schedule?')) return;
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/schedules/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/schedules/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -2094,7 +2097,7 @@ export default function AdminDashboard() {
     try {
       setStandingsLoading(true);
       const token = localStorage.getItem("token");
-      const response = await fetch('http://localhost:5000/api/standings', {
+      const response = await fetch(`${API_BASE_URL}/standings`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (response.ok) {
@@ -2114,7 +2117,7 @@ export default function AdminDashboard() {
     try {
       setStandingsLoading(true);
       const token = localStorage.getItem("token");
-      const url = editingStanding ? `http://localhost:5000/api/standings/${editingStanding._id}` : 'http://localhost:5000/api/standings';
+      const url = editingStanding ? `${API_BASE_URL}/standings/${editingStanding._id}` : `${API_BASE_URL}/standings`;
       const method = editingStanding ? 'PUT' : 'POST';
       const response = await fetch(url, {
         method,
@@ -2165,7 +2168,7 @@ export default function AdminDashboard() {
     if (!window.confirm('Delete this standing?')) return;
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/standings/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/standings/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -2190,12 +2193,12 @@ export default function AdminDashboard() {
     try {
       setMediaLoading(true);
       const token = localStorage.getItem("token");
-      let url = 'http://localhost:5000/api/gallery/admin/all';
+      let url = `${API_BASE_URL}/gallery/admin/all`;
       
       if (tab === 'pending') {
-        url = 'http://localhost:5000/api/gallery/admin/pending';
+        url = `${API_BASE_URL}/gallery/admin/pending`;
       } else if (tab === 'flagged') {
-        url = 'http://localhost:5000/api/gallery/admin/flagged';
+        url = `${API_BASE_URL}/gallery/admin/flagged`;
       }
       
       const response = await fetch(url, {
@@ -2235,7 +2238,7 @@ export default function AdminDashboard() {
       formData.append('description', mediaForm.description);
       formData.append('category', mediaForm.category);
 
-      const response = await fetch('http://localhost:5000/api/gallery/upload', {
+      const response = await fetch(`${API_BASE_URL}/gallery/upload`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
         body: formData
@@ -2262,7 +2265,7 @@ export default function AdminDashboard() {
   const handleApproveMedia = async (id) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/gallery/admin/${id}/approve`, {
+      const response = await fetch(`${API_BASE_URL}/gallery/admin/${id}/approve`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -2285,7 +2288,7 @@ export default function AdminDashboard() {
     
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/gallery/admin/${id}/reject`, {
+      const response = await fetch(`${API_BASE_URL}/gallery/admin/${id}/reject`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -2307,7 +2310,7 @@ export default function AdminDashboard() {
     
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/gallery/admin/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/gallery/admin/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -2370,7 +2373,7 @@ export default function AdminDashboard() {
       const token = localStorage.getItem("token");
       
       // Load summary statistics
-      const summaryResponse = await fetch('http://localhost:5000/api/financial-transactions/stats/summary', {
+      const summaryResponse = await fetch(`${API_BASE_URL}/financial-transactions/stats/summary`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (summaryResponse.ok) {
@@ -2379,7 +2382,7 @@ export default function AdminDashboard() {
       }
       
       // Load all transactions
-      const transactionsResponse = await fetch('http://localhost:5000/api/financial-transactions', {
+      const transactionsResponse = await fetch(`${API_BASE_URL}/financial-transactions`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (transactionsResponse.ok) {
@@ -2400,7 +2403,7 @@ export default function AdminDashboard() {
       const token = localStorage.getItem("token");
       
       // Load marketplace items - use admin endpoint to get ALL items including pending
-      const itemsResponse = await fetch('http://localhost:5000/api/marketplace/admin/all?limit=1000', {
+      const itemsResponse = await fetch(`${API_BASE_URL}/marketplace/admin/all?limit=1000`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       
@@ -2485,8 +2488,8 @@ export default function AdminDashboard() {
     try {
       const token = localStorage.getItem("token");
       const url = editingTransaction 
-        ? `http://localhost:5000/api/financial-transactions/${editingTransaction._id}` 
-        : 'http://localhost:5000/api/financial-transactions';
+        ? `${API_BASE_URL}/financial-transactions/${editingTransaction._id}` 
+        : `${API_BASE_URL}/financial-transactions`;
       
       const response = await fetch(url, {
         method: editingTransaction ? 'PUT' : 'POST',
@@ -2534,7 +2537,7 @@ export default function AdminDashboard() {
     
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/financial-transactions/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/financial-transactions/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -2558,7 +2561,7 @@ export default function AdminDashboard() {
       const token = localStorage.getItem("token");
       
       // Load membership stats
-      const statsResponse = await fetch('http://localhost:5000/api/memberships/admin/stats', {
+      const statsResponse = await fetch(`${API_BASE_URL}/memberships/admin/stats`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (statsResponse.ok) {
@@ -2567,7 +2570,7 @@ export default function AdminDashboard() {
       }
       
       // Load tiers
-      const tiersResponse = await fetch('http://localhost:5000/api/memberships/tiers', {
+      const tiersResponse = await fetch(`${API_BASE_URL}/memberships/tiers`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (tiersResponse.ok) {
@@ -2576,7 +2579,7 @@ export default function AdminDashboard() {
       }
       
       // Load all memberships
-      const membershipsResponse = await fetch('http://localhost:5000/api/memberships/admin/all', {
+      const membershipsResponse = await fetch(`${API_BASE_URL}/memberships/admin/all`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (membershipsResponse.ok) {
@@ -2611,8 +2614,8 @@ export default function AdminDashboard() {
     try {
       const token = localStorage.getItem("token");
       const url = editingTier 
-        ? `http://localhost:5000/api/memberships/tiers/${editingTier._id}` 
-        : 'http://localhost:5000/api/memberships/tiers';
+        ? `${API_BASE_URL}/memberships/tiers/${editingTier._id}` 
+        : `${API_BASE_URL}/memberships/tiers`;
       
       const response = await fetch(url, {
         method: editingTier ? 'PUT' : 'POST',
@@ -2657,7 +2660,7 @@ export default function AdminDashboard() {
     
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/memberships/tiers/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/memberships/tiers/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -2694,8 +2697,8 @@ export default function AdminDashboard() {
     try {
       const token = localStorage.getItem("token");
       const url = editingMembership 
-        ? `http://localhost:5000/api/memberships/${editingMembership._id}` 
-        : 'http://localhost:5000/api/memberships';
+        ? `${API_BASE_URL}/memberships/${editingMembership._id}` 
+        : `${API_BASE_URL}/memberships`;
       
       const response = await fetch(url, {
         method: editingMembership ? 'PUT' : 'POST',
@@ -2737,7 +2740,7 @@ export default function AdminDashboard() {
   const handleMembershipStatusChange = async (id, status) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/memberships/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/memberships/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -2763,7 +2766,7 @@ export default function AdminDashboard() {
     try {
       setSponsorsLoading(true);
       const token = localStorage.getItem("token");
-      const response = await fetch('http://localhost:5000/api/sponsors', {
+      const response = await fetch(`${API_BASE_URL}/sponsors`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (response.ok) {
@@ -2809,8 +2812,8 @@ export default function AdminDashboard() {
     try {
       const token = localStorage.getItem("token");
       const url = editingSponsor 
-        ? `http://localhost:5000/api/sponsors/${editingSponsor._id}` 
-        : 'http://localhost:5000/api/sponsors';
+        ? `${API_BASE_URL}/sponsors/${editingSponsor._id}` 
+        : `${API_BASE_URL}/sponsors`;
       
       const response = await fetch(url, {
         method: editingSponsor ? 'PUT' : 'POST',
@@ -2862,7 +2865,7 @@ export default function AdminDashboard() {
     
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/sponsors/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/sponsors/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -3135,6 +3138,13 @@ export default function AdminDashboard() {
               >
                     Club Information
               </button>
+              <Link
+                to="/admin/fees"
+                className="nav-link text-white text-start border-0 d-block"
+                style={{ textDecoration: 'none' }}
+              >
+                💵 Fee Management
+              </Link>
               <button
                 className={`nav-link text-white text-start border-0 ${activeSection === 'policies' ? 'bg-white bg-opacity-25' : ''}`}
                 onClick={() => handleSectionChange('policies')}
@@ -5514,7 +5524,7 @@ export default function AdminDashboard() {
                                 <i className="bi bi-house-fill text-primary" style={{fontSize: '2rem'}}></i>
                                 <h5 className="mt-3 mb-2">Homepage Content</h5>
                                 <p className="text-muted small">Welcome section, hero content, featured sections</p>
-                                <button className="btn btn-primary btn-sm">Edit Homepage</button>
+                                <Link to="/admin/content" state={{ from: 'content' }} className="btn btn-primary btn-sm">Edit Homepage</Link>
                               </div>
                             </div>
                           </div>
@@ -5524,7 +5534,7 @@ export default function AdminDashboard() {
                                 <i className="bi bi-info-circle-fill text-success" style={{fontSize: '2rem'}}></i>
                                 <h5 className="mt-3 mb-2">About Page</h5>
                                 <p className="text-muted small">Club information, history, mission statement</p>
-                                <button className="btn btn-success btn-sm">Edit About</button>
+                                <Link to="/admin/about" state={{ from: 'content' }} className="btn btn-success btn-sm">Edit About</Link>
                               </div>
                             </div>
                           </div>
@@ -5534,7 +5544,7 @@ export default function AdminDashboard() {
                                 <i className="bi bi-newspaper text-warning" style={{fontSize: '2rem'}}></i>
                                 <h5 className="mt-3 mb-2">News & Articles</h5>
                                 <p className="text-muted small">Latest updates, announcements, blog posts</p>
-                                <button className="btn btn-warning btn-sm">Manage News</button>
+                                <Link to="/admin/news" state={{ from: 'content' }} className="btn btn-warning btn-sm">Manage News</Link>
                               </div>
                             </div>
                           </div>
@@ -5571,7 +5581,7 @@ export default function AdminDashboard() {
                                 <td>2 hours ago</td>
                                 <td>Admin User</td>
                                 <td><span className="badge bg-success">Published</span></td>
-                                <td><button className="btn btn-sm btn-outline-primary">Edit</button></td>
+                                <td><Link to="/admin/content" state={{ from: 'content' }} className="btn btn-sm btn-outline-primary">Edit</Link></td>
                               </tr>
                               <tr>
                                 <td>About Us - Club History</td>
@@ -5579,7 +5589,7 @@ export default function AdminDashboard() {
                                 <td>1 day ago</td>
                                 <td>Content Manager</td>
                                 <td><span className="badge bg-success">Published</span></td>
-                                <td><button className="btn btn-sm btn-outline-primary">Edit</button></td>
+                                <td><Link to="/admin/about" state={{ from: 'content' }} className="btn btn-sm btn-outline-primary">Edit</Link></td>
                               </tr>
                               <tr>
                                 <td>Weekly Training Update</td>
@@ -5587,7 +5597,7 @@ export default function AdminDashboard() {
                                 <td>3 days ago</td>
                                 <td>Coach Admin</td>
                                 <td><span className="badge bg-success">Published</span></td>
-                                <td><button className="btn btn-sm btn-outline-primary">Edit</button></td>
+                                <td><Link to="/admin/news" state={{ from: 'content' }} className="btn btn-sm btn-outline-primary">Edit</Link></td>
                               </tr>
                               <tr>
                                 <td>Gallery - Championship Photos</td>
@@ -5595,7 +5605,7 @@ export default function AdminDashboard() {
                                 <td>1 week ago</td>
                                 <td>Media Manager</td>
                                 <td><span className="badge bg-success">Published</span></td>
-                                <td><button className="btn btn-sm btn-outline-primary">Edit</button></td>
+                                <td><Link to="/admin/gallery" state={{ from: 'content' }} className="btn btn-sm btn-outline-primary">Edit</Link></td>
                               </tr>
                             </tbody>
                           </table>
@@ -8255,7 +8265,7 @@ export default function AdminDashboard() {
                               <div key={item._id} className="col-md-4 col-lg-3">
                                 <div className="card h-100">
                                   <img 
-                                    src={`http://localhost:5000${item.imageUrl}`} 
+                                    src={`${SERVER_URL}${item.imageUrl}`} 
                                     alt={item.title}
                                     className="card-img-top"
                                     style={{height: '200px', objectFit: 'cover'}}

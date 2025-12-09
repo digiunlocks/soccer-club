@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
 import { FaPlus, FaEdit, FaTrash, FaSave, FaTimes, FaTag, FaList, FaDollarSign, FaClock, FaCog, FaChevronDown, FaChevronUp, FaArrowLeft } from 'react-icons/fa';
+import { API_BASE_URL } from './config/api';
 
 const EnhancedCategoryManagement = () => {
   const [categories, setCategories] = useState([]);
@@ -74,7 +75,7 @@ const EnhancedCategoryManagement = () => {
   const fetchCategories = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/categories/admin', {
+      const response = await fetch(`${API_BASE_URL}/categories/admin`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       
@@ -99,8 +100,8 @@ const EnhancedCategoryManagement = () => {
     try {
       const token = localStorage.getItem('token');
       const url = editingCategory 
-        ? `http://localhost:5000/api/categories/${editingCategory._id}`
-        : 'http://localhost:5000/api/categories';
+        ? `${API_BASE_URL}/categories/${editingCategory._id}`
+        : `${API_BASE_URL}/categories`;
       
       const method = editingCategory ? 'PUT' : 'POST';
       
@@ -137,7 +138,7 @@ const EnhancedCategoryManagement = () => {
       const token = localStorage.getItem('token');
       
       // Update pricing settings
-      await fetch(`http://localhost:5000/api/categories/${selectedCategoryId}/pricing`, {
+      await fetch(`${API_BASE_URL}/categories/${selectedCategoryId}/pricing`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -147,7 +148,7 @@ const EnhancedCategoryManagement = () => {
       });
       
       // Update expiration settings
-      await fetch(`http://localhost:5000/api/categories/${selectedCategoryId}/expiration`, {
+      await fetch(`${API_BASE_URL}/categories/${selectedCategoryId}/expiration`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -157,7 +158,7 @@ const EnhancedCategoryManagement = () => {
       });
       
       // Update free listing settings
-      await fetch(`http://localhost:5000/api/categories/${selectedCategoryId}/free-listings`, {
+      await fetch(`${API_BASE_URL}/categories/${selectedCategoryId}/free-listings`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -185,7 +186,7 @@ const EnhancedCategoryManagement = () => {
     
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/categories/${selectedCategoryId}/pricing-tiers`, {
+      const response = await fetch(`${API_BASE_URL}/categories/${selectedCategoryId}/pricing-tiers`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -213,7 +214,7 @@ const EnhancedCategoryManagement = () => {
     
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/categories/${selectedCategoryId}/pricing-tiers/${tierId}`, {
+      const response = await fetch(`${API_BASE_URL}/categories/${selectedCategoryId}/pricing-tiers/${tierId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });

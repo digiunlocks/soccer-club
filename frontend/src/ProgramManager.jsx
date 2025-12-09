@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from './config/api';
 
-const API_URL = "http://localhost:5000/api/programs";
+const API_URL = `${API_BASE_URL}/programs`;
 const TEAMS = ["U8 Leopards", "U10 Tigers", "U12 Lions", "U14 Panthers", "Adult Leopards"];
 const COACHES = ["Coach Smith", "Coach Lee", "Coach Patel", "Coach Garcia"];
 

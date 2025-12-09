@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
+import { API_BASE_URL } from './config/api';
 
-const API_URL = "http://localhost:5000/api/hero-content";
+const API_URL = `${API_BASE_URL}/hero-content`;
 
 export default function HeroTextEditor() {
   const [heroItems, setHeroItems] = useState([]);

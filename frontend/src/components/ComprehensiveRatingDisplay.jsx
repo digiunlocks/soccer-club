@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaStar, FaStarHalfAlt, FaThumbsUp, FaFlag, FaReply } from 'react-icons/fa';
 import RatingDisplay from './RatingDisplay';
+import { API_BASE_URL } from '../config/api';
 
 const ComprehensiveRatingDisplay = ({ 
   sellerId, 
@@ -23,13 +24,13 @@ const ComprehensiveRatingDisplay = ({
       const token = localStorage.getItem('token');
       
       // Fetch comprehensive rating stats
-      const statsResponse = await fetch(`http://localhost:5000/api/ratings/seller/${sellerId}/stats`, {
+      const statsResponse = await fetch(`${API_BASE_URL}/ratings/seller/${sellerId}/stats`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const stats = await statsResponse.json();
       
       // Fetch recent reviews
-      const reviewsResponse = await fetch(`http://localhost:5000/api/ratings/seller/${sellerId}/reviews?limit=${maxReviews}`, {
+      const reviewsResponse = await fetch(`${API_BASE_URL}/ratings/seller/${sellerId}/reviews?limit=${maxReviews}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const reviews = await reviewsResponse.json();
@@ -46,7 +47,7 @@ const ComprehensiveRatingDisplay = ({
   const handleHelpfulVote = async (reviewId) => {
     try {
       const token = localStorage.getItem('token');
-      await fetch(`http://localhost:5000/api/ratings/${reviewId}/helpful`, {
+      await fetch(`${API_BASE_URL}/ratings/${reviewId}/helpful`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -61,7 +62,7 @@ const ComprehensiveRatingDisplay = ({
     if (window.confirm('Are you sure you want to report this review?')) {
       try {
         const token = localStorage.getItem('token');
-        await fetch(`http://localhost:5000/api/ratings/${reviewId}/report`, {
+        await fetch(`${API_BASE_URL}/ratings/${reviewId}/report`, {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}` }
         });

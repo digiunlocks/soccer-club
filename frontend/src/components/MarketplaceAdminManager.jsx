@@ -7,6 +7,9 @@ import {
   FaCheckCircle, FaTimesCircle, FaExclamationTriangle, FaEyeSlash,
   FaDownload, FaUpload, FaCog, FaBroom
 } from 'react-icons/fa';
+import { API_BASE_URL } from '../config/api';
+
+const SERVER_URL = API_BASE_URL.replace('/api', '');
 
 export default function MarketplaceAdminManager() {
   const [activeTab, setActiveTab] = useState('pending');
@@ -69,7 +72,7 @@ export default function MarketplaceAdminManager() {
       }
 
       // Verify user is super admin
-      const response = await fetch('http://localhost:5000/api/auth/me', {
+      const response = await fetch(`${API_BASE_URL}/auth/me`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -98,7 +101,7 @@ export default function MarketplaceAdminManager() {
   const fetchStats = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/marketplace/admin/statistics', {
+      const response = await fetch(`${API_BASE_URL}/marketplace/admin/statistics`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -126,21 +129,21 @@ export default function MarketplaceAdminManager() {
         'Authorization': `Bearer ${token}`
       };
 
-      let endpoint = 'http://localhost:5000/api/marketplace/admin/all-items';
+      let endpoint = `${API_BASE_URL}/marketplace/admin/all-items`;
       
       // Use specific endpoints for different tabs
       switch (activeTab) {
         case 'pending':
-          endpoint = 'http://localhost:5000/api/marketplace/admin/moderation-queue';
+          endpoint = `${API_BASE_URL}/marketplace/admin/moderation-queue`;
           break;
         case 'flagged':
-          endpoint = 'http://localhost:5000/api/marketplace/admin/flagged';
+          endpoint = `${API_BASE_URL}/marketplace/admin/flagged`;
           break;
         case 'restorable':
-          endpoint = 'http://localhost:5000/api/marketplace/admin/restorable';
+          endpoint = `${API_BASE_URL}/marketplace/admin/restorable`;
           break;
         default:
-          endpoint = 'http://localhost:5000/api/marketplace/admin/all-items';
+          endpoint = `${API_BASE_URL}/marketplace/admin/all-items`;
       }
 
       // Build query parameters
@@ -178,7 +181,7 @@ export default function MarketplaceAdminManager() {
   const fetchExpirationSettings = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/marketplace/fees/current', {
+      const response = await fetch(`${API_BASE_URL}/marketplace/fees/current`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -203,7 +206,7 @@ export default function MarketplaceAdminManager() {
   const updateExpirationSettings = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/marketplace/fees/admin/config', {
+      const response = await fetch(`${API_BASE_URL}/marketplace/fees/admin/config`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -236,7 +239,7 @@ export default function MarketplaceAdminManager() {
   const handleStatusChange = async (itemId, newStatus, reason = '') => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/marketplace/admin/${itemId}/status`, {
+      const response = await fetch(`${API_BASE_URL}/marketplace/admin/${itemId}/status`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -272,7 +275,7 @@ export default function MarketplaceAdminManager() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/marketplace/admin/${itemId}`, {
+      const response = await fetch(`${API_BASE_URL}/marketplace/admin/${itemId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -309,7 +312,7 @@ export default function MarketplaceAdminManager() {
       const token = localStorage.getItem('token');
       
       if (bulkAction === 'delete') {
-        const response = await fetch('http://localhost:5000/api/marketplace/admin/bulk-delete', {
+        const response = await fetch(`${API_BASE_URL}/marketplace/admin/bulk-delete`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -348,7 +351,7 @@ export default function MarketplaceAdminManager() {
   const handleResolveFlag = async (itemId, flagId, action) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/marketplace/admin/${itemId}/resolve-flag`, {
+      const response = await fetch(`${API_BASE_URL}/marketplace/admin/${itemId}/resolve-flag`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,

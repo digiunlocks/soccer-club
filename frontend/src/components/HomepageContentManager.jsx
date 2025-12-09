@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { toast } from 'react-toastify';
+import { API_BASE_URL } from '../config/api';
 
 export default function HomepageContentManager() {
   const [homepageContent, setHomepageContent] = useState({
@@ -156,7 +157,7 @@ export default function HomepageContentManager() {
 
   const fetchHomepageContent = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/settings/homepage');
+      const response = await fetch(`${API_BASE_URL}/settings/homepage`);
       if (response.ok) {
         const data = await response.json();
         setHomepageContent(data);
@@ -173,7 +174,7 @@ export default function HomepageContentManager() {
     setSaving(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/settings', {
+      const response = await fetch(`${API_BASE_URL}/settings`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

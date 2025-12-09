@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaStar, FaUser } from 'react-icons/fa';
+import { API_BASE_URL } from '../config/api';
 
 export default function SellerReviews({ sellerId, itemId }) {
   const [reviews, setReviews] = useState([]);
@@ -15,7 +16,7 @@ export default function SellerReviews({ sellerId, itemId }) {
   const fetchReviews = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:5000/api/seller-ratings/seller/${sellerId}`);
+      const response = await fetch(`${API_BASE_URL}/seller-ratings/seller/${sellerId}`);
       
       if (response.ok) {
         const data = await response.json();

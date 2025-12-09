@@ -1,6 +1,7 @@
 import { Routes, Route, Link, useLocation, useNavigate, Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import Logo from "./components/Logo";
+import { API_BASE_URL } from "./config/api";
 
 import Home from "./Home";
 import About from "./About";
@@ -24,6 +25,7 @@ import BrandingManager from "./BrandingManager";
 import ClubManager from "./ClubManager";
 import ContactManager from "./ContactManager";
 import ContentManager from "./ContentManager";
+import FeeManagement from "./FeeManagement";
 import PlaceholderManager from "./PlaceholderManager";
 import AdminDashboard from "./AdminDashboard";
 import ProgramManager from "./ProgramManager";
@@ -105,7 +107,7 @@ export default function App() {
   useEffect(() => {
     const fetchLogoUrl = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/settings/public');
+        const response = await fetch(`${API_BASE_URL}/settings/public`);
         if (response.ok) {
           const data = await response.json();
           if (data.logoUrl) {
@@ -371,6 +373,7 @@ export default function App() {
           <Route path="/admin/club" element={<ClubManager />} />
           <Route path="/admin/contact" element={<ContactManager />} />
           <Route path="/admin/content" element={<ContentManager />} />
+          <Route path="/admin/fees" element={<FeeManagement />} />
           <Route path="/admin/social" element={<PlaceholderManager 
             title="Social & SEO Management" 
             description="Manage social media integration and SEO settings"

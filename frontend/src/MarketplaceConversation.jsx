@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaDollarSign, FaHandshake, FaCheck, FaTimes, FaComments, FaHistory, FaUser } from 'react-icons/fa';
+import { API_BASE_URL } from './config/api';
+
+const SERVER_URL = API_BASE_URL.replace('/api', '');
 
 export default function MarketplaceConversation() {
   const { itemId, otherUserId } = useParams();
@@ -26,7 +29,7 @@ export default function MarketplaceConversation() {
     if (!token) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/marketplace-messages/conversation/${itemId}/${otherUserId}`, {
+      const response = await fetch(`${API_BASE_URL}/marketplace-messages/conversation/${itemId}/${otherUserId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.ok) {
@@ -42,7 +45,7 @@ export default function MarketplaceConversation() {
 
   const fetchItem = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/marketplace/public/${itemId}`);
+      const response = await fetch(`${API_BASE_URL}/marketplace/public/${itemId}`);
       if (response.ok) {
         const data = await response.json();
         setItem(data);
@@ -57,7 +60,7 @@ export default function MarketplaceConversation() {
     if (!token) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/users/${otherUserId}`, {
+      const response = await fetch(`${API_BASE_URL}/users/${otherUserId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.ok) {
@@ -88,7 +91,7 @@ export default function MarketplaceConversation() {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch('http://localhost:5000/api/marketplace-messages/send', {
+      const response = await fetch(`${API_BASE_URL}/marketplace-messages/send`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -125,7 +128,7 @@ export default function MarketplaceConversation() {
     if (!token) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/marketplace-messages/${action}/${messageId}`, {
+      const response = await fetch(`${API_BASE_URL}/marketplace-messages/${action}/${messageId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -210,7 +213,7 @@ export default function MarketplaceConversation() {
                   src={item.images && item.images[0] ? 
                     (item.images[0].startsWith('http') ? 
                       item.images[0] : 
-                      `http://localhost:5000${item.images[0]}`) : 
+                      `${SERVER_URL}${item.images[0]}`) : 
                     '/placeholder-item.jpg'}
                   alt={item.title}
                   className="w-full h-full object-cover"

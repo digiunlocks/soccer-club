@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaUpload, FaMapMarkerAlt } from 'react-icons/fa';
+import { API_BASE_URL } from './config/api';
 
 export default function MarketplacePost() {
   const navigate = useNavigate();
@@ -87,7 +88,7 @@ export default function MarketplacePost() {
         submitData.append('images', file);
       });
 
-      const response = await fetch('http://localhost:5000/api/marketplace', {
+      const response = await fetch(`${API_BASE_URL}/marketplace`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`

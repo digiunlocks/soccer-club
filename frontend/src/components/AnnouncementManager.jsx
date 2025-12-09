@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { toast } from 'react-toastify';
+import { API_BASE_URL } from '../config/api';
 
 const AnnouncementManager = () => {
   const [form, setForm] = useState({
@@ -21,7 +22,7 @@ const AnnouncementManager = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/messages/announcement', {
+      const response = await fetch(`${API_BASE_URL}/messages/announcement`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

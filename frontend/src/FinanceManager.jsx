@@ -1,22 +1,44 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { API_BASE_URL } from './config/api';
+
+const API_URL = API_BASE_URL;
 
 const FinanceManager = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState('overview');
   const [transactions, setTransactions] = useState([]);
+  const [payments, setPayments] = useState([]);
   const [invoices, setInvoices] = useState([]);
+  const [declinedPayments, setDeclinedPayments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState('transaction'); // transaction, invoice, refund
   const [editingItem, setEditingItem] = useState(null);
+  const [selectedPayment, setSelectedPayment] = useState(null);
+  const [paymentStats, setPaymentStats] = useState({
+    totalRevenue: 0,
+    completedPayments: 0,
+    pendingAmount: 0,
+    refundedAmount: 0,
+    todayRevenue: 0,
+    todayCount: 0
+  });
   const [filter, setFilter] = useState({
     search: '',
     type: 'all',
     status: 'all',
     dateFrom: '',
     dateTo: '',
-    category: 'all'
+    category: 'all',
+    paymentType: 'all'
+  });
+  const [dateRange, setDateRange] = useState({
+    startDate: new Date(new Date().setMonth(new Date().getMonth() - 1)).toISOString().split('T')[0],
+    endDate: new Date().toISOString().split('T')[0]
   });
 
   const [transactionForm, setTransactionForm] = useState({
@@ -61,10 +83,12 @@ const FinanceManager = () => {
   const tabs = [
     { id: 'overview', name: 'Overview', icon: '📊' },
     { id: 'transactions', name: 'Transactions', icon: '💳' },
+    { id: 'payments', name: 'Payment History', icon: '💵' },
+    { id: 'declined', name: 'Declined/Failed', icon: '❌' },
     { id: 'invoices', name: 'Invoices', icon: '📄' },
     { id: 'refunds', name: 'Refunds', icon: '↩️' },
-    { id: 'reports', name: 'Reports', icon: '📈' },
-    { id: 'budget', name: 'Budget', icon: '💰' }
+    { id: 'profit-loss', name: 'Profit & Loss', icon: '📈' },
+    { id: 'reports', name: 'Reports', icon: '📋' }
   ];
 
   const transactionTypes = [
@@ -169,32 +193,101 @@ const FinanceManager = () => {
 
   useEffect(() => {
     document.title = 'Financial Management - Seattle Leopards FC Admin';
-    loadTransactions();
-    loadInvoices();
-  }, []);
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/signin');
+      return;
+    }
+    loadAllData();
+  }, [navigate]);
+
+  const loadAllData = async () => {
+    setLoading(true);
+    await Promise.all([
+      loadTransactions(),
+      loadPayments(),
+      loadDeclinedPayments(),
+      loadPaymentStats(),
+      loadInvoices()
+    ]);
+    setLoading(false);
+  };
 
   const loadTransactions = async () => {
     try {
-      setLoading(true);
-      const response = await fetch('/api/finance/transactions');
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_URL}/financial-transactions`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       if (response.ok) {
         const data = await response.json();
-        setTransactions(Array.isArray(data) ? data : []);
+        setTransactions(Array.isArray(data.transactions) ? data.transactions : Array.isArray(data) ? data : []);
       }
     } catch (error) {
       console.error('Error loading transactions:', error);
       setTransactions([]);
-    } finally {
-      setLoading(false);
+    }
+  };
+
+  const loadPayments = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_URL}/payments`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setPayments(Array.isArray(data.payments) ? data.payments : Array.isArray(data) ? data : []);
+      }
+    } catch (error) {
+      console.error('Error loading payments:', error);
+      setPayments([]);
+    }
+  };
+
+  const loadDeclinedPayments = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_URL}/payments?status=failed`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        const allPayments = Array.isArray(data.payments) ? data.payments : Array.isArray(data) ? data : [];
+        // Get all failed and cancelled payments
+        const declined = allPayments.filter(p => ['failed', 'cancelled'].includes(p.status));
+        setDeclinedPayments(declined);
+      }
+    } catch (error) {
+      console.error('Error loading declined payments:', error);
+      setDeclinedPayments([]);
+    }
+  };
+
+  const loadPaymentStats = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_URL}/payments/stats`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setPaymentStats(data);
+      }
+    } catch (error) {
+      console.error('Error loading payment stats:', error);
     }
   };
 
   const loadInvoices = async () => {
     try {
-      const response = await fetch('/api/finance/invoices');
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_URL}/invoices`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       if (response.ok) {
         const data = await response.json();
-        setInvoices(Array.isArray(data) ? data : []);
+        setInvoices(Array.isArray(data.invoices) ? data.invoices : Array.isArray(data) ? data : []);
       }
     } catch (error) {
       console.error('Error loading invoices:', error);
@@ -205,26 +298,34 @@ const FinanceManager = () => {
   const saveTransaction = async () => {
     try {
       setLoading(true);
-      const url = editingItem ? `/api/finance/transactions/${editingItem._id}` : '/api/finance/transactions';
+      const token = localStorage.getItem('token');
+      const url = editingItem 
+        ? `${API_URL}/financial-transactions/${editingItem._id}` 
+        : `${API_URL}/financial-transactions`;
       const method = editingItem ? 'PUT' : 'POST';
 
       const response = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify(transactionForm)
       });
 
       if (response.ok) {
-        setMessage(`Transaction ${editingItem ? 'updated' : 'added'} successfully!`);
+        toast.success(`Transaction ${editingItem ? 'updated' : 'added'} successfully!`);
         loadTransactions();
+        loadPaymentStats();
         setShowModal(false);
         resetForms();
+      } else {
+        const error = await response.json();
+        toast.error(error.error || 'Failed to save transaction');
       }
-      setTimeout(() => setMessage(''), 3000);
     } catch (error) {
       console.error('Error saving transaction:', error);
-      setMessage('Error saving transaction');
-      setTimeout(() => setMessage(''), 3000);
+      toast.error('Error saving transaction');
     } finally {
       setLoading(false);
     }
@@ -233,26 +334,32 @@ const FinanceManager = () => {
   const saveInvoice = async () => {
     try {
       setLoading(true);
-      const url = editingItem ? `/api/finance/invoices/${editingItem._id}` : '/api/finance/invoices';
+      const token = localStorage.getItem('token');
+      const url = editingItem 
+        ? `${API_URL}/invoices/${editingItem._id}` 
+        : `${API_URL}/invoices`;
       const method = editingItem ? 'PUT' : 'POST';
 
       const response = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify(invoiceForm)
       });
 
       if (response.ok) {
-        setMessage(`Invoice ${editingItem ? 'updated' : 'created'} successfully!`);
+        toast.success(`Invoice ${editingItem ? 'updated' : 'created'} successfully!`);
         loadInvoices();
         setShowModal(false);
         resetForms();
+      } else {
+        toast.error('Failed to save invoice');
       }
-      setTimeout(() => setMessage(''), 3000);
     } catch (error) {
       console.error('Error saving invoice:', error);
-      setMessage('Error saving invoice');
-      setTimeout(() => setMessage(''), 3000);
+      toast.error('Error saving invoice');
     } finally {
       setLoading(false);
     }
@@ -261,25 +368,92 @@ const FinanceManager = () => {
   const processRefund = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/finance/refunds', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(refundForm)
+      const token = localStorage.getItem('token');
+      
+      // If we have a selected payment, process refund via payment endpoint
+      if (selectedPayment) {
+        const response = await fetch(`${API_URL}/payments/${selectedPayment._id}/refund`, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            amount: parseFloat(refundForm.amount),
+            reason: `${refundForm.refundReason}: ${refundForm.reason}`
+          })
+        });
+
+        if (response.ok) {
+          toast.success('Refund processed successfully!');
+          loadAllData();
+          setShowModal(false);
+          resetForms();
+          setSelectedPayment(null);
+        } else {
+          const error = await response.json();
+          toast.error(error.error || 'Failed to process refund');
+        }
+      } else {
+        // Process as a general expense transaction
+        const refundTransaction = {
+          type: 'expense',
+          category: 'Refunds',
+          amount: parseFloat(refundForm.amount),
+          description: `Refund: ${refundForm.reason}`,
+          date: new Date().toISOString(),
+          paymentMethod: refundForm.refundMethod,
+          status: 'completed',
+          notes: `Reason: ${refundForm.refundReason}. Processed by: ${refundForm.processedBy}. Approved by: ${refundForm.approvedBy}`
+        };
+
+        const response = await fetch(`${API_URL}/financial-transactions`, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(refundTransaction)
+        });
+
+        if (response.ok) {
+          toast.success('Refund recorded successfully!');
+          loadAllData();
+          setShowModal(false);
+          resetForms();
+        } else {
+          toast.error('Failed to record refund');
+        }
+      }
+    } catch (error) {
+      console.error('Error processing refund:', error);
+      toast.error('Error processing refund');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const retryPayment = async (paymentId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_URL}/payments/${paymentId}`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ status: 'pending' })
       });
 
       if (response.ok) {
-        setMessage('Refund processed successfully!');
-        loadTransactions();
-        setShowModal(false);
-        resetForms();
+        toast.success('Payment marked for retry');
+        loadAllData();
+      } else {
+        toast.error('Failed to retry payment');
       }
-      setTimeout(() => setMessage(''), 3000);
     } catch (error) {
-      console.error('Error processing refund:', error);
-      setMessage('Error processing refund');
-      setTimeout(() => setMessage(''), 3000);
-    } finally {
-      setLoading(false);
+      console.error('Error retrying payment:', error);
+      toast.error('Error retrying payment');
     }
   };
 
@@ -387,7 +561,8 @@ const FinanceManager = () => {
 
   const filteredTransactions = getFilteredTransactions();
 
-  const stats = {
+  // Calculate stats from transactions
+  const transactionStats = {
     totalIncome: Array.isArray(transactions) ? transactions
       .filter(t => t.type === 'income' && t.status === 'completed')
       .reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0) : 0,
@@ -398,8 +573,26 @@ const FinanceManager = () => {
       .filter(t => t.type === 'income' && t.status === 'pending')
       .reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0) : 0,
     refundedAmount: Array.isArray(transactions) ? transactions
-      .filter(t => t.status === 'refunded')
+      .filter(t => t.status === 'refunded' || t.category === 'Refunds')
       .reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0) : 0,
+  };
+
+  // Calculate payment stats
+  const paymentCalcs = {
+    totalPayments: payments.length,
+    completedPayments: payments.filter(p => p.status === 'completed').length,
+    pendingPayments: payments.filter(p => p.status === 'pending').length,
+    failedPayments: payments.filter(p => p.status === 'failed').length,
+    refundedPayments: payments.filter(p => ['refunded', 'partially_refunded'].includes(p.status)).length,
+    totalPaymentAmount: payments
+      .filter(p => p.status === 'completed')
+      .reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0),
+    totalRefundedAmount: payments
+      .reduce((sum, p) => sum + (parseFloat(p.refundAmount) || 0), 0),
+  };
+
+  // Invoice stats
+  const invoiceStats = {
     invoicesSent: Array.isArray(invoices) ? invoices.filter(i => i.status === 'sent').length : 0,
     invoicesPaid: Array.isArray(invoices) ? invoices.filter(i => i.status === 'paid').length : 0,
     invoicesOverdue: Array.isArray(invoices) ? invoices.filter(i => i.status === 'overdue').length : 0,
@@ -408,7 +601,35 @@ const FinanceManager = () => {
       .reduce((sum, i) => sum + (parseFloat(i.total) || 0), 0) : 0
   };
 
+  // Combined stats
+  const stats = {
+    ...transactionStats,
+    ...paymentCalcs,
+    ...invoiceStats,
+    // Use payment stats from API if available, otherwise use calculated
+    totalRevenue: paymentStats.totalRevenue || transactionStats.totalIncome,
+    todayRevenue: paymentStats.todayRevenue || 0,
+    todayCount: paymentStats.todayCount || 0,
+  };
+
   stats.netIncome = stats.totalIncome - stats.totalExpenses;
+  stats.profitMargin = stats.totalIncome > 0 ? ((stats.netIncome / stats.totalIncome) * 100).toFixed(1) : 0;
+
+  // Group payments by type for analysis
+  const paymentsByType = payments.reduce((acc, p) => {
+    if (p.status === 'completed') {
+      acc[p.paymentType] = (acc[p.paymentType] || 0) + (parseFloat(p.amount) || 0);
+    }
+    return acc;
+  }, {});
+
+  // Group expenses by category
+  const expensesByCategory = transactions
+    .filter(t => t.type === 'expense' && t.status === 'completed')
+    .reduce((acc, t) => {
+      acc[t.category] = (acc[t.category] || 0) + (parseFloat(t.amount) || 0);
+      return acc;
+    }, {});
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-US', {
@@ -431,12 +652,21 @@ const FinanceManager = () => {
               </p>
             </div>
             <div className="flex space-x-3">
-              <Link
-                to="/admin"
-                className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors"
+              <button
+                onClick={() => {
+                  if (location.state?.from) {
+                    navigate('/admin', { state: { section: location.state.from } });
+                  } else {
+                    navigate('/admin', { state: { section: 'finance' } });
+                  }
+                }}
+                className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2"
               >
-                ← Back to Admin
-              </Link>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Back
+              </button>
               <button
                 onClick={() => {
                   resetForms();
@@ -943,16 +1173,479 @@ const FinanceManager = () => {
           </div>
         )}
 
-        {/* Budget Tab */}
-        {activeTab === 'budget' && (
+        {/* Payment History Tab */}
+        {activeTab === 'payments' && (
           <div className="space-y-6">
+            {/* Payment Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg border border-green-200">
+                <div className="text-2xl font-bold text-green-900">{formatCurrency(stats.totalPaymentAmount)}</div>
+                <div className="text-sm text-green-700">Total Revenue</div>
+              </div>
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
+                <div className="text-2xl font-bold text-blue-900">{stats.completedPayments}</div>
+                <div className="text-sm text-blue-700">Completed</div>
+              </div>
+              <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 p-4 rounded-lg border border-yellow-200">
+                <div className="text-2xl font-bold text-yellow-900">{stats.pendingPayments}</div>
+                <div className="text-sm text-yellow-700">Pending</div>
+              </div>
+              <div className="bg-gradient-to-br from-red-50 to-red-100 p-4 rounded-lg border border-red-200">
+                <div className="text-2xl font-bold text-red-900">{stats.failedPayments}</div>
+                <div className="text-sm text-red-700">Failed</div>
+              </div>
+              <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-lg border border-orange-200">
+                <div className="text-2xl font-bold text-orange-900">{formatCurrency(stats.totalRefundedAmount)}</div>
+                <div className="text-sm text-orange-700">Refunded</div>
+              </div>
+              <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200">
+                <div className="text-2xl font-bold text-purple-900">{formatCurrency(stats.todayRevenue)}</div>
+                <div className="text-sm text-purple-700">Today</div>
+              </div>
+            </div>
+
+            {/* Payment Type Filter */}
+            <div className="bg-white rounded-lg shadow-sm border p-4">
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <input
+                  type="text"
+                  placeholder="Search by name, email, or transaction ID..."
+                  value={filter.search}
+                  onChange={(e) => setFilter(f => ({ ...f, search: e.target.value }))}
+                  className="border rounded px-3 py-2"
+                />
+                <select
+                  value={filter.paymentType}
+                  onChange={(e) => setFilter(f => ({ ...f, paymentType: e.target.value }))}
+                  className="border rounded px-3 py-2"
+                >
+                  <option value="all">All Payment Types</option>
+                  <option value="Registration Fees">📝 Registration Fees</option>
+                  <option value="Membership Dues">👥 Membership Dues</option>
+                  <option value="Tournament Fees">🏆 Tournament Fees</option>
+                  <option value="Training Sessions">⚽ Training Sessions</option>
+                  <option value="Equipment Purchase">🎽 Equipment Purchase</option>
+                  <option value="Uniform Purchase">👕 Uniform Purchase</option>
+                  <option value="Camp/Clinic Fees">🏕️ Camp/Clinic Fees</option>
+                  <option value="Merchandise">🛍️ Merchandise</option>
+                  <option value="Marketplace Purchase">🛒 Marketplace Purchase</option>
+                  <option value="Donations">💝 Donations</option>
+                  <option value="Sponsorship">🤝 Sponsorship</option>
+                  <option value="Other">💵 Other</option>
+                </select>
+                <select
+                  value={filter.status}
+                  onChange={(e) => setFilter(f => ({ ...f, status: e.target.value }))}
+                  className="border rounded px-3 py-2"
+                >
+                  <option value="all">All Statuses</option>
+                  <option value="completed">✅ Completed</option>
+                  <option value="pending">⏳ Pending</option>
+                  <option value="failed">❌ Failed</option>
+                  <option value="refunded">↩️ Refunded</option>
+                  <option value="cancelled">🚫 Cancelled</option>
+                </select>
+                <input
+                  type="date"
+                  value={filter.dateFrom}
+                  onChange={(e) => setFilter(f => ({ ...f, dateFrom: e.target.value }))}
+                  className="border rounded px-3 py-2"
+                />
+                <input
+                  type="date"
+                  value={filter.dateTo}
+                  onChange={(e) => setFilter(f => ({ ...f, dateTo: e.target.value }))}
+                  className="border rounded px-3 py-2"
+                />
+              </div>
+            </div>
+
+            {/* Payments Table */}
+            <div className="bg-white rounded-lg shadow-sm border">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Payer</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Method</th>
+                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Amount</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Transaction ID</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {payments.length === 0 ? (
+                      <tr>
+                        <td colSpan="8" className="px-6 py-12 text-center text-gray-500">
+                          <div className="text-6xl mb-4">💵</div>
+                          <p className="text-lg font-semibold mb-2">No payments found</p>
+                          <p className="text-sm">Payments will appear here once they are processed</p>
+                        </td>
+                      </tr>
+                    ) : (
+                      payments
+                        .filter(p => {
+                          if (filter.paymentType !== 'all' && p.paymentType !== filter.paymentType) return false;
+                          if (filter.status !== 'all' && p.status !== filter.status) return false;
+                          if (filter.search && !p.payerName?.toLowerCase().includes(filter.search.toLowerCase()) &&
+                              !p.payerEmail?.toLowerCase().includes(filter.search.toLowerCase()) &&
+                              !p.transactionId?.toLowerCase().includes(filter.search.toLowerCase())) return false;
+                          return true;
+                        })
+                        .map((payment) => (
+                          <tr key={payment._id} className="hover:bg-gray-50">
+                            <td className="px-4 py-3 text-sm text-gray-900">
+                              {new Date(payment.paymentDate).toLocaleDateString()}
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="text-sm font-medium text-gray-900">{payment.payerName}</div>
+                              <div className="text-xs text-gray-500">{payment.payerEmail}</div>
+                            </td>
+                            <td className="px-4 py-3 text-sm text-gray-600">{payment.paymentType}</td>
+                            <td className="px-4 py-3 text-sm text-gray-600">
+                              {paymentMethods.find(m => m.id === payment.paymentMethod)?.name || payment.paymentMethod}
+                            </td>
+                            <td className="px-4 py-3 text-right text-sm font-semibold text-green-600">
+                              {formatCurrency(payment.amount)}
+                              {payment.refundAmount > 0 && (
+                                <div className="text-xs text-orange-600">
+                                  -{formatCurrency(payment.refundAmount)} refunded
+                                </div>
+                              )}
+                            </td>
+                            <td className="px-4 py-3">
+                              <span className={`px-2 py-1 text-xs rounded-full ${
+                                payment.status === 'completed' ? 'bg-green-100 text-green-800' :
+                                payment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                payment.status === 'failed' ? 'bg-red-100 text-red-800' :
+                                payment.status === 'refunded' ? 'bg-orange-100 text-orange-800' :
+                                'bg-gray-100 text-gray-800'
+                              }`}>
+                                {payment.status}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-xs text-gray-500 font-mono">
+                              {payment.transactionId || '-'}
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="flex gap-2">
+                                {payment.status === 'completed' && (
+                                  <button
+                                    onClick={() => {
+                                      setSelectedPayment(payment);
+                                      setRefundForm(prev => ({
+                                        ...prev,
+                                        amount: payment.amount - (payment.refundAmount || 0),
+                                        originalTransactionId: payment._id
+                                      }));
+                                      setModalType('refund');
+                                      setShowModal(true);
+                                    }}
+                                    className="text-orange-600 hover:text-orange-800 text-sm"
+                                    title="Issue Refund"
+                                  >
+                                    ↩️ Refund
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Declined/Failed Payments Tab */}
+        {activeTab === 'declined' && (
+          <div className="space-y-6">
+            {/* Alert */}
+            <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded">
+              <div className="flex items-center">
+                <div className="text-red-600 text-2xl mr-3">⚠️</div>
+                <div>
+                  <h3 className="text-red-800 font-semibold">Failed & Declined Payments</h3>
+                  <p className="text-red-700 text-sm">
+                    These payments were unsuccessful. You can retry processing or contact the customer.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Stats */}
+            <div className="grid grid-cols-3 gap-4">
+              <div className="bg-red-50 p-4 rounded-lg border border-red-200 text-center">
+                <div className="text-3xl font-bold text-red-900">{declinedPayments.length}</div>
+                <div className="text-sm text-red-700">Total Failed</div>
+              </div>
+              <div className="bg-orange-50 p-4 rounded-lg border border-orange-200 text-center">
+                <div className="text-3xl font-bold text-orange-900">
+                  {formatCurrency(declinedPayments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0))}
+                </div>
+                <div className="text-sm text-orange-700">Lost Revenue</div>
+              </div>
+              <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200 text-center">
+                <div className="text-3xl font-bold text-yellow-900">
+                  {declinedPayments.filter(p => new Date(p.paymentDate) > new Date(Date.now() - 7*24*60*60*1000)).length}
+                </div>
+                <div className="text-sm text-yellow-700">Last 7 Days</div>
+              </div>
+            </div>
+
+            {/* Declined Payments Table */}
+            <div className="bg-white rounded-lg shadow-sm border">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-red-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-red-700 uppercase">Date</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-red-700 uppercase">Payer</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-red-700 uppercase">Contact</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-red-700 uppercase">Type</th>
+                      <th className="px-4 py-3 text-right text-xs font-medium text-red-700 uppercase">Amount</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-red-700 uppercase">Status</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-red-700 uppercase">Method</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-red-700 uppercase">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {declinedPayments.length === 0 ? (
+                      <tr>
+                        <td colSpan="8" className="px-6 py-12 text-center text-gray-500">
+                          <div className="text-6xl mb-4">✅</div>
+                          <p className="text-lg font-semibold mb-2 text-green-700">No Failed Payments!</p>
+                          <p className="text-sm">All payments are processing successfully</p>
+                        </td>
+                      </tr>
+                    ) : (
+                      declinedPayments.map((payment) => (
+                        <tr key={payment._id} className="hover:bg-red-50">
+                          <td className="px-4 py-3 text-sm text-gray-900">
+                            {new Date(payment.paymentDate).toLocaleDateString()}
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="text-sm font-medium text-gray-900">{payment.payerName}</div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="text-sm text-gray-600">{payment.payerEmail}</div>
+                            {payment.payerPhone && (
+                              <div className="text-xs text-gray-500">{payment.payerPhone}</div>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-gray-600">{payment.paymentType}</td>
+                          <td className="px-4 py-3 text-right text-sm font-semibold text-red-600">
+                            {formatCurrency(payment.amount)}
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">
+                              {payment.status === 'failed' ? '❌ Failed' : '🚫 Cancelled'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-sm text-gray-600">
+                            {payment.paymentMethod}
+                            {payment.cardLastFour && (
+                              <span className="text-xs text-gray-500 ml-1">
+                                ****{payment.cardLastFour}
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => retryPayment(payment._id)}
+                                className="bg-blue-600 text-white px-3 py-1 rounded text-xs hover:bg-blue-700"
+                              >
+                                🔄 Retry
+                              </button>
+                              <a
+                                href={`mailto:${payment.payerEmail}`}
+                                className="bg-gray-600 text-white px-3 py-1 rounded text-xs hover:bg-gray-700"
+                              >
+                                ✉️ Contact
+                              </a>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Profit & Loss Tab */}
+        {activeTab === 'profit-loss' && (
+          <div className="space-y-6">
+            {/* Date Range Selector */}
+            <div className="bg-white rounded-lg shadow-sm border p-4">
+              <div className="flex items-center gap-4">
+                <span className="font-semibold text-gray-700">Report Period:</span>
+                <input
+                  type="date"
+                  value={dateRange.startDate}
+                  onChange={(e) => setDateRange(prev => ({ ...prev, startDate: e.target.value }))}
+                  className="border rounded px-3 py-2"
+                />
+                <span className="text-gray-500">to</span>
+                <input
+                  type="date"
+                  value={dateRange.endDate}
+                  onChange={(e) => setDateRange(prev => ({ ...prev, endDate: e.target.value }))}
+                  className="border rounded px-3 py-2"
+                />
+                <button
+                  onClick={loadAllData}
+                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                >
+                  🔄 Refresh
+                </button>
+              </div>
+            </div>
+
+            {/* P&L Summary */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Total Income */}
+              <div className="bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-xl shadow-lg">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="text-5xl">📈</div>
+                  <div className="text-green-200 text-sm">TOTAL INCOME</div>
+                </div>
+                <div className="text-4xl font-bold">{formatCurrency(stats.totalIncome)}</div>
+                <div className="text-green-200 text-sm mt-2">
+                  {stats.completedPayments} completed transactions
+                </div>
+              </div>
+
+              {/* Total Expenses */}
+              <div className="bg-gradient-to-br from-red-500 to-red-600 text-white p-6 rounded-xl shadow-lg">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="text-5xl">📉</div>
+                  <div className="text-red-200 text-sm">TOTAL EXPENSES</div>
+                </div>
+                <div className="text-4xl font-bold">{formatCurrency(stats.totalExpenses)}</div>
+                <div className="text-red-200 text-sm mt-2">
+                  Including refunds: {formatCurrency(stats.totalRefundedAmount)}
+                </div>
+              </div>
+
+              {/* Net Profit/Loss */}
+              <div className={`bg-gradient-to-br ${stats.netIncome >= 0 ? 'from-blue-500 to-blue-600' : 'from-orange-500 to-orange-600'} text-white p-6 rounded-xl shadow-lg`}>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="text-5xl">{stats.netIncome >= 0 ? '💰' : '⚠️'}</div>
+                  <div className={`${stats.netIncome >= 0 ? 'text-blue-200' : 'text-orange-200'} text-sm`}>
+                    NET {stats.netIncome >= 0 ? 'PROFIT' : 'LOSS'}
+                  </div>
+                </div>
+                <div className="text-4xl font-bold">{formatCurrency(Math.abs(stats.netIncome))}</div>
+                <div className={`${stats.netIncome >= 0 ? 'text-blue-200' : 'text-orange-200'} text-sm mt-2`}>
+                  Profit Margin: {stats.profitMargin}%
+                </div>
+              </div>
+            </div>
+
+            {/* Revenue Breakdown by Payment Type */}
             <div className="bg-white rounded-lg shadow-sm border p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Budget Planning</h2>
-              
-              <div className="text-center py-12">
-                <div className="text-6xl mb-4">💰</div>
-                <p className="text-lg font-semibold mb-2 text-gray-900">Budget Management</p>
-                <p className="text-sm text-gray-600">Set budgets and track spending against goals</p>
+              <h3 className="text-xl font-bold text-gray-900 mb-4">💵 Revenue by Category</h3>
+              <div className="space-y-3">
+                {Object.entries(paymentsByType).length === 0 ? (
+                  <p className="text-gray-500 text-center py-4">No revenue data available</p>
+                ) : (
+                  Object.entries(paymentsByType)
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([type, amount]) => (
+                      <div key={type} className="flex items-center">
+                        <div className="w-40 text-sm text-gray-600">{type}</div>
+                        <div className="flex-1 mx-4">
+                          <div className="bg-gray-200 rounded-full h-4 overflow-hidden">
+                            <div
+                              className="bg-green-500 h-full rounded-full"
+                              style={{ width: `${(amount / stats.totalPaymentAmount) * 100}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                        <div className="w-32 text-right font-semibold text-green-600">
+                          {formatCurrency(amount)}
+                        </div>
+                        <div className="w-16 text-right text-sm text-gray-500">
+                          {((amount / stats.totalPaymentAmount) * 100).toFixed(1)}%
+                        </div>
+                      </div>
+                    ))
+                )}
+              </div>
+            </div>
+
+            {/* Expense Breakdown by Category */}
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">💸 Expenses by Category</h3>
+              <div className="space-y-3">
+                {Object.entries(expensesByCategory).length === 0 ? (
+                  <p className="text-gray-500 text-center py-4">No expense data available</p>
+                ) : (
+                  Object.entries(expensesByCategory)
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([category, amount]) => {
+                      const cat = expenseCategories.find(c => c.id === category);
+                      return (
+                        <div key={category} className="flex items-center">
+                          <div className="w-40 text-sm text-gray-600">
+                            {cat?.icon} {cat?.name || category}
+                          </div>
+                          <div className="flex-1 mx-4">
+                            <div className="bg-gray-200 rounded-full h-4 overflow-hidden">
+                              <div
+                                className="bg-red-500 h-full rounded-full"
+                                style={{ width: `${(amount / stats.totalExpenses) * 100}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                          <div className="w-32 text-right font-semibold text-red-600">
+                            {formatCurrency(amount)}
+                          </div>
+                          <div className="w-16 text-right text-sm text-gray-500">
+                            {((amount / stats.totalExpenses) * 100).toFixed(1)}%
+                          </div>
+                        </div>
+                      );
+                    })
+                )}
+              </div>
+            </div>
+
+            {/* Financial Health Indicators */}
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">📊 Financial Health Indicators</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="text-center p-4 bg-gray-50 rounded-lg">
+                  <div className="text-2xl font-bold text-gray-900">{stats.profitMargin}%</div>
+                  <div className="text-sm text-gray-600">Profit Margin</div>
+                </div>
+                <div className="text-center p-4 bg-gray-50 rounded-lg">
+                  <div className="text-2xl font-bold text-gray-900">
+                    {stats.totalIncome > 0 ? ((stats.totalExpenses / stats.totalIncome) * 100).toFixed(1) : 0}%
+                  </div>
+                  <div className="text-sm text-gray-600">Expense Ratio</div>
+                </div>
+                <div className="text-center p-4 bg-gray-50 rounded-lg">
+                  <div className="text-2xl font-bold text-gray-900">
+                    {stats.totalPaymentAmount > 0 ? ((stats.totalRefundedAmount / stats.totalPaymentAmount) * 100).toFixed(1) : 0}%
+                  </div>
+                  <div className="text-sm text-gray-600">Refund Rate</div>
+                </div>
+                <div className="text-center p-4 bg-gray-50 rounded-lg">
+                  <div className="text-2xl font-bold text-gray-900">
+                    {stats.totalPayments > 0 ? ((stats.completedPayments / stats.totalPayments) * 100).toFixed(1) : 0}%
+                  </div>
+                  <div className="text-sm text-gray-600">Success Rate</div>
+                </div>
               </div>
             </div>
           </div>

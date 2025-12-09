@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaDollarSign, FaShoppingBag, FaStar, FaComments, FaEye, FaCheck, FaTimes, FaBox, FaArrowLeft } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import { API_BASE_URL } from './config/api';
+
+const SERVER_URL = API_BASE_URL.replace('/api', '');
 
 export default function MarketplaceDashboard() {
   const navigate = useNavigate();
@@ -43,7 +46,7 @@ export default function MarketplaceDashboard() {
         return;
       }
 
-      const response = await fetch('http://localhost:5000/api/auth/me', {
+      const response = await fetch(`${API_BASE_URL}/auth/me`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -63,7 +66,7 @@ export default function MarketplaceDashboard() {
 
       if (activeTab === 'my-offers') {
         // Fetch my offers
-        const response = await fetch('http://localhost:5000/api/marketplace-messages/my-offers', {
+        const response = await fetch(`${API_BASE_URL}/marketplace-messages/my-offers`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (response.ok) {
@@ -72,7 +75,7 @@ export default function MarketplaceDashboard() {
         }
       } else if (activeTab === 'bought-items') {
         // Fetch bought items (accepted offers where I'm the buyer)
-        const response = await fetch('http://localhost:5000/api/marketplace-messages/my-purchases', {
+        const response = await fetch(`${API_BASE_URL}/marketplace-messages/my-purchases`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (response.ok) {
@@ -81,7 +84,7 @@ export default function MarketplaceDashboard() {
         }
       } else if (activeTab === 'my-reviews') {
         // Fetch reviews I wrote
-        const response = await fetch('http://localhost:5000/api/seller-ratings/my-reviews', {
+        const response = await fetch(`${API_BASE_URL}/seller-ratings/my-reviews`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (response.ok) {
@@ -94,12 +97,12 @@ export default function MarketplaceDashboard() {
         console.log('📊 [Dashboard] Fetching all reviews for user:', userId);
         
         // Fetch seller reviews (reviews I received as a seller)
-        const sellerResponse = await fetch(`http://localhost:5000/api/seller-ratings/seller/${userId}`, {
+        const sellerResponse = await fetch(`${API_BASE_URL}/seller-ratings/seller/${userId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         
         // Fetch buyer reviews (reviews I received as a buyer)  
-        const buyerResponse = await fetch(`http://localhost:5000/api/buyer-ratings/buyer/${userId}`, {
+        const buyerResponse = await fetch(`${API_BASE_URL}/buyer-ratings/buyer/${userId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         
@@ -133,7 +136,7 @@ export default function MarketplaceDashboard() {
   const markAsReceived = async (messageId) => {
     const token = localStorage.getItem('token');
     try {
-      const response = await fetch(`http://localhost:5000/api/marketplace-messages/mark-received/${messageId}`, {
+      const response = await fetch(`${API_BASE_URL}/marketplace-messages/mark-received/${messageId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -303,7 +306,7 @@ export default function MarketplaceDashboard() {
                               <img
                                 src={offer.item.images[0].startsWith('http') 
                                   ? offer.item.images[0] 
-                                  : `http://localhost:5000${offer.item.images[0]}`}
+                                  : `${SERVER_URL}${offer.item.images[0]}`}
                                 alt={offer.item.title}
                                 className="w-20 h-20 object-cover rounded"
                               />
@@ -370,7 +373,7 @@ export default function MarketplaceDashboard() {
                               <img
                                 src={offer.item.images[0].startsWith('http') 
                                   ? offer.item.images[0] 
-                                  : `http://localhost:5000${offer.item.images[0]}`}
+                                  : `${SERVER_URL}${offer.item.images[0]}`}
                                 alt={offer.item.title}
                                 className="w-24 h-24 object-cover rounded"
                               />

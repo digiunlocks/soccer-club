@@ -7,6 +7,9 @@ import {
   FaEnvelope, FaCheckCircle, FaShieldAlt, FaTruck, FaCreditCard,
   FaGift, FaBell, FaBookmark, FaHistory, FaUser, FaShoppingCart, FaPlus, FaDollarSign, FaBox
 } from 'react-icons/fa';
+import { API_BASE_URL } from './config/api';
+
+const SERVER_URL = API_BASE_URL.replace('/api', '');
 
 export default function Marketplace() {
   console.log('Marketplace component rendering...');
@@ -124,7 +127,7 @@ export default function Marketplace() {
 
   const fetchTrendingItems = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/marketplace/public/trending');
+      const response = await fetch(`${API_BASE_URL}/marketplace/public/trending`);
       if (response.ok) {
         const data = await response.json();
         setTrendingItems(data.items || []);
@@ -139,7 +142,7 @@ export default function Marketplace() {
       const token = localStorage.getItem('token');
       if (!token) return;
       
-      const response = await fetch('http://localhost:5000/api/marketplace/recommended', {
+      const response = await fetch(`${API_BASE_URL}/marketplace/recommended`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (response.ok) {
@@ -153,7 +156,7 @@ export default function Marketplace() {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/marketplace/public/categories');
+      const response = await fetch(`${API_BASE_URL}/marketplace/public/categories`);
       if (response.ok) {
         const data = await response.json();
         setCategories(data.categories || []);
@@ -180,7 +183,7 @@ export default function Marketplace() {
       if (priceRange.max) params.append('maxPrice', priceRange.max);
       if (debouncedSearchQuery) params.append('search', debouncedSearchQuery);
 
-      const url = `http://localhost:5000/api/marketplace/public?${params}`;
+      const url = `${API_BASE_URL}/marketplace/public?${params}`;
       console.log('Fetching from URL:', url);
       
       const response = await fetch(url);
@@ -261,7 +264,7 @@ export default function Marketplace() {
         return;
       }
 
-      const response = await fetch('http://localhost:5000/api/marketplace/my-items', {
+      const response = await fetch(`${API_BASE_URL}/marketplace/my-items`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -289,7 +292,7 @@ export default function Marketplace() {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      const response = await fetch('http://localhost:5000/api/marketplace/my-items/stats', {
+      const response = await fetch(`${API_BASE_URL}/marketplace/my-items/stats`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -367,7 +370,7 @@ export default function Marketplace() {
           src={item.images && item.images[0] ? 
             (item.images[0].startsWith('http') ? 
               item.images[0] : 
-              `http://localhost:5000${item.images[0]}`) : 
+              `${SERVER_URL}${item.images[0]}`) : 
             'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDMwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjRjNGNEY2Ii8+Cjx0ZXh0IHg9IjE1MCIgeT0iMTUwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5QjlCQjAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5JbWFnZSBOb3QgQXZhaWxhYmxlPC90ZXh0Pgo8L3N2Zz4K'}
           alt={item.title || 'Item image'}
           className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from 'react-toastify';
+import { API_BASE_URL } from './config/api';
 
 export default function ClubInfoManager() {
   const navigate = useNavigate();
@@ -100,7 +101,7 @@ export default function ClubInfoManager() {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      const response = await fetch('http://localhost:5000/api/club-info', {
+      const response = await fetch(`${API_BASE_URL}/club-info`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -126,7 +127,7 @@ export default function ClubInfoManager() {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      const response = await fetch('http://localhost:5000/api/club-info', {
+      const response = await fetch(`${API_BASE_URL}/club-info`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,

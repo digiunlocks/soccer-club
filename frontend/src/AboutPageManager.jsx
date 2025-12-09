@@ -1,7 +1,14 @@
 import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { API_BASE_URL } from './config/api';
+
+// Server base URL for images (without /api)
+const SERVER_URL = API_BASE_URL.replace('/api', '');
 
 export default function AboutPageManager() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [aboutData, setAboutData] = useState({
     title: '',
     description: '',
@@ -23,19 +30,39 @@ export default function AboutPageManager() {
   const [searchTerm, setSearchTerm] = useState('');
   const [dragIndex, setDragIndex] = useState(null);
   const [hoverIndex, setHoverIndex] = useState(null);
+  const [unauthorized, setUnauthorized] = useState(false);
 
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/signin');
+      return;
+    }
     fetchAboutData();
-  }, []);
+  }, [navigate]);
+
+  const handleBack = () => {
+    if (location.state?.from) {
+      navigate('/admin', { state: { section: location.state.from } });
+    } else {
+      navigate('/admin');
+    }
+  };
 
   const fetchAboutData = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/about/admin', {
+      const response = await fetch(`${API_BASE_URL}/about/admin`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
+      
+      if (response.status === 401 || response.status === 403) {
+        setUnauthorized(true);
+        toast.error('You do not have permission to access this page');
+        return;
+      }
       
       if (!response.ok) {
         throw new Error('Failed to fetch about page data');
@@ -63,7 +90,7 @@ export default function AboutPageManager() {
     setSaving(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/about', {
+      const response = await fetch(`${API_BASE_URL}/about`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -127,7 +154,7 @@ export default function AboutPageManager() {
       formData.append('captions', JSON.stringify(imageCaptions));
       formData.append('alts', JSON.stringify(imageAlts));
 
-      const response = await fetch('http://localhost:5000/api/about/gallery', {
+      const response = await fetch(`${API_BASE_URL}/about/gallery`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -167,7 +194,7 @@ export default function AboutPageManager() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/about/gallery/${imageId}`, {
+      const response = await fetch(`${API_BASE_URL}/about/gallery/${imageId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -206,7 +233,7 @@ export default function AboutPageManager() {
     try {
       const token = localStorage.getItem('token');
       const deletePromises = selectedImages.map(imageId =>
-        fetch(`http://localhost:5000/api/about/gallery/${imageId}`, {
+        fetch(`${API_BASE_URL}/about/gallery/${imageId}`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -234,7 +261,7 @@ export default function AboutPageManager() {
   const handleUpdateImage = async (imageId, updates) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/about/gallery/${imageId}`, {
+      const response = await fetch(`${API_BASE_URL}/about/gallery/${imageId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -266,7 +293,7 @@ export default function AboutPageManager() {
   const handleReorderGallery = async (newOrder) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/about/gallery/reorder', {
+      const response = await fetch(`${API_BASE_URL}/about/gallery/reorder`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -364,18 +391,47 @@ export default function AboutPageManager() {
     );
   }
 
+  if (unauthorized) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white rounded-xl shadow-lg p-8 max-w-md text-center">
+          <div className="text-6xl mb-4">🔒</div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h2>
+          <p className="text-gray-600 mb-6">You do not have permission to access the About Page Manager. This feature requires super admin privileges.</p>
+          <button
+            onClick={handleBack}
+            className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto p-6">
       <div className="bg-white rounded-xl shadow-lg p-8">
         {/* Header */}
-        <div className="flex items-center gap-3 mb-8">
-          <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-            <span className="text-2xl">ℹ️</span>
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+              <span className="text-2xl">ℹ️</span>
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">About Page Manager</h1>
+              <p className="text-gray-600">Manage your about page content and gallery</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">About Page Manager</h1>
-            <p className="text-gray-600">Manage your about page content and gallery</p>
-          </div>
+          <button
+            onClick={handleBack}
+            className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors flex items-center gap-2"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Back
+          </button>
         </div>
 
         {/* Navigation Tabs */}
@@ -676,7 +732,7 @@ export default function AboutPageManager() {
                         <>
                           <div className="relative">
                             <img
-                              src={`http://localhost:5000${image.url}`}
+                              src={`${SERVER_URL}${image.url}`}
                               alt={image.alt || 'Gallery image'}
                               className="w-full h-48 object-cover"
                               onError={(e) => {
@@ -711,7 +767,7 @@ export default function AboutPageManager() {
                       ) : (
                         <>
                           <img
-                            src={`http://localhost:5000${image.url}`}
+                            src={`${SERVER_URL}${image.url}`}
                             alt={image.alt || 'Gallery image'}
                             className="w-20 h-20 object-cover rounded-lg"
                             onError={(e) => {

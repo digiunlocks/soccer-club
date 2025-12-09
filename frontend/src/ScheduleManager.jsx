@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from './config/api';
 
-const API_URL = "http://localhost:5000/api/schedules";
+const API_URL = `${API_BASE_URL}/schedules`;
 
 const TEAMS = [
   "U8 Leopards", "U10 Tigers", "U12 Lions", "U14 Panthers", "U16 Warriors", 

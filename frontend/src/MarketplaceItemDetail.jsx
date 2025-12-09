@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { FaMapMarkerAlt, FaClock, FaUser, FaArrowLeft, FaDollarSign, FaHandshake, FaTimes, FaCheck, FaComments, FaHistory, FaStar } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import { API_BASE_URL } from './config/api';
+
+const SERVER_URL = API_BASE_URL.replace('/api', '');
 // import SellerRatingFormNew from './SellerRatingFormNew';
 // import SellerReviewsNew from './SellerReviewsNew';
 
@@ -17,7 +20,7 @@ const SellerRatingFormNew = ({ sellerId, itemId, onReviewSubmitted }) => {
     
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/seller-ratings', {
+      const response = await fetch(`${API_BASE_URL}/seller-ratings`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -101,7 +104,7 @@ const SellerReviewsNew = ({ sellerId, itemId }) => {
   useEffect(() => {
     const fetchReviews = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/seller-ratings/seller/${sellerId}`);
+        const response = await fetch(`${API_BASE_URL}/seller-ratings/seller/${sellerId}`);
         if (response.ok) {
           const data = await response.json();
           setReviews(data.ratings || []);
@@ -221,7 +224,7 @@ export default function MarketplaceItemDetail() {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      const response = await fetch('http://localhost:5000/api/auth/me', {
+      const response = await fetch(`${API_BASE_URL}/auth/me`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -238,7 +241,7 @@ export default function MarketplaceItemDetail() {
 
   const fetchItem = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/marketplace/public/${id}`);
+      const response = await fetch(`${API_BASE_URL}/marketplace/public/${id}`);
       if (response.ok) {
         const data = await response.json();
         setItem(data);
@@ -267,12 +270,12 @@ export default function MarketplaceItemDetail() {
       if (!userId || !item?.seller?._id) return;
       
       // Check if user has messaged this seller
-      const messagesResponse = await fetch(`http://localhost:5000/api/messages/conversation/${userId}/${item.seller._id}`, {
+      const messagesResponse = await fetch(`${API_BASE_URL}/messages/conversation/${userId}/${item.seller._id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
       // Check if user has purchased from this seller (check transactions)
-      const transactionsResponse = await fetch(`http://localhost:5000/api/transactions/user/${userId}`, {
+      const transactionsResponse = await fetch(`${API_BASE_URL}/transactions/user/${userId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -297,7 +300,7 @@ export default function MarketplaceItemDetail() {
 
     try {
       // Fetch active (pending) offers
-      const response = await fetch(`http://localhost:5000/api/marketplace/messages/offers/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/marketplace/messages/offers/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.ok) {
@@ -309,7 +312,7 @@ export default function MarketplaceItemDetail() {
       }
 
       // Fetch all offers (including accepted/rejected) for history
-      const allResponse = await fetch(`http://localhost:5000/api/marketplace/messages/offers/${id}/all`, {
+      const allResponse = await fetch(`${API_BASE_URL}/marketplace/messages/offers/${id}/all`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (allResponse.ok) {
@@ -332,7 +335,7 @@ export default function MarketplaceItemDetail() {
       
       if (!userId || !item?.seller?._id) return;
 
-      const response = await fetch(`http://localhost:5000/api/marketplace/messages/conversation/${id}/${item.seller._id}`, {
+      const response = await fetch(`${API_BASE_URL}/marketplace/messages/conversation/${id}/${item.seller._id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.ok) {
@@ -365,7 +368,7 @@ export default function MarketplaceItemDetail() {
         ? counterOfferRecipient 
         : item.seller._id;
       
-      const response = await fetch('http://localhost:5000/api/marketplace/messages/send', {
+      const response = await fetch(`${API_BASE_URL}/marketplace/messages/send`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -405,7 +408,7 @@ export default function MarketplaceItemDetail() {
     if (!token) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/marketplace/messages/${action}/${messageId}`, {
+      const response = await fetch(`${API_BASE_URL}/marketplace/messages/${action}/${messageId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -442,7 +445,7 @@ export default function MarketplaceItemDetail() {
 
     setIsSubmittingFlag(true);
     try {
-      const response = await fetch('http://localhost:5000/api/marketplace/flags', {
+      const response = await fetch(`${API_BASE_URL}/marketplace/flags`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -545,7 +548,7 @@ export default function MarketplaceItemDetail() {
                 src={item.images && item.images[currentImageIndex] ? 
                   (item.images[currentImageIndex].startsWith('http') ? 
                     item.images[currentImageIndex] : 
-                    `http://localhost:5000${item.images[currentImageIndex]}`) : 
+                    `${SERVER_URL}${item.images[currentImageIndex]}`) : 
                   '/placeholder-item.jpg'}
                 alt={item.title}
                 className="w-full h-full object-cover"
@@ -567,7 +570,7 @@ export default function MarketplaceItemDetail() {
                     }`}
                   >
                     <img
-                      src={image.startsWith('http') ? image : `http://localhost:5000${image}`}
+                      src={image.startsWith('http') ? image : `${SERVER_URL}${image}`}
                       alt={`${item.title} ${index + 1}`}
                       className="w-full h-full object-cover"
                       onError={(e) => {

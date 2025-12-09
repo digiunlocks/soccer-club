@@ -2,6 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import ConversationView from './components/ConversationView';
+import { API_BASE_URL } from './config/api';
+
+const SERVER_URL = API_BASE_URL.replace('/api', '');
 
 const Messages = () => {
   const { conversationId } = useParams();
@@ -46,7 +49,7 @@ const Messages = () => {
           return;
         }
 
-        const response = await fetch('http://localhost:5000/api/auth/me', {
+        const response = await fetch(`${API_BASE_URL}/auth/me`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -75,7 +78,7 @@ const Messages = () => {
     if (marketplaceItemId) {
       const fetchMarketplaceItem = async () => {
         try {
-          const response = await fetch(`http://localhost:5000/api/marketplace/public/${marketplaceItemId}`);
+          const response = await fetch(`${API_BASE_URL}/marketplace/public/${marketplaceItemId}`);
           if (response.ok) {
             const itemData = await response.json();
             setMarketplaceItem(itemData);
@@ -96,7 +99,7 @@ const Messages = () => {
     const fetchConversations = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch('http://localhost:5000/api/messages/conversations', {
+        const response = await fetch(`${API_BASE_URL}/messages/conversations`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -148,7 +151,7 @@ const Messages = () => {
     const fetchAnnouncements = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch('http://localhost:5000/api/messages/announcements', {
+        const response = await fetch(`${API_BASE_URL}/messages/announcements`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -168,7 +171,7 @@ const Messages = () => {
     const fetchBroadcasts = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch('http://localhost:5000/api/broadcasts/my-broadcasts', {
+        const response = await fetch(`${API_BASE_URL}/broadcasts/my-broadcasts`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -215,7 +218,7 @@ const Messages = () => {
           // Mark announcement as read
           if (!selectedConversation.announcement.isRead) {
             try {
-              const readResponse = await fetch(`http://localhost:5000/api/messages/announcements/${selectedConversation.announcement._id}/read`, {
+              const readResponse = await fetch(`${API_BASE_URL}/messages/announcements/${selectedConversation.announcement._id}/read`, {
                 method: 'PUT',
                 headers: {
                   'Authorization': `Bearer ${token}`
@@ -254,7 +257,7 @@ const Messages = () => {
           // Mark broadcast as read
           if (!selectedConversation.broadcast.inAppRead) {
             try {
-              const readResponse = await fetch(`http://localhost:5000/api/broadcasts/${selectedConversation.broadcast.id}/read`, {
+              const readResponse = await fetch(`${API_BASE_URL}/broadcasts/${selectedConversation.broadcast.id}/read`, {
                 method: 'POST',
                 headers: {
                   'Authorization': `Bearer ${token}`
@@ -282,7 +285,7 @@ const Messages = () => {
         const otherUserId = selectedConversation.otherUser._id;
         console.log('🔍 Using other user ID:', otherUserId);
         
-        const response = await fetch(`http://localhost:5000/api/messages/conversation/${otherUserId}`, {
+        const response = await fetch(`${API_BASE_URL}/messages/conversation/${otherUserId}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -318,7 +321,7 @@ const Messages = () => {
     setSearching(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/messages/search-users?query=${encodeURIComponent(query)}`, {
+      const response = await fetch(`${API_BASE_URL}/messages/search-users?query=${encodeURIComponent(query)}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -399,8 +402,8 @@ const Messages = () => {
       
       // Use marketplace endpoint if this is a marketplace conversation
       const endpoint = marketplaceItemId ? 
-        'http://localhost:5000/api/marketplace/messages/send' : 
-        'http://localhost:5000/api/messages/send';
+        `${API_BASE_URL}/marketplace/messages/send` : 
+        `${API_BASE_URL}/messages/send`;
       
       // Adjust message data for marketplace endpoint
       if (marketplaceItemId) {
@@ -463,7 +466,7 @@ const Messages = () => {
     
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/marketplace/messages/send', {
+      const response = await fetch(`${API_BASE_URL}/marketplace/messages/send`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -481,7 +484,7 @@ const Messages = () => {
         const result = await response.json();
         const sentMessage = result.data;
         // Refresh conversations
-        const conversationsResponse = await fetch('http://localhost:5000/api/messages/conversations', {
+        const conversationsResponse = await fetch(`${API_BASE_URL}/messages/conversations`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -520,7 +523,7 @@ const Messages = () => {
       const token = localStorage.getItem('token');
       const otherUserId = selectedConversation.otherUser._id;
       
-      const response = await fetch(`http://localhost:5000/api/messages/mark-read/${otherUserId}`, {
+      const response = await fetch(`${API_BASE_URL}/messages/mark-read/${otherUserId}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -541,7 +544,7 @@ const Messages = () => {
   const startConversation = async (otherUser) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/messages/send', {
+      const response = await fetch(`${API_BASE_URL}/messages/send`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -556,7 +559,7 @@ const Messages = () => {
       if (response.ok) {
         const sentMessage = await response.json();
         // Refresh conversations
-        const conversationsResponse = await fetch('http://localhost:5000/api/messages/conversations', {
+        const conversationsResponse = await fetch(`${API_BASE_URL}/messages/conversations`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -594,7 +597,7 @@ const Messages = () => {
   const deleteMessage = async (messageId) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/messages/${messageId}`, {
+      const response = await fetch(`${API_BASE_URL}/messages/${messageId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -628,7 +631,7 @@ const Messages = () => {
       if (conversation.isAnnouncement) {
         console.log('🔍 Deleting all announcements');
         
-        const response = await fetch(`http://localhost:5000/api/messages/announcements/delete-all`, {
+        const response = await fetch(`${API_BASE_URL}/messages/announcements/delete-all`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -655,7 +658,7 @@ const Messages = () => {
         
         console.log('🔍 Deleting conversation with user:', otherUserId);
         
-        const response = await fetch(`http://localhost:5000/api/messages/conversation/${otherUserId}`, {
+        const response = await fetch(`${API_BASE_URL}/messages/conversation/${otherUserId}`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${token}`

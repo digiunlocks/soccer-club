@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from 'react-toastify';
+import { API_BASE_URL } from './config/api';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -25,7 +26,7 @@ export default function Login() {
     setError("");
 
     try {
-      const response = await fetch("http://localhost:5000/api/auth/login", {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -74,7 +75,7 @@ export default function Login() {
     setRecoveryMessage("");
 
     try {
-      const response = await fetch("http://localhost:5000/api/auth/forgot-password", {
+      const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -108,7 +109,7 @@ export default function Login() {
     setRecoveryMessage("");
 
     try {
-      const response = await fetch("http://localhost:5000/api/auth/forgot-username", {
+      const response = await fetch(`${API_BASE_URL}/auth/forgot-username`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

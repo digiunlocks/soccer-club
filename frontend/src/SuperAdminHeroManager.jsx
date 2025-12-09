@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from 'react-toastify';
+import { API_BASE_URL } from './config/api';
 
-const API_URL = "http://localhost:5000/api/hero-content";
+const API_URL = `${API_BASE_URL}/hero-content`;
 const UPLOAD_URL = `${API_URL}/upload`;
-const BASE_URL = "http://localhost:5000";
+const BASE_URL = API_BASE_URL.replace('/api', '');
 
 export default function SuperAdminHeroManager() {
   const navigate = useNavigate();

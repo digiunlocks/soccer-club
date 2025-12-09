@@ -8,6 +8,9 @@ import {
   FaCalendarAlt, FaHeart, FaMapMarkerAlt, FaBox, FaBell,
   FaExchangeAlt, FaFileInvoiceDollar, FaUserShield
 } from 'react-icons/fa';
+import { API_BASE_URL } from '../config/api';
+
+const SERVER_URL = API_BASE_URL.replace('/api', '');
 
 export default function UnifiedMarketplaceManager() {
   // Main navigation state
@@ -287,8 +290,8 @@ export default function UnifiedMarketplaceManager() {
   const loadItems = async (headers) => {
     try {
       const endpoint = activeSubTab === 'pending' 
-        ? 'http://localhost:5000/api/marketplace/admin/moderation-queue'
-        : 'http://localhost:5000/api/marketplace/admin/all?limit=1000';
+        ? `${API_BASE_URL}/marketplace/admin/moderation-queue`
+        : `${API_BASE_URL}/marketplace/admin/all?limit=1000`;
       
       const response = await fetch(endpoint, { headers });
       if (response.ok) {
@@ -318,7 +321,7 @@ export default function UnifiedMarketplaceManager() {
 
   const loadStats = async (headers) => {
     try {
-      const response = await fetch('http://localhost:5000/api/marketplace/admin/all?limit=1000', { headers });
+      const response = await fetch(`${API_BASE_URL}/marketplace/admin/all?limit=1000`, { headers });
       if (response.ok) {
         const data = await response.json();
         const allItems = data.items || data;
@@ -346,8 +349,8 @@ export default function UnifiedMarketplaceManager() {
   const loadRatings = async (headers) => {
     try {
       const [sellerRes, buyerRes] = await Promise.all([
-        fetch('http://localhost:5000/api/seller-ratings', { headers }),
-        fetch('http://localhost:5000/api/buyer-ratings', { headers })
+        fetch(`${API_BASE_URL}/seller-ratings`, { headers }),
+        fetch(`${API_BASE_URL}/buyer-ratings`, { headers })
       ]);
 
       const sellerRatings = sellerRes.ok ? await sellerRes.json() : [];
@@ -361,7 +364,7 @@ export default function UnifiedMarketplaceManager() {
 
   const loadReviews = async (headers) => {
     try {
-      const response = await fetch('http://localhost:5000/api/marketplace', { headers });
+      const response = await fetch(`${API_BASE_URL}/marketplace`, { headers });
       if (response.ok) {
         const data = await response.json();
         const allReviews = [];
@@ -383,7 +386,7 @@ export default function UnifiedMarketplaceManager() {
 
   const loadFlags = async (headers) => {
     try {
-      const response = await fetch('http://localhost:5000/api/marketplace/admin/flagged', { headers });
+      const response = await fetch(`${API_BASE_URL}/marketplace/admin/flagged`, { headers });
       if (response.ok) {
         const data = await response.json();
         setFlags(data.items || data);
@@ -395,7 +398,7 @@ export default function UnifiedMarketplaceManager() {
 
   const loadCategories = async (headers) => {
     try {
-      const response = await fetch('http://localhost:5000/api/categories', { headers });
+      const response = await fetch(`${API_BASE_URL}/categories`, { headers });
       if (response.ok) {
         const data = await response.json();
         setCategories(data);
@@ -415,7 +418,7 @@ export default function UnifiedMarketplaceManager() {
   const handleApprove = async (itemId) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/marketplace/admin/${itemId}/approve`, {
+      const response = await fetch(`${API_BASE_URL}/marketplace/admin/${itemId}/approve`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -438,7 +441,7 @@ export default function UnifiedMarketplaceManager() {
   const handleReject = async (itemId, reason = '') => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/marketplace/admin/${itemId}/reject`, {
+      const response = await fetch(`${API_BASE_URL}/marketplace/admin/${itemId}/reject`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -466,7 +469,7 @@ export default function UnifiedMarketplaceManager() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/marketplace/${itemId}`, {
+      const response = await fetch(`${API_BASE_URL}/marketplace/${itemId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -521,8 +524,8 @@ export default function UnifiedMarketplaceManager() {
       const token = localStorage.getItem('token');
       const method = editingCategory ? 'PUT' : 'POST';
       const endpoint = editingCategory 
-        ? `http://localhost:5000/api/categories/${editingCategory._id}`
-        : 'http://localhost:5000/api/categories';
+        ? `${API_BASE_URL}/categories/${editingCategory._id}`
+        : `${API_BASE_URL}/categories`;
 
       const response = await fetch(endpoint, {
         method,
@@ -565,7 +568,7 @@ export default function UnifiedMarketplaceManager() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/categories/${categoryId}`, {
+      const response = await fetch(`${API_BASE_URL}/categories/${categoryId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -654,7 +657,7 @@ export default function UnifiedMarketplaceManager() {
     setSettingsSaving(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/marketplace/settings', {
+      const response = await fetch(`${API_BASE_URL}/marketplace/settings`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -682,7 +685,7 @@ export default function UnifiedMarketplaceManager() {
   const loadSettings = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/marketplace/settings/admin', {
+      const response = await fetch(`${API_BASE_URL}/marketplace/settings/admin`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

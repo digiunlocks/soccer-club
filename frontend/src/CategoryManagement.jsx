@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { FaPlus, FaEdit, FaTrash, FaSave, FaTimes, FaTag, FaList, FaGripVertical } from 'react-icons/fa';
+import { API_BASE_URL } from './config/api';
 
 const CategoryManagement = () => {
   const [categories, setCategories] = useState([]);
@@ -36,7 +37,7 @@ const CategoryManagement = () => {
   const fetchCategories = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/categories/admin', {
+      const response = await fetch(`${API_BASE_URL}/categories/admin`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       
@@ -61,8 +62,8 @@ const CategoryManagement = () => {
     try {
       const token = localStorage.getItem('token');
       const url = editingCategory 
-        ? `http://localhost:5000/api/categories/${editingCategory._id}`
-        : 'http://localhost:5000/api/categories';
+        ? `${API_BASE_URL}/categories/${editingCategory._id}`
+        : `${API_BASE_URL}/categories`;
       
       const method = editingCategory ? 'PUT' : 'POST';
       
@@ -98,8 +99,8 @@ const CategoryManagement = () => {
     try {
       const token = localStorage.getItem('token');
       const url = editingSubcategory
-        ? `http://localhost:5000/api/categories/${selectedCategoryId}/subcategories/${editingSubcategory._id}`
-        : `http://localhost:5000/api/categories/${selectedCategoryId}/subcategories`;
+        ? `${API_BASE_URL}/categories/${selectedCategoryId}/subcategories/${editingSubcategory._id}`
+        : `${API_BASE_URL}/categories/${selectedCategoryId}/subcategories`;
       
       const method = editingSubcategory ? 'PUT' : 'POST';
       
@@ -135,7 +136,7 @@ const CategoryManagement = () => {
     
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/categories/${categoryId}`, {
+      const response = await fetch(`${API_BASE_URL}/categories/${categoryId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -160,7 +161,7 @@ const CategoryManagement = () => {
     
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/categories/${categoryId}/subcategories/${subcategoryId}`, {
+      const response = await fetch(`${API_BASE_URL}/categories/${categoryId}/subcategories/${subcategoryId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });

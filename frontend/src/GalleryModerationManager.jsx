@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
+import { API_BASE_URL } from './config/api';
+
+const SERVER_URL = API_BASE_URL.replace('/api', '');
 
 export default function GalleryModerationManager() {
   const [activeTab, setActiveTab] = useState('pending');
@@ -36,7 +39,7 @@ export default function GalleryModerationManager() {
           endpoint = '/api/gallery/admin/pending';
       }
 
-      const response = await fetch(`http://localhost:5000${endpoint}`, {
+      const response = await fetch(`${SERVER_URL}${endpoint}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -67,7 +70,7 @@ export default function GalleryModerationManager() {
   const handleApprove = async (itemId) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/gallery/admin/${itemId}/approve`, {
+      const response = await fetch(`${API_BASE_URL}/gallery/admin/${itemId}/approve`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -95,7 +98,7 @@ export default function GalleryModerationManager() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/gallery/admin/${itemId}/reject`, {
+      const response = await fetch(`${API_BASE_URL}/gallery/admin/${itemId}/reject`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -126,7 +129,7 @@ export default function GalleryModerationManager() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/gallery/admin/${itemId}`, {
+      const response = await fetch(`${API_BASE_URL}/gallery/admin/${itemId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -172,7 +175,7 @@ export default function GalleryModerationManager() {
       <div className="flex items-start gap-4">
         <div className="flex-shrink-0">
           <img
-            src={`http://localhost:5000${item.imageUrl}`}
+            src={`${SERVER_URL}${item.imageUrl}`}
             alt={item.title}
             className="w-24 h-24 object-cover rounded-lg"
             onError={(e) => {
@@ -382,7 +385,7 @@ export default function GalleryModerationManager() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <img
-                  src={`http://localhost:5000${selectedItem.imageUrl}`}
+                  src={`${SERVER_URL}${selectedItem.imageUrl}`}
                   alt={selectedItem.title}
                   className="w-full rounded-lg"
                               onError={(e) => {

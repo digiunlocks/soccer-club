@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from './config/api';
 
 export default function SiteSettings() {
   const navigate = useNavigate();
@@ -285,7 +286,7 @@ export default function SiteSettings() {
         return;
       }
 
-      const res = await fetch("http://localhost:5000/api/settings", {
+      const res = await fetch(`${API_BASE_URL}/settings`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       
@@ -302,17 +303,17 @@ export default function SiteSettings() {
         // Construct full URLs for images if they exist
         const processedData = { ...data };
         if (data.logoUrl && !data.logoUrl.startsWith('http')) {
-          processedData.logoUrl = `http://localhost:5000${data.logoUrl}`;
+          processedData.logoUrl = `${API_BASE_URL.replace('/api', '')}${data.logoUrl}`;
           console.log("Processed logo URL:", processedData.logoUrl);
         }
         if (data.faviconUrl && !data.faviconUrl.startsWith('http')) {
-          processedData.faviconUrl = `http://localhost:5000${data.faviconUrl}`;
+          processedData.faviconUrl = `${API_BASE_URL.replace('/api', '')}${data.faviconUrl}`;
         }
         if (data.heroImageUrl && !data.heroImageUrl.startsWith('http')) {
-          processedData.heroImageUrl = `http://localhost:5000${data.heroImageUrl}`;
+          processedData.heroImageUrl = `${API_BASE_URL.replace('/api', '')}${data.heroImageUrl}`;
         }
         if (data.aboutImageUrl && !data.aboutImageUrl.startsWith('http')) {
-          processedData.aboutImageUrl = `http://localhost:5000${data.aboutImageUrl}`;
+          processedData.aboutImageUrl = `${API_BASE_URL.replace('/api', '')}${data.aboutImageUrl}`;
         }
         setSettings(prev => ({ ...prev, ...processedData }));
       } else {
@@ -362,7 +363,7 @@ export default function SiteSettings() {
         return;
       }
 
-      const response = await fetch("http://localhost:5000/api/settings/upload-logo", {
+      const response = await fetch(`${API_BASE_URL}/settings/upload-logo`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -389,7 +390,7 @@ export default function SiteSettings() {
 
       const data = await response.json();
       // Construct full URL for the logo
-      const fullLogoUrl = `http://localhost:5000${data.logoUrl}`;
+      const fullLogoUrl = `${API_BASE_URL.replace('/api', '')}${data.logoUrl}`;
       console.log("Logo uploaded successfully. URL:", fullLogoUrl);
       setSettings(prev => ({
         ...prev,
@@ -421,7 +422,7 @@ export default function SiteSettings() {
         return;
       }
 
-      const res = await fetch("http://localhost:5000/api/settings", {
+      const res = await fetch(`${API_BASE_URL}/settings`, {
         method: "PUT",
         headers: { 
           "Content-Type": "application/json",

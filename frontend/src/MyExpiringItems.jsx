@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { FaClock, FaExclamationTriangle, FaDollarSign, FaCalendarAlt, FaRedo } from 'react-icons/fa';
+import { API_BASE_URL } from './config/api';
+
+const SERVER_URL = API_BASE_URL.replace('/api', '');
 
 const MyExpiringItems = () => {
   const [items, setItems] = useState([]);
@@ -16,7 +19,7 @@ const MyExpiringItems = () => {
   const fetchExpiringItems = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/marketplace/extension/my-expiring-items', {
+      const response = await fetch(`${API_BASE_URL}/marketplace/extension/my-expiring-items`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -45,7 +48,7 @@ const MyExpiringItems = () => {
     setExtending(itemId);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/marketplace/extension/extend/${itemId}`, {
+      const response = await fetch(`${API_BASE_URL}/marketplace/extension/extend/${itemId}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -245,7 +248,7 @@ const MyExpiringItems = () => {
                   {/* Item Image */}
                   <div className="flex-shrink-0">
                     <img
-                      src={item.images[0] ? `http://localhost:5000/uploads/${item.images[0]}` : '/placeholder.jpg'}
+                      src={item.images[0] ? `${SERVER_URL}/uploads/${item.images[0]}` : '/placeholder.jpg'}
                       alt={item.title}
                       className="w-32 h-32 object-cover rounded-lg"
                     />

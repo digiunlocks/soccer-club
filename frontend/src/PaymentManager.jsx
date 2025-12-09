@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from './config/api';
 
-const API_URL = "http://localhost:5000/api/payments";
+const API_URL = `${API_BASE_URL}/payments`;
 const METHODS = ["paypal", "zelle", "venmo", "cashapp", "card"];
 const STATUS = ["completed", "pending", "refunded", "failed", "partial"];
 const REFUNDABLE_METHODS = ["paypal", "card"];

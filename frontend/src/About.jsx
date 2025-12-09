@@ -6,6 +6,9 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import 'swiper/css/effect-fade';
 import 'swiper/css/effect-cube';
+import { API_BASE_URL } from './config/api';
+
+const SERVER_URL = API_BASE_URL.replace('/api', '');
 
 export default function About() {
   const [aboutData, setAboutData] = useState(null);
@@ -26,7 +29,7 @@ export default function About() {
     try {
       // Add cache-busting parameter to ensure fresh data
       const timestamp = new Date().getTime();
-      const response = await fetch(`http://localhost:5000/api/about?t=${timestamp}`);
+      const response = await fetch(`${API_BASE_URL}/about?t=${timestamp}`);
       if (!response.ok) {
         throw new Error('Failed to fetch about page data');
       }
@@ -280,7 +283,7 @@ export default function About() {
                       <div className="relative group cursor-pointer" onClick={() => openLightbox(image, idx)}>
                         <div className="relative overflow-hidden rounded-lg">
                           <img 
-                            src={`http://localhost:5000${image.url}?t=${new Date().getTime()}`} 
+                            src={`${SERVER_URL}${image.url}?t=${new Date().getTime()}`} 
                             alt={image.alt} 
                             className="w-full h-64 sm:h-80 object-cover transition-transform duration-300 group-hover:scale-105"
                             onLoad={() => handleImageLoad(image._id || idx)}
@@ -325,7 +328,7 @@ export default function About() {
                   >
                     <div className="relative">
                       <img 
-                        src={`http://localhost:5000${image.url}?t=${new Date().getTime()}`} 
+                        src={`${SERVER_URL}${image.url}?t=${new Date().getTime()}`} 
                         alt={image.alt} 
                         className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-110"
                         onLoad={() => handleImageLoad(image._id || idx)}
@@ -377,7 +380,7 @@ export default function About() {
                     <SwiperSlide key={image._id || idx}>
                       <div className="relative h-full">
                         <img 
-                          src={`http://localhost:5000${image.url}?t=${new Date().getTime()}`} 
+                          src={`${SERVER_URL}${image.url}?t=${new Date().getTime()}`} 
                           alt={image.alt} 
                           className="w-full h-full object-cover"
                           onLoad={() => handleImageLoad(image._id || idx)}
@@ -451,7 +454,7 @@ export default function About() {
             
             {/* Image */}
             <img
-              src={`http://localhost:5000${selectedImage.url}?t=${new Date().getTime()}`}
+              src={`${SERVER_URL}${selectedImage.url}?t=${new Date().getTime()}`}
               alt={selectedImage.alt}
               className="max-w-full max-h-full object-contain rounded-lg"
             />

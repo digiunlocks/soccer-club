@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { API_BASE_URL } from './config/api';
 
 export default function Programs() {
   const [programs, setPrograms] = useState([]);
@@ -13,7 +14,7 @@ export default function Programs() {
   const fetchPrograms = async () => {
     try {
       setLoading(true);
-      const response = await fetch("http://localhost:5000/api/programs");
+      const response = await fetch(`${API_BASE_URL}/programs`);
       
       if (!response.ok) {
         throw new Error("Failed to fetch programs");

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from 'react-toastify';
+import { API_BASE_URL } from './config/api';
 
 export default function Schedules() {
   const [schedules, setSchedules] = useState([]);
@@ -30,7 +31,7 @@ export default function Schedules() {
     try {
       console.log('Fetching schedules with filters:', filter);
       
-      let url = "http://localhost:5000/api/schedules/public?";
+      let url = `${API_BASE_URL}/schedules/public?`;
       if (filter.team) url += `team=${filter.team}&`;
       if (filter.eventType) url += `eventType=${filter.eventType}&`;
       if (filter.dateFrom) url += `dateFrom=${filter.dateFrom}&`;

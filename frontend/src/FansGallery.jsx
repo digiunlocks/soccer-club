@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import { API_BASE_URL } from './config/api';
+
+const SERVER_URL = API_BASE_URL.replace('/api', '');
 
 export default function FansGallery() {
   const [activeTab, setActiveTab] = useState('gallery');
@@ -22,7 +25,7 @@ export default function FansGallery() {
     
     if (token) {
       // Fetch user info if logged in
-      fetch('http://localhost:5000/api/auth/me', {
+      fetch(`${API_BASE_URL}/auth/me`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -62,7 +65,7 @@ export default function FansGallery() {
 
     try {
       // Always fetch all items, filter client-side to prevent flickering
-      const response = await fetch(`http://localhost:5000/api/gallery/public`);
+      const response = await fetch(`${API_BASE_URL}/gallery/public`);
       
       if (!response.ok) {
         throw new Error('Failed to fetch gallery items');
@@ -108,8 +111,8 @@ export default function FansGallery() {
 
       // For non-registered users, we'll use a different endpoint or add a guest flag
       const endpoint = token 
-        ? `http://localhost:5000/api/gallery/${selectedItem._id}/flag`
-        : `http://localhost:5000/api/gallery/${selectedItem._id}/flag-guest`;
+        ? `${API_BASE_URL}/gallery/${selectedItem._id}/flag`
+        : `${API_BASE_URL}/gallery/${selectedItem._id}/flag-guest`;
 
       const response = await fetch(endpoint, {
         method: 'POST',
@@ -145,7 +148,7 @@ export default function FansGallery() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/gallery/${selectedItem._id}/comments`, {
+      const response = await fetch(`${API_BASE_URL}/gallery/${selectedItem._id}/comments`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -179,7 +182,7 @@ export default function FansGallery() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/gallery/${itemId}/like`, {
+      const response = await fetch(`${API_BASE_URL}/gallery/${itemId}/like`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -375,7 +378,7 @@ export default function FansGallery() {
                 <div key={item._id} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
                   <div className="relative">
                     <img
-                      src={`http://localhost:5000${item.imageUrl}`}
+                      src={`${SERVER_URL}${item.imageUrl}`}
                       alt={item.title}
                       className="w-full h-48 object-cover"
                       onError={(e) => {
@@ -722,7 +725,7 @@ export default function FansGallery() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div>
                 <img
-                  src={`http://localhost:5000${selectedItem.imageUrl}`}
+                  src={`${SERVER_URL}${selectedItem.imageUrl}`}
                   alt={selectedItem.title}
                   className="w-full rounded-lg"
                               onError={(e) => {

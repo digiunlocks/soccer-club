@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { API_BASE_URL } from './config/api';
 
 export default function Cookie() {
   const [cookieContent, setCookieContent] = useState('');
@@ -10,7 +11,7 @@ export default function Cookie() {
     // Fetch cookie policy content from settings
     const fetchCookieContent = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/settings/cookie");
+        const res = await fetch(`${API_BASE_URL}/settings/cookie`);
         
         if (res.ok) {
           const data = await res.json();

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from 'react-toastify';
+import { API_BASE_URL } from './config/api';
 
 const USER_ROLES = ["coach"];
 const USER_STATUSES = ["active", "inactive", "pending"];
@@ -83,7 +84,7 @@ export default function CoachesManager() {
       const token = localStorage.getItem("token");
       console.log('🔍 Fetching coaches with token:', token ? 'Present' : 'Missing');
       
-      const response = await fetch('http://localhost:5000/api/users?role=coach', {
+      const response = await fetch(`${API_BASE_URL}/users?role=coach`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -144,7 +145,7 @@ export default function CoachesManager() {
     
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch('http://localhost:5000/api/users', {
+      const response = await fetch(`${API_BASE_URL}/users`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -186,7 +187,7 @@ export default function CoachesManager() {
     
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/users/${selectedCoach._id}`, {
+      const response = await fetch(`${API_BASE_URL}/users/${selectedCoach._id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -223,7 +224,7 @@ export default function CoachesManager() {
     
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/users/${coachId}`, {
+      const response = await fetch(`${API_BASE_URL}/users/${coachId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -284,7 +285,7 @@ export default function CoachesManager() {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch('http://localhost:5000/api/users/bulk', {
+      const response = await fetch(`${API_BASE_URL}/users/bulk`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -354,7 +355,7 @@ export default function CoachesManager() {
     
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/users/${coachId}/reset-password`, {
+      const response = await fetch(`${API_BASE_URL}/users/${coachId}/reset-password`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -398,7 +399,7 @@ export default function CoachesManager() {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/api/users/${selectedCoach._id}/set-password`, {
+      const response = await fetch(`${API_BASE_URL}/users/${selectedCoach._id}/set-password`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

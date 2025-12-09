@@ -1,12 +1,12 @@
 // API Configuration
 const API_CONFIG = {
   development: {
-    baseURL: 'http://localhost:5000/api',
+    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
     timeout: 10000,
     retries: 3
   },
   production: {
-    baseURL: import.meta.env.VITE_API_URL_PROD || 'https://yourdomain.com/api',
+    baseURL: import.meta.env.VITE_API_URL || import.meta.env.VITE_API_URL_PROD || '/api',
     timeout: 15000,
     retries: 2
   }
@@ -14,6 +14,9 @@ const API_CONFIG = {
 
 const environment = import.meta.env.MODE || 'development';
 const config = API_CONFIG[environment] || API_CONFIG.development;
+
+// Export the base URL for components that need direct access
+export const API_BASE_URL = config.baseURL;
 
 // API endpoints
 export const API_ENDPOINTS = {
