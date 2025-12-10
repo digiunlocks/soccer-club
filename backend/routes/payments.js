@@ -1,8 +1,94 @@
 const express = require('express');
 const router = express.Router();
 const Payment = require('../models/Payment');
-const { superAdminAuth } = require('./auth');
+const { superAdminAuth, auth } = require('./auth');
 const FinanceIntegrationService = require('../services/financeIntegrationService');
+
+// POST /api/payments/donate - Public donation endpoint (no auth required)
+router.post('/donate', async (req, res) => {
+  try {
+    const { 
+      amount, 
+      paymentMethod, 
+      payerName, 
+      payerEmail, 
+      payerPhone,
+      cardType,
+      cardLastFour,
+      message 
+    } = req.body;
+
+    // Validate required fields
+    if (!amount || amount <= 0) {
+      return res.status(400).json({ error: 'Invalid donation amount' });
+    }
+    if (!payerName || !payerEmail) {
+      return res.status(400).json({ error: 'Name and email are required' });
+    }
+    if (!paymentMethod || !['credit_card', 'debit_card', 'paypal'].includes(paymentMethod)) {
+      return res.status(400).json({ error: 'Invalid payment method' });
+    }
+
+    // Check minimum donation amount from settings
+    const Settings = require('../models/Settings');
+    const settings = await Settings.findOne();
+    if (settings?.donationMin && amount < settings.donationMin) {
+      return res.status(400).json({ error: `Minimum donation is $${settings.donationMin}` });
+    }
+
+    // Generate transaction ID
+    const transactionId = `DON-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+
+    // Create the donation payment record
+    const payment = new Payment({
+      payerName,
+      payerEmail,
+      payerPhone: payerPhone || '',
+      paymentType: 'Donations',
+      amount,
+      paymentMethod,
+      cardType: cardType || '',
+      cardLastFour: cardLastFour || '',
+      transactionId,
+      status: 'completed', // In production, this would be 'pending' until payment processor confirms
+      paymentDate: new Date(),
+      notes: message ? `Donor message: ${message}` : 'Online donation'
+    });
+
+    await payment.save();
+
+    // Record in finance system
+    try {
+      const FinancialTransaction = require('../models/FinancialTransaction');
+      const financeTransaction = new FinancialTransaction({
+        type: 'income',
+        category: 'Donations',
+        description: `Donation from ${payerName}`,
+        amount: amount,
+        date: new Date(),
+        paymentMethod,
+        status: 'completed',
+        referenceNumber: transactionId,
+        payer: payerName,
+        notes: message ? `Donor message: ${message}` : 'Online donation'
+      });
+      await financeTransaction.save();
+      console.log('💰 [Donation] Recorded in finance system');
+    } catch (financeError) {
+      console.error('⚠️  [Donation] Failed to record in finance:', financeError.message);
+    }
+
+    res.status(201).json({ 
+      success: true, 
+      message: 'Thank you for your donation!',
+      transactionId,
+      amount 
+    });
+  } catch (error) {
+    console.error('Error processing donation:', error);
+    res.status(500).json({ error: 'Failed to process donation' });
+  }
+});
 
 // GET /api/payments - Get all payments (admin only, with filters)
 router.get('/', superAdminAuth, async (req, res) => {
