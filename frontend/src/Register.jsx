@@ -104,8 +104,8 @@ export default function Register() {
         
         toast.success("Registration successful! Welcome to Seattle Leopards FC!");
         
-        // Redirect to account page
-        navigate("/account");
+        // Redirect to registration payment page
+        navigate("/registration-payment");
       } catch (error) {
         console.error("Registration error:", error);
         toast.error(error.message || "Registration failed. Please try again.");

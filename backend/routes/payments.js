@@ -185,6 +185,15 @@ router.post('/registration', auth, async (req, res) => {
       console.error('Failed to create payment notification:', notifError);
     }
 
+    // Send receipt email automatically
+    try {
+      const emailService = require('../services/emailService');
+      await emailService.sendPaymentReceiptEmail(user, payment);
+      console.log('📧 Receipt email sent to:', user.email);
+    } catch (emailError) {
+      console.error('Failed to send receipt email:', emailError);
+    }
+
     res.status(201).json({ 
       success: true, 
       message: 'Registration payment successful!',
@@ -194,6 +203,44 @@ router.post('/registration', auth, async (req, res) => {
   } catch (error) {
     console.error('Error processing registration payment:', error);
     res.status(500).json({ error: 'Failed to process payment' });
+  }
+});
+
+// POST /api/payments/send-receipt - Send receipt email (auth required)
+router.post('/send-receipt', auth, async (req, res) => {
+  try {
+    const { transactionId } = req.body;
+    const user = req.user;
+
+    if (!transactionId) {
+      return res.status(400).json({ error: 'Transaction ID is required' });
+    }
+
+    // Find the payment
+    const payment = await Payment.findOne({ 
+      transactionId,
+      $or: [
+        { relatedUser: user._id },
+        { payerEmail: user.email }
+      ]
+    });
+
+    if (!payment) {
+      return res.status(404).json({ error: 'Payment not found' });
+    }
+
+    // Send receipt email
+    const emailService = require('../services/emailService');
+    const result = await emailService.sendPaymentReceiptEmail(user, payment);
+
+    if (result.success) {
+      res.json({ success: true, message: `Receipt sent to ${user.email}` });
+    } else {
+      res.status(500).json({ error: 'Failed to send receipt email' });
+    }
+  } catch (error) {
+    console.error('Error sending receipt:', error);
+    res.status(500).json({ error: 'Failed to send receipt' });
   }
 });
 

@@ -85,6 +85,7 @@ import Notifications from './Notifications';
 import UnifiedInbox from './UnifiedInbox';
 import MyMarketplaceItems from './MyMarketplaceItems';
 import MarketplaceNotification from './components/MarketplaceNotification';
+import RegistrationPayment from './RegistrationPayment';
 
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -360,6 +361,7 @@ export default function App() {
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/cookie" element={<Cookie />} />
             <Route path="/legal" element={<Legal />} />
+            <Route path="/registration-payment" element={<RegistrationPayment />} />
             <Route path="/account" element={<Account />} />
           
           <Route path="/messages" element={<Messages />} />

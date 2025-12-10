@@ -957,6 +957,40 @@ export default function Account() {
                 </div>
               )}
 
+              {/* Team Assignment Card */}
+              {paymentStatus && paymentStatus.registrationPaymentStatus === 'paid' && (
+                <div className="mb-6 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-5">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <span className="text-2xl">⚽</span>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-green-900 mb-1">Your Team Assignment</h3>
+                      {user?.team ? (
+                        <div>
+                          <p className="text-green-800">
+                            You have been assigned to: <span className="font-bold text-lg">{user.team}</span>
+                          </p>
+                          {user?.coach && (
+                            <p className="text-green-700 text-sm mt-1">Coach: {user.coach}</p>
+                          )}
+                          {user?.program && (
+                            <p className="text-green-700 text-sm">Program: {user.program}</p>
+                          )}
+                        </div>
+                      ) : (
+                        <div>
+                          <p className="text-green-700">Your payment is confirmed! ✓</p>
+                          <p className="text-green-600 text-sm mt-1">
+                            A club administrator will assign you to a team soon. You'll receive a notification when your team is ready.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Welcome Section */}
               <div className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome back, {user?.name || user?.username || 'User'}!</h2>

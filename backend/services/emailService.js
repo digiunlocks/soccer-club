@@ -523,6 +523,192 @@ const sendUsernameRecoveryEmail = async (user) => {
   }
 };
 
+// Payment receipt email template
+const getPaymentReceiptEmailTemplate = (user, payment) => {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Payment Receipt - Seattle Leopards FC</title>
+      <style>
+        body {
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          line-height: 1.6;
+          color: #333;
+          max-width: 600px;
+          margin: 0 auto;
+          padding: 20px;
+          background-color: #f4f4f4;
+        }
+        .container {
+          background-color: #ffffff;
+          border-radius: 10px;
+          padding: 30px;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+          text-align: center;
+          border-bottom: 3px solid #166534;
+          padding-bottom: 20px;
+          margin-bottom: 30px;
+        }
+        .logo {
+          font-size: 28px;
+          font-weight: bold;
+          color: #166534;
+          margin-bottom: 10px;
+        }
+        .success-badge {
+          display: inline-block;
+          background-color: #dcfce7;
+          color: #166534;
+          padding: 8px 20px;
+          border-radius: 20px;
+          font-weight: bold;
+          margin: 10px 0;
+        }
+        .receipt-details {
+          background-color: #f8f9fa;
+          padding: 20px;
+          border-radius: 8px;
+          margin: 20px 0;
+        }
+        .detail-row {
+          display: flex;
+          justify-content: space-between;
+          padding: 10px 0;
+          border-bottom: 1px solid #eee;
+        }
+        .detail-row:last-child {
+          border-bottom: none;
+        }
+        .detail-label {
+          color: #666;
+        }
+        .detail-value {
+          font-weight: bold;
+        }
+        .total-row {
+          background-color: #f0fdf4;
+          padding: 15px;
+          border-radius: 8px;
+          margin-top: 15px;
+          font-size: 1.2em;
+        }
+        .total-row .detail-value {
+          color: #166534;
+        }
+        .next-steps {
+          background-color: #e7f3ff;
+          padding: 20px;
+          border-radius: 8px;
+          margin: 25px 0;
+        }
+        .footer {
+          text-align: center;
+          margin-top: 30px;
+          padding-top: 20px;
+          border-top: 1px solid #eee;
+          color: #666;
+          font-size: 14px;
+        }
+        .button {
+          display: inline-block;
+          background-color: #166534;
+          color: white;
+          padding: 12px 25px;
+          text-decoration: none;
+          border-radius: 5px;
+          margin: 10px 5px;
+          font-weight: bold;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <div class="logo">⚽ Seattle Leopards FC</div>
+          <div style="color: #666; font-size: 16px;">Payment Receipt</div>
+          <div class="success-badge">✓ Payment Successful</div>
+        </div>
+
+        <h2>Thank You for Your Payment!</h2>
+        <p>Hello ${user.name},</p>
+        <p>Your payment has been successfully processed. Here are your receipt details:</p>
+        
+        <div class="receipt-details">
+          <div class="detail-row">
+            <span class="detail-label">Transaction ID</span>
+            <span class="detail-value" style="font-family: monospace;">${payment.transactionId}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Date</span>
+            <span class="detail-value">${new Date(payment.paymentDate || payment.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Payment Type</span>
+            <span class="detail-value">${payment.paymentType}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Payment Method</span>
+            <span class="detail-value">${payment.paymentMethod === 'credit_card' || payment.paymentMethod === 'debit_card' 
+              ? `${payment.cardType || 'Card'} ending in ${payment.cardLastFour || '****'}` 
+              : payment.paymentMethod?.replace('_', ' ').replace(/^\w/, c => c.toUpperCase())}</span>
+          </div>
+          <div class="total-row">
+            <div class="detail-row" style="border-bottom: none; padding: 0;">
+              <span class="detail-label" style="font-weight: bold; font-size: 1em;">Amount Paid</span>
+              <span class="detail-value">$${payment.amount.toFixed(2)}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="next-steps">
+          <h3>What's Next?</h3>
+          <p>A club administrator will review your registration and assign you to a team based on your program selection. You'll receive a notification when your team assignment is complete.</p>
+          <p>In the meantime, feel free to explore your account and connect with other members!</p>
+        </div>
+
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/account" class="button">Go to My Account</a>
+        </div>
+        
+        <div class="footer">
+          <p>This receipt was sent to ${user.email}</p>
+          <p>Please keep this email for your records.</p>
+          <p>Questions? Contact us at support@seattleleopardsfc.com</p>
+          <p><strong>Seattle Leopards FC</strong><br>
+          Building Champions, Creating Memories</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+};
+
+// Send payment receipt email
+const sendPaymentReceiptEmail = async (user, payment) => {
+  try {
+    const transporter = createTransporter();
+    
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: user.email,
+      subject: `Payment Receipt - $${payment.amount.toFixed(2)} - Seattle Leopards FC`,
+      html: getPaymentReceiptEmailTemplate(user, payment)
+    };
+
+    const result = await transporter.sendMail(mailOptions);
+    console.log('✅ Payment receipt email sent successfully to:', user.email);
+    return { success: true, messageId: result.messageId };
+  } catch (error) {
+    console.error('❌ Failed to send payment receipt email to:', user.email, error);
+    return { success: false, error: error.message };
+  }
+};
+
 module.exports = {
   sendWelcomeEmail,
   sendBulkWelcomeEmails,
@@ -531,5 +717,7 @@ module.exports = {
   sendPasswordResetEmail,
   sendUsernameRecoveryEmail,
   getPasswordResetEmailTemplate,
-  getUsernameRecoveryEmailTemplate
+  getUsernameRecoveryEmailTemplate,
+  sendPaymentReceiptEmail,
+  getPaymentReceiptEmailTemplate
 };
