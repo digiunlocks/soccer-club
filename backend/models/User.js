@@ -111,7 +111,28 @@ const userSchema = new mongoose.Schema({
   }],
   // Self-service password reset fields
   resetPasswordToken: { type: String },
-  resetPasswordExpires: { type: Date }
+  resetPasswordExpires: { type: Date },
+  // Registration payment status
+  registrationPaymentStatus: {
+    type: String,
+    enum: ['pending', 'paid', 'waived'],
+    default: 'pending'
+  },
+  registrationPaymentAmount: {
+    type: Number,
+    default: 0
+  },
+  registrationPaymentDate: {
+    type: Date
+  },
+  registrationPaymentMethod: {
+    type: String,
+    enum: ['credit_card', 'debit_card', 'paypal', 'cash', 'check', 'waived', ''],
+    default: ''
+  },
+  registrationTransactionId: {
+    type: String
+  }
 }, { timestamps: true });
 
 // Method to get masked contact info based on privacy settings

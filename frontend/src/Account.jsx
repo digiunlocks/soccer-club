@@ -42,6 +42,20 @@ export default function Account() {
   const [showItemModal, setShowItemModal] = useState(false);
   const [editingItem, setEditingItem] = useState(false);
   const [itemForm, setItemForm] = useState({});
+  
+  // Payment state
+  const [paymentStatus, setPaymentStatus] = useState(null);
+  const [paymentHistory, setPaymentHistory] = useState([]);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [processingPayment, setProcessingPayment] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('');
+  const [cardInfo, setCardInfo] = useState({
+    cardNumber: '',
+    cardName: '',
+    expiryDate: '',
+    cvv: '',
+    cardType: ''
+  });
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -117,7 +131,7 @@ export default function Account() {
           localStorage.setItem('user', JSON.stringify(userData));
 
       // Now fetch related data using the user's email
-      const [applicationsResponse, marketplaceResponse, galleryResponse, notificationsResponse, offersResponse, reviewsResponse, messagesResponse] = await Promise.allSettled([
+      const [applicationsResponse, marketplaceResponse, galleryResponse, notificationsResponse, offersResponse, reviewsResponse, messagesResponse, paymentStatusResponse, paymentHistoryResponse] = await Promise.allSettled([
         fetch(`${API_BASE_URL}/applications/user/${userData.email}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         }),
@@ -137,6 +151,12 @@ export default function Account() {
           headers: { 'Authorization': `Bearer ${token}` }
         }),
         fetch(`${API_BASE_URL}/marketplace/messages/user`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }),
+        fetch(`${API_BASE_URL}/payments/user/status`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }),
+        fetch(`${API_BASE_URL}/payments/user/history`, {
           headers: { 'Authorization': `Bearer ${token}` }
         })
       ]);
@@ -200,6 +220,20 @@ export default function Account() {
         console.error('Failed to load marketplace messages:', messagesResponse);
         console.error('Messages response status:', messagesResponse.status);
         console.error('Messages response value:', messagesResponse.value);
+      }
+
+      // Process payment status
+      if (paymentStatusResponse.status === 'fulfilled' && paymentStatusResponse.value.ok) {
+        const statusData = await paymentStatusResponse.value.json();
+        console.log('Payment status loaded:', statusData);
+        setPaymentStatus(statusData);
+      }
+
+      // Process payment history
+      if (paymentHistoryResponse.status === 'fulfilled' && paymentHistoryResponse.value.ok) {
+        const historyData = await paymentHistoryResponse.value.json();
+        console.log('Payment history loaded:', historyData);
+        setPaymentHistory(historyData);
       }
 
       } catch (error) {
@@ -620,6 +654,105 @@ export default function Account() {
     return daysLeft !== null && daysLeft <= 3 && daysLeft > 0;
   };
 
+  // Payment helper functions
+  const detectCardType = (number) => {
+    const cleaned = number.replace(/\s/g, '');
+    if (/^4/.test(cleaned)) return 'Visa';
+    if (/^5[1-5]/.test(cleaned)) return 'Mastercard';
+    if (/^3[47]/.test(cleaned)) return 'American Express';
+    if (/^6(?:011|5)/.test(cleaned)) return 'Discover';
+    return '';
+  };
+
+  const handleCardNumberChange = (e) => {
+    let value = e.target.value.replace(/\D/g, '');
+    value = value.replace(/(\d{4})(?=\d)/g, '$1 ');
+    if (value.length <= 19) {
+      setCardInfo(prev => ({
+        ...prev,
+        cardNumber: value,
+        cardType: detectCardType(value)
+      }));
+    }
+  };
+
+  const handleExpiryChange = (e) => {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value.length >= 2) {
+      value = value.slice(0, 2) + '/' + value.slice(2, 4);
+    }
+    if (value.length <= 5) {
+      setCardInfo(prev => ({ ...prev, expiryDate: value }));
+    }
+  };
+
+  const processRegistrationPayment = async () => {
+    if (!paymentMethod) {
+      toast.error('Please select a payment method');
+      return;
+    }
+
+    if (paymentMethod === 'card') {
+      const cardNum = cardInfo.cardNumber.replace(/\s/g, '');
+      if (cardNum.length < 15) {
+        toast.error('Please enter a valid card number');
+        return;
+      }
+      if (!cardInfo.cardName) {
+        toast.error('Please enter the name on your card');
+        return;
+      }
+      if (cardInfo.expiryDate.length < 5) {
+        toast.error('Please enter a valid expiry date');
+        return;
+      }
+      if (cardInfo.cvv.length < 3) {
+        toast.error('Please enter a valid CVV');
+        return;
+      }
+    }
+
+    setProcessingPayment(true);
+
+    try {
+      const token = localStorage.getItem('token');
+      const cardLastFour = paymentMethod === 'card' 
+        ? cardInfo.cardNumber.replace(/\s/g, '').slice(-4) 
+        : '';
+
+      const response = await fetch(`${API_BASE_URL}/payments/registration`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          paymentMethod: paymentMethod === 'card' ? 'credit_card' : 'paypal',
+          cardType: cardInfo.cardType,
+          cardLastFour
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success('Payment successful! You will be assigned to a team soon.');
+        setShowPaymentModal(false);
+        setPaymentMethod('');
+        setCardInfo({ cardNumber: '', cardName: '', expiryDate: '', cvv: '', cardType: '' });
+        // Refresh user data
+        await fetchAllUserData(token);
+      } else {
+        toast.error(data.error || 'Payment failed');
+      }
+    } catch (error) {
+      console.error('Payment error:', error);
+      toast.error('An error occurred while processing your payment');
+    } finally {
+      setProcessingPayment(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -798,6 +931,32 @@ export default function Account() {
           {/* Overview Tab - Enhanced and Comprehensive */}
           {activeTab === 'overview' && (
             <div className="p-6">
+              {/* Payment Required Alert */}
+              {paymentStatus && paymentStatus.registrationPaymentStatus === 'pending' && (
+                <div className="mb-6 bg-gradient-to-r from-yellow-50 to-orange-50 border-l-4 border-yellow-500 rounded-r-lg p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-start">
+                      <div className="text-2xl mr-3">⚠️</div>
+                      <div>
+                        <h4 className="font-semibold text-yellow-800">Complete Your Registration</h4>
+                        <p className="text-yellow-700 text-sm mt-1">
+                          Pay the registration fee of <span className="font-bold">${paymentStatus.registrationPaymentAmount?.toFixed(2)}</span> to be assigned to a team.
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setActiveTab('payments');
+                        setShowPaymentModal(true);
+                      }}
+                      className="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition-colors font-semibold whitespace-nowrap ml-4"
+                    >
+                      Pay Now
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Welcome Section */}
               <div className="mb-8">
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome back, {user?.name || user?.username || 'User'}!</h2>
@@ -2238,11 +2397,257 @@ export default function Account() {
           {/* Payments Tab */}
           {activeTab === 'payments' && (
             <div className="p-6">
+              {/* Registration Payment Alert */}
+              {paymentStatus && paymentStatus.registrationPaymentStatus === 'pending' && (
+                <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  <div className="flex items-start">
+                    <div className="text-2xl mr-3">⚠️</div>
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-yellow-800">Registration Payment Required</h4>
+                      <p className="text-yellow-700 text-sm mt-1">
+                        To complete your registration and be assigned to a team, please pay the registration fee of 
+                        <span className="font-bold"> ${paymentStatus.registrationPaymentAmount?.toFixed(2) || '50.00'}</span>.
+                      </p>
+                      <button
+                        onClick={() => setShowPaymentModal(true)}
+                        className="mt-3 bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition-colors font-semibold"
+                      >
+                        Pay Now - ${paymentStatus.registrationPaymentAmount?.toFixed(2) || '50.00'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Payment Status Confirmed */}
+              {paymentStatus && paymentStatus.registrationPaymentStatus === 'paid' && (
+                <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
+                  <div className="flex items-start">
+                    <div className="text-2xl mr-3">✅</div>
+                    <div>
+                      <h4 className="font-semibold text-green-800">Registration Payment Confirmed</h4>
+                      <p className="text-green-700 text-sm mt-1">
+                        Your registration fee of ${paymentStatus.registrationPaymentAmount?.toFixed(2)} was paid on {formatDate(paymentStatus.registrationPaymentDate)}.
+                      </p>
+                      {paymentStatus.registrationTransactionId && (
+                        <p className="text-green-600 text-xs mt-1">Transaction ID: {paymentStatus.registrationTransactionId}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Payment History</h3>
-              <div className="text-center py-8 text-gray-500">
-                <div className="text-4xl mb-4">💳</div>
-                <p>No payment history available</p>
-                <p className="text-sm mt-2">Payments and donations will appear here</p>
+              
+              {paymentHistory.length > 0 ? (
+                <div className="space-y-4">
+                  {paymentHistory.map((payment) => (
+                    <div key={payment._id} className="border border-gray-200 rounded-lg p-4">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h4 className="font-medium text-gray-900">{payment.paymentType}</h4>
+                          <p className="text-sm text-gray-600 mt-1">
+                            {payment.paymentMethod === 'credit_card' || payment.paymentMethod === 'debit_card' 
+                              ? `${payment.cardType || 'Card'} ending in ${payment.cardLastFour || '****'}`
+                              : payment.paymentMethod?.replace('_', ' ').charAt(0).toUpperCase() + payment.paymentMethod?.slice(1).replace('_', ' ')
+                            }
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">{formatDate(payment.paymentDate)}</p>
+                          {payment.transactionId && (
+                            <p className="text-xs text-gray-400 mt-1">ID: {payment.transactionId}</p>
+                          )}
+                        </div>
+                        <div className="text-right">
+                          <p className="text-lg font-bold text-gray-900">${payment.amount?.toFixed(2)}</p>
+                          <span className={`text-xs px-2 py-1 rounded-full ${
+                            payment.status === 'completed' ? 'bg-green-100 text-green-700' :
+                            payment.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                            payment.status === 'refunded' ? 'bg-blue-100 text-blue-700' :
+                            'bg-gray-100 text-gray-700'
+                          }`}>
+                            {payment.status}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <div className="text-4xl mb-4">💳</div>
+                  <p>No payment history available</p>
+                  <p className="text-sm mt-2">Payments and donations will appear here</p>
+                </div>
+              )}
+
+              {/* Make a Donation */}
+              <div className="mt-8 pt-6 border-t border-gray-200">
+                <h4 className="font-semibold text-gray-900 mb-3">Support the Club</h4>
+                <p className="text-gray-600 text-sm mb-4">
+                  Your donations help us provide opportunities, equipment, and programs for youth and adult soccer.
+                </p>
+                <Link
+                  to="/donate"
+                  className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  <span className="mr-2">❤️</span> Make a Donation
+                </Link>
+              </div>
+            </div>
+          )}
+
+          {/* Payment Modal */}
+          {showPaymentModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-xl font-bold text-gray-900">Pay Registration Fee</h3>
+                  <button
+                    onClick={() => {
+                      setShowPaymentModal(false);
+                      setPaymentMethod('');
+                      setCardInfo({ cardNumber: '', cardName: '', expiryDate: '', cvv: '', cardType: '' });
+                    }}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div className="bg-green-50 rounded p-3 mb-4">
+                  <p className="text-sm text-green-800">
+                    Amount Due: <span className="font-bold text-lg">${paymentStatus?.registrationPaymentAmount?.toFixed(2) || '50.00'}</span>
+                  </p>
+                </div>
+
+                {/* Payment Method Selection */}
+                {!paymentMethod && (
+                  <div className="space-y-3">
+                    <p className="font-medium text-gray-700 mb-2">Select Payment Method:</p>
+                    <button
+                      onClick={() => setPaymentMethod('paypal')}
+                      className="w-full flex items-center justify-center gap-3 p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                    >
+                      <img src="https://www.paypalobjects.com/webstatic/icon/pp258.png" alt="PayPal" className="w-8 h-8" />
+                      <span className="font-medium">Pay with PayPal</span>
+                    </button>
+                    <button
+                      onClick={() => setPaymentMethod('card')}
+                      className="w-full flex items-center justify-center gap-3 p-4 border-2 border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors"
+                    >
+                      <svg className="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                      </svg>
+                      <span className="font-medium">Pay with Card</span>
+                    </button>
+                  </div>
+                )}
+
+                {/* PayPal Payment */}
+                {paymentMethod === 'paypal' && (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 mb-4">
+                      <button onClick={() => setPaymentMethod('')} className="text-gray-500 hover:text-gray-700">←</button>
+                      <img src="https://www.paypalobjects.com/webstatic/icon/pp258.png" alt="PayPal" className="w-6 h-6" />
+                      <span className="font-medium">PayPal Checkout</span>
+                    </div>
+                    <p className="text-gray-600 text-sm">
+                      Click the button below to complete your payment securely with PayPal.
+                    </p>
+                    <button
+                      onClick={processRegistrationPayment}
+                      disabled={processingPayment}
+                      className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center"
+                    >
+                      {processingPayment ? (
+                        <>
+                          <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                          </svg>
+                          Processing...
+                        </>
+                      ) : (
+                        `Pay $${paymentStatus?.registrationPaymentAmount?.toFixed(2) || '50.00'} with PayPal`
+                      )}
+                    </button>
+                  </div>
+                )}
+
+                {/* Card Payment */}
+                {paymentMethod === 'card' && (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 mb-4">
+                      <button onClick={() => setPaymentMethod('')} className="text-gray-500 hover:text-gray-700">←</button>
+                      <span className="font-medium">Card Payment</span>
+                    </div>
+                    
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={cardInfo.cardNumber}
+                        onChange={handleCardNumberChange}
+                        placeholder="Card Number"
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 pr-16"
+                        maxLength={19}
+                      />
+                      {cardInfo.cardType && (
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-gray-500">
+                          {cardInfo.cardType}
+                        </span>
+                      )}
+                    </div>
+                    
+                    <input
+                      type="text"
+                      value={cardInfo.cardName}
+                      onChange={(e) => setCardInfo(prev => ({ ...prev, cardName: e.target.value }))}
+                      placeholder="Name on Card"
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                    />
+                    
+                    <div className="grid grid-cols-2 gap-3">
+                      <input
+                        type="text"
+                        value={cardInfo.expiryDate}
+                        onChange={handleExpiryChange}
+                        placeholder="MM/YY"
+                        className="border border-gray-300 rounded-lg px-3 py-2"
+                        maxLength={5}
+                      />
+                      <input
+                        type="text"
+                        value={cardInfo.cvv}
+                        onChange={(e) => setCardInfo(prev => ({ ...prev, cvv: e.target.value.replace(/\D/g, '').slice(0, 4) }))}
+                        placeholder="CVV"
+                        className="border border-gray-300 rounded-lg px-3 py-2"
+                        maxLength={4}
+                      />
+                    </div>
+
+                    <button
+                      onClick={processRegistrationPayment}
+                      disabled={processingPayment}
+                      className="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center justify-center"
+                    >
+                      {processingPayment ? (
+                        <>
+                          <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                          </svg>
+                          Processing...
+                        </>
+                      ) : (
+                        `Pay $${paymentStatus?.registrationPaymentAmount?.toFixed(2) || '50.00'}`
+                      )}
+                    </button>
+
+                    <p className="text-xs text-gray-500 text-center">
+                      🔒 Your payment information is secure and encrypted
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           )}

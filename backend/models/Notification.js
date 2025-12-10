@@ -31,7 +31,10 @@ const notificationSchema = new mongoose.Schema({
       'announcement',
       'item_expiring_soon',
       'item_expired',
-      'item_extended'
+      'item_extended',
+      'payment_required',
+      'payment_received',
+      'registration_complete'
     ]
   },
   title: {

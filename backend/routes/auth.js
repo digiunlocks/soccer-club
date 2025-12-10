@@ -181,6 +181,36 @@ router.post('/register', async (req, res) => {
       // Don't fail registration if email fails
     }
     
+    // Set registration fee from settings and create payment notification
+    try {
+      const Settings = require('../models/Settings');
+      const Notification = require('../models/Notification');
+      
+      const settings = await Settings.findOne();
+      const registrationFee = settings?.fees?.registration?.baseAmount || settings?.registrationFee || 50;
+      
+      // Update user with registration payment info
+      user.registrationPaymentStatus = 'pending';
+      user.registrationPaymentAmount = registrationFee;
+      await user.save();
+      
+      // Create payment required notification
+      await Notification.createNotification(
+        user._id,
+        user._id, // Self-notification
+        'payment_required',
+        '⚠️ Registration Payment Required',
+        `Welcome to Seattle Leopards FC! To complete your registration and be assigned to a team, please pay the registration fee of $${registrationFee.toFixed(2)}. Go to your Account page to make a payment.`,
+        null,
+        null,
+        { amount: registrationFee, type: 'registration' }
+      );
+      
+      console.log('✅ Registration payment notification created for:', user.email);
+    } catch (notifError) {
+      console.error('❌ Failed to create payment notification:', notifError);
+    }
+    
     // Generate JWT token
     const token = jwt.sign(
       { 

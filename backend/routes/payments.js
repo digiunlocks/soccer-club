@@ -90,6 +90,153 @@ router.post('/donate', async (req, res) => {
   }
 });
 
+// POST /api/payments/registration - User pays registration fee (auth required)
+router.post('/registration', auth, async (req, res) => {
+  try {
+    const { 
+      paymentMethod, 
+      cardType,
+      cardLastFour
+    } = req.body;
+
+    const user = req.user;
+
+    // Check if already paid
+    if (user.registrationPaymentStatus === 'paid') {
+      return res.status(400).json({ error: 'Registration fee already paid' });
+    }
+
+    // Validate payment method
+    if (!paymentMethod || !['credit_card', 'debit_card', 'paypal'].includes(paymentMethod)) {
+      return res.status(400).json({ error: 'Invalid payment method' });
+    }
+
+    // Get registration fee amount
+    const Settings = require('../models/Settings');
+    const settings = await Settings.findOne();
+    const amount = user.registrationPaymentAmount || settings?.fees?.registration?.baseAmount || settings?.registrationFee || 50;
+
+    // Generate transaction ID
+    const transactionId = `REG-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+
+    // Create payment record
+    const payment = new Payment({
+      payerName: user.name,
+      payerEmail: user.email,
+      payerPhone: user.phone || '',
+      paymentType: 'Registration Fees',
+      amount,
+      paymentMethod,
+      cardType: cardType || '',
+      cardLastFour: cardLastFour || '',
+      transactionId,
+      status: 'completed',
+      paymentDate: new Date(),
+      relatedUser: user._id,
+      notes: `Registration fee payment for ${user.name} (${user.email})`
+    });
+
+    await payment.save();
+
+    // Update user payment status
+    const User = require('../models/User');
+    await User.findByIdAndUpdate(user._id, {
+      registrationPaymentStatus: 'paid',
+      registrationPaymentDate: new Date(),
+      registrationPaymentMethod: paymentMethod,
+      registrationTransactionId: transactionId
+    });
+
+    // Record in finance system
+    try {
+      const FinancialTransaction = require('../models/FinancialTransaction');
+      const financeTransaction = new FinancialTransaction({
+        type: 'income',
+        category: 'Registration Fees',
+        description: `Registration fee from ${user.name}`,
+        amount: amount,
+        date: new Date(),
+        paymentMethod,
+        status: 'completed',
+        referenceNumber: transactionId,
+        payer: user.name,
+        notes: `Registration fee payment. User: ${user.email}`
+      });
+      await financeTransaction.save();
+      console.log('💰 [Registration] Recorded in finance system');
+    } catch (financeError) {
+      console.error('⚠️  [Registration] Failed to record in finance:', financeError.message);
+    }
+
+    // Create payment confirmation notification
+    try {
+      const Notification = require('../models/Notification');
+      await Notification.createNotification(
+        user._id,
+        user._id,
+        'payment_received',
+        '✅ Registration Payment Received',
+        `Thank you! Your registration payment of $${amount.toFixed(2)} has been received. You will be assigned to a team soon. Transaction ID: ${transactionId}`,
+        null,
+        null,
+        { amount, transactionId, type: 'registration' }
+      );
+    } catch (notifError) {
+      console.error('Failed to create payment notification:', notifError);
+    }
+
+    res.status(201).json({ 
+      success: true, 
+      message: 'Registration payment successful!',
+      transactionId,
+      amount 
+    });
+  } catch (error) {
+    console.error('Error processing registration payment:', error);
+    res.status(500).json({ error: 'Failed to process payment' });
+  }
+});
+
+// GET /api/payments/user/status - Get user's payment status (auth required)
+router.get('/user/status', auth, async (req, res) => {
+  try {
+    const user = req.user;
+    const Settings = require('../models/Settings');
+    const settings = await Settings.findOne();
+    const registrationFee = user.registrationPaymentAmount || settings?.fees?.registration?.baseAmount || settings?.registrationFee || 50;
+
+    res.json({
+      registrationPaymentStatus: user.registrationPaymentStatus || 'pending',
+      registrationPaymentAmount: registrationFee,
+      registrationPaymentDate: user.registrationPaymentDate,
+      registrationPaymentMethod: user.registrationPaymentMethod,
+      registrationTransactionId: user.registrationTransactionId
+    });
+  } catch (error) {
+    console.error('Error fetching payment status:', error);
+    res.status(500).json({ error: 'Failed to fetch payment status' });
+  }
+});
+
+// GET /api/payments/user/history - Get user's payment history (auth required)
+router.get('/user/history', auth, async (req, res) => {
+  try {
+    const payments = await Payment.find({ 
+      $or: [
+        { relatedUser: req.user._id },
+        { payerEmail: req.user.email }
+      ]
+    })
+    .sort({ paymentDate: -1 })
+    .limit(50);
+
+    res.json(payments);
+  } catch (error) {
+    console.error('Error fetching payment history:', error);
+    res.status(500).json({ error: 'Failed to fetch payment history' });
+  }
+});
+
 // GET /api/payments - Get all payments (admin only, with filters)
 router.get('/', superAdminAuth, async (req, res) => {
   try {
