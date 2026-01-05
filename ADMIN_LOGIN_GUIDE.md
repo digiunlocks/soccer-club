@@ -71,14 +71,42 @@ node scripts/create-admin.js admin@example.com your-password admin "Super Admin"
 node scripts/create-admin.js admin@mysoccerclub.com MySecurePass123 admin "John Admin" "555-1234"
 ```
 
-### Method 3: Update Existing Admin Password
+### Method 3: Reset Admin Account (Recommended for Troubleshooting)
 
-If an admin account already exists, you can update the password:
+If you're having trouble logging in, use the reset script to check and fix the admin account:
 
 ```bash
 cd backend
-node scripts/create-admin.js existing-admin@example.com new-password-here
+node scripts/reset-admin.js
 ```
+
+This script will:
+- Check if admin account exists
+- Reset password to default (`admin123`) or environment variable password
+- Ensure `isSuperAdmin` is set to true
+- Update username, email, and other fields if needed
+- Test the login credentials
+- Display the current login credentials
+
+**With custom password:**
+```bash
+node scripts/reset-admin.js admin@example.com mynewpassword123
+```
+
+### Method 4: Test Admin Login
+
+To verify your admin login credentials work:
+
+```bash
+cd backend
+node scripts/test-admin-login.js
+```
+
+This will test:
+- Finding admin by email
+- Finding admin by username  
+- Password verification
+- Login query (as the login endpoint does)
 
 ---
 
@@ -86,26 +114,38 @@ node scripts/create-admin.js existing-admin@example.com new-password-here
 
 ### Can't Log In?
 
-1. **Check if admin account exists:**
+1. **Reset the admin account (Easiest solution):**
    ```bash
-   # Connect to MongoDB and check
-   # Or use the script to create/update
-   node scripts/create-admin.js your-email@example.com your-password
+   cd backend
+   node scripts/reset-admin.js
+   ```
+   This will reset the password and ensure everything is correct.
+
+2. **Test the login credentials:**
+   ```bash
+   cd backend
+   node scripts/test-admin-login.js
+   ```
+   This will verify that the credentials work correctly.
+
+3. **Check if admin account exists:**
+   ```bash
+   # Use the reset script to check and fix
+   node scripts/reset-admin.js
    ```
 
-2. **Verify environment variables:**
+4. **Verify environment variables:**
    - Make sure `ADMIN_EMAIL` and `ADMIN_PASSWORD` are set in `backend/.env`
    - Restart the server after changing environment variables
 
-3. **Check server logs:**
+5. **Check server logs:**
    - Look for messages like "✅ Super admin created" or "✅ Super admin already exists"
    - Check for any error messages
+   - Make sure MongoDB is running and connected
 
-4. **Reset password:**
-   - Use the setup script to update the password:
-   ```bash
-   node scripts/create-admin.js your-email@example.com new-password
-   ```
+6. **Try both email and username:**
+   - You can log in with either `admin@soccerclub.com` OR `admin`
+   - Make sure you're using the correct password
 
 ### Forgot Admin Credentials?
 

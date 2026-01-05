@@ -231,46 +231,72 @@ const connectDB = async (retries = 5) => {
       // In production, only create admin if credentials are provided via environment variables
       if (process.env.NODE_ENV === 'production' && !process.env.ADMIN_EMAIL) {
         console.log('⚠️  Production mode: Admin account not created. Set ADMIN_EMAIL and ADMIN_PASSWORD environment variables to create admin account.');
-        return;
-      }
-      
-      const existingAdmin = await User.findOne({ 
-        $or: [
-          { email: adminEmail },
-          { username: adminUsername }
-        ]
-      });
-      
-      if (!existingAdmin) {
-        const hashedPassword = await bcrypt.hash(adminPassword, 10);
-        const defaultAdmin = new User({
-          username: adminUsername,
-          name: adminName,
-          email: adminEmail,
-          password: hashedPassword,
-          phone: adminPhone,
-          isSuperAdmin: true
-        });
-        await defaultAdmin.save();
-        console.log(`✅ Super admin created: ${adminEmail} / ${adminUsername}`);
-        if (process.env.NODE_ENV !== 'production') {
-          console.log(`   Password: ${adminPassword}`);
-        } else {
-          console.log('   Password: (set via ADMIN_PASSWORD environment variable)');
-        }
       } else {
-        // Update existing admin if password changed in environment
-        if (process.env.ADMIN_PASSWORD && existingAdmin.email === adminEmail) {
+        const existingAdmin = await User.findOne({ 
+          $or: [
+            { email: adminEmail },
+            { username: adminUsername }
+          ]
+        });
+        
+        if (!existingAdmin) {
+          const hashedPassword = await bcrypt.hash(adminPassword, 10);
+          const defaultAdmin = new User({
+            username: adminUsername,
+            name: adminName,
+            email: adminEmail,
+            password: hashedPassword,
+            phone: adminPhone,
+            isSuperAdmin: true
+          });
+          await defaultAdmin.save();
+          console.log(`✅ Super admin created: ${adminEmail} / ${adminUsername}`);
+          if (process.env.NODE_ENV !== 'production') {
+            console.log(`   Password: ${adminPassword}`);
+          } else {
+            console.log('   Password: (set via ADMIN_PASSWORD environment variable)');
+          }
+        } else {
+          // Always ensure admin status and update password if needed
+          let needsUpdate = false;
+          
+          // Ensure isSuperAdmin is true
+          if (!existingAdmin.isSuperAdmin) {
+            existingAdmin.isSuperAdmin = true;
+            needsUpdate = true;
+          }
+          
+          // Update email/username if they don't match
+          if (existingAdmin.email !== adminEmail) {
+            existingAdmin.email = adminEmail;
+            needsUpdate = true;
+          }
+          if (existingAdmin.username !== adminUsername) {
+            existingAdmin.username = adminUsername;
+            needsUpdate = true;
+          }
+          
+          // Update password if it doesn't match (always in development, or if ADMIN_PASSWORD is set)
           const isPasswordMatch = await bcrypt.compare(adminPassword, existingAdmin.password);
           if (!isPasswordMatch) {
-            const hashedPassword = await bcrypt.hash(adminPassword, 10);
-            existingAdmin.password = hashedPassword;
-            existingAdmin.isSuperAdmin = true; // Ensure admin status
+            // In development, always reset to default password if it doesn't match
+            // In production, only update if ADMIN_PASSWORD is explicitly set
+            if (process.env.NODE_ENV !== 'production' || process.env.ADMIN_PASSWORD) {
+              const hashedPassword = await bcrypt.hash(adminPassword, 10);
+              existingAdmin.password = hashedPassword;
+              needsUpdate = true;
+              console.log(`✅ Super admin password updated: ${adminEmail}`);
+            }
+          }
+          
+          if (needsUpdate) {
             await existingAdmin.save();
-            console.log(`✅ Super admin password updated: ${adminEmail}`);
+          }
+          console.log(`✅ Super admin already exists: ${adminEmail}`);
+          if (process.env.NODE_ENV !== 'production') {
+            console.log(`   Password: ${adminPassword}`);
           }
         }
-        console.log(`✅ Super admin already exists: ${adminEmail}`);
       }
     } catch (error) {
       console.error('❌ Error creating/updating super admin:', error.message);
@@ -457,7 +483,6 @@ const connectDB = async (retries = 5) => {
           console.error('❌ Error creating default programs:', error.message);
         }
       }
-    }
     
     // Maintenance mode middleware - only apply after database is connected
     const maintenanceMode = require('./middleware/maintenance');
