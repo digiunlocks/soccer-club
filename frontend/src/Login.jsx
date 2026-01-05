@@ -149,8 +149,12 @@ export default function Login() {
             value={form.usernameOrEmail}
             onChange={handleChange}
             className="border border-green-300 rounded px-3 py-2 w-full"
+            placeholder="Enter your username or email address"
             required
           />
+          <p className="text-xs text-gray-600 mt-1">
+            You can log in using either your username or email address
+          </p>
         </div>
         <div>
           <label className="font-semibold">Password <span className="text-red-600">*</span></label>

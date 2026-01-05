@@ -151,10 +151,14 @@ export default function Register() {
             value={form.username} 
             onChange={handleChange} 
             className={`border rounded px-3 py-2 w-full ${errors.username ? 'border-red-500' : 'border-green-300'}`}
+            placeholder="Choose a unique username (3-30 characters)"
             required 
             minLength={3}
             maxLength={30}
           />
+          <p className="text-xs text-gray-600 mt-1">
+            You'll be able to log in using either your username or email address
+          </p>
           {errors.username && <div className="text-xs text-red-600">{errors.username}</div>}
         </div>
         <div>
@@ -177,8 +181,12 @@ export default function Register() {
             value={form.email} 
             onChange={handleChange} 
             className={`border rounded px-3 py-2 w-full ${errors.email ? 'border-red-500' : 'border-green-300'}`}
+            placeholder="your.email@example.com"
             required 
           />
+          <p className="text-xs text-gray-600 mt-1">
+            You can use your email address to log in instead of your username
+          </p>
           {errors.email && <div className="text-xs text-red-600">{errors.email}</div>}
         </div>
         <div>
