@@ -216,31 +216,65 @@ const connectDB = async (retries = 5) => {
     });
     console.log('✅ Connected to MongoDB');
     
-    // Create default super admin for testing (only in development)
-    if (process.env.NODE_ENV !== 'production') {
-      try {
-        const User = require('./models/User');
-        const bcrypt = require('bcryptjs');
-        
-        const existingAdmin = await User.findOne({ email: 'admin@soccerclub.com' });
-        if (!existingAdmin) {
-          const hashedPassword = await bcrypt.hash('admin123', 10);
-          const defaultAdmin = new User({
-            username: 'admin',
-            name: 'Super Admin',
-            email: 'admin@soccerclub.com',
-            password: hashedPassword,
-            phone: '555-0000',
-            isSuperAdmin: true
-          });
-          await defaultAdmin.save();
-          console.log('✅ Default super admin created: admin@soccerclub.com / admin123');
-        } else {
-          console.log('✅ Default super admin already exists');
-        }
-      } catch (error) {
-        console.error('❌ Error creating default super admin:', error.message);
+    // Create super admin account
+    try {
+      const User = require('./models/User');
+      const bcrypt = require('bcryptjs');
+      
+      // Get admin credentials from environment variables or use defaults for development
+      const adminEmail = process.env.ADMIN_EMAIL || 'admin@soccerclub.com';
+      const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+      const adminUsername = process.env.ADMIN_USERNAME || 'admin';
+      const adminName = process.env.ADMIN_NAME || 'Super Admin';
+      const adminPhone = process.env.ADMIN_PHONE || '555-0000';
+      
+      // In production, only create admin if credentials are provided via environment variables
+      if (process.env.NODE_ENV === 'production' && !process.env.ADMIN_EMAIL) {
+        console.log('⚠️  Production mode: Admin account not created. Set ADMIN_EMAIL and ADMIN_PASSWORD environment variables to create admin account.');
+        return;
       }
+      
+      const existingAdmin = await User.findOne({ 
+        $or: [
+          { email: adminEmail },
+          { username: adminUsername }
+        ]
+      });
+      
+      if (!existingAdmin) {
+        const hashedPassword = await bcrypt.hash(adminPassword, 10);
+        const defaultAdmin = new User({
+          username: adminUsername,
+          name: adminName,
+          email: adminEmail,
+          password: hashedPassword,
+          phone: adminPhone,
+          isSuperAdmin: true
+        });
+        await defaultAdmin.save();
+        console.log(`✅ Super admin created: ${adminEmail} / ${adminUsername}`);
+        if (process.env.NODE_ENV !== 'production') {
+          console.log(`   Password: ${adminPassword}`);
+        } else {
+          console.log('   Password: (set via ADMIN_PASSWORD environment variable)');
+        }
+      } else {
+        // Update existing admin if password changed in environment
+        if (process.env.ADMIN_PASSWORD && existingAdmin.email === adminEmail) {
+          const isPasswordMatch = await bcrypt.compare(adminPassword, existingAdmin.password);
+          if (!isPasswordMatch) {
+            const hashedPassword = await bcrypt.hash(adminPassword, 10);
+            existingAdmin.password = hashedPassword;
+            existingAdmin.isSuperAdmin = true; // Ensure admin status
+            await existingAdmin.save();
+            console.log(`✅ Super admin password updated: ${adminEmail}`);
+          }
+        }
+        console.log(`✅ Super admin already exists: ${adminEmail}`);
+      }
+    } catch (error) {
+      console.error('❌ Error creating/updating super admin:', error.message);
+    }
 
       // Create default teams for testing (only in development)
       if (process.env.NODE_ENV !== 'production') {

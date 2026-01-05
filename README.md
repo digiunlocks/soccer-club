@@ -149,15 +149,42 @@ npm start
 
 ## 👑 Super Admin Access
 
-### Default Admin Credentials
+### Default Admin Credentials (Development)
 - **Email**: `admin@soccerclub.com`
+- **Username**: `admin`
 - **Password**: `admin123`
 
 ### How to Access
 1. Navigate to the application
 2. Click "Sign In" in the navigation
-3. Use the credentials above
+3. Use the credentials above (email or username works)
 4. You'll be redirected to the admin dashboard
+
+### Setting Up Admin in Production
+
+#### Option 1: Using Environment Variables
+Add these to your `backend/.env` file:
+```env
+ADMIN_EMAIL=your-admin@example.com
+ADMIN_PASSWORD=your-secure-password
+ADMIN_USERNAME=admin
+ADMIN_NAME=Super Admin
+ADMIN_PHONE=555-0000
+```
+The admin account will be created automatically when the server starts.
+
+#### Option 2: Using the Setup Script
+Run the admin creation script:
+```bash
+cd backend
+node scripts/create-admin.js your-admin@example.com your-secure-password admin "Super Admin" "555-0000"
+```
+
+Or with environment variables:
+```bash
+cd backend
+ADMIN_EMAIL=your-admin@example.com ADMIN_PASSWORD=your-secure-password node scripts/create-admin.js
+```
 
 ### Admin Features Available
 - **Hero Content Management**: Upload images/videos for the homepage
@@ -167,6 +194,9 @@ npm start
 - **Gallery Management**: Upload and manage media
 - **User Management**: Manage user accounts
 - **Site Settings**: Configure maintenance mode and other settings
+- **Marketplace Management**: Moderate marketplace items
+- **Payment Management**: View and manage payments
+- **Broadcast System**: Send announcements to users
 
 ## 🐳 Docker Deployment
 
